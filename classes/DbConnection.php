@@ -168,6 +168,7 @@ class DbConnection
 
         if ($newsletterGuests && $this->checkModuleStatus($newsletterModule)) {
             $ngWhere = 'UNION SELECT
+                    0 as id,
                     "Friend" as firstname,
                     "" as lastname,
                     n.email as email,
@@ -189,6 +190,7 @@ class DbConnection
         }
 
         $sql = 'SELECT
+                    cu.id_customer as id,
                     cu.firstname as firstname,
                     cu.lastname as lastname,
                     cu.email as email,
@@ -574,6 +576,31 @@ class DbConnection
                     `id_order` = ' . (int) $orderId;
 
         return $this->db->getValue($sql);
+    }
+
+
+    /**
+     * @param int $userId
+     * @return Cart[]
+     */
+    public function getUserCarts($userId)
+    {
+        $sql = 'SELECT `id_cart` FROM
+                    ' . _DB_PREFIX_ . 'cart 
+                WHERE
+                    `id_customer` = ' . (int) $userId;
+
+        if ($results = $this->db->ExecuteS($sql)) {
+            $carts = array();
+
+            foreach ($results as $result) {
+                $carts[] = new Cart($result['id_cart']);
+            }
+
+            return $carts;
+        }
+
+        return array();
     }
 
     /**

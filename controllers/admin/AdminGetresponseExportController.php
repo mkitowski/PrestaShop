@@ -1,5 +1,30 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'AdminGetresponseController.php';
+
+use GrShareCode\Contact\ContactService as GrContactService;
+use GrShareCode\GetresponseApi;
+use GrShareCode\Api\ApiType as GrApiType;
+use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
+use GrShareCode\Contact\CustomField as GrCustomField;
+use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\ApiTypeException as GrApiTypeException;
+use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
+use GrShareCode\Cart\Cart as GrCart;
+use GrShareCode\Product\ProductsCollection as GrProductsCollection;
+use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
+use GrShareCode\Product\Category\Category as GrCategory;
+use GrShareCode\Product\Variant\Variant as GrVariant;
+use GrShareCode\Product\Product as GrProduct;
+use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GrShareCode\Product\ProductService as GrProductService;
+use GrShareCode\Cart\CartService as GrCartService;
+use GrShareCode\Order\OrderService as GrOrderService;
+use GrShareCode\Export\ExportCustomersService as GrExportCustomersService;
+use GrShareCode\Export\Settings\ExportSettings as GrExportSettings;
+use GrShareCode\Export\Settings\EcommerceSettings as GrEcommerceSettings;
+use GrShareCode\Export\ExportContactCommand as GrExportContactCommand;
 
 /**
  * Class AdminGetresponseExportController
@@ -326,6 +351,31 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         )
                     ),
                     array(
+                        'type' => 'checkbox',
+                        'label' => '',
+                        'name' => 'exportEcommerce',
+                        'values' => array(
+                            'query' => array(
+                                array('id' => 1, 'val' =>1, 'name' => $this->l(' Include ecommerce data in this export'))
+                            ),
+                            'id' => 'id',
+                            'name' => 'name',
+                        ),
+                    ),
+                    array(
+                        'type' => 'checkbox',
+                        'label' => '',
+                        'name' => 'asyncExport',
+                        'desc' => $this->l('To use this option, you need to have PrestaShop Cron Tasks Manager installed'),
+                        'values' => array(
+                            'query' => array(
+                                array('id' => 1, 'val' =>1, 'name' => $this->l(' Use a time-based job scheduler for this export'))
+                            ),
+                            'id' => 'id',
+                            'name' => 'name',
+                        ),
+                    ),
+                    array(
                         'label' => $this->l('Update contacts info'),
                         'name' => 'contactInfo',
                         'type' => 'switch',
@@ -413,65 +463,92 @@ class AdminGetresponseExportController extends AdminGetresponseController
         }
     }
 
-
     public function performExport()
     {
-        $campaign       = Tools::getValue('campaign');
-        $addToCycle   = Tools::getValue('addToCycle_1', 0);
-        $cycleDay      = Tools::getValue('autoresponder_day', null);
-        $updateAddress = Tools::getValue('contactInfo', 0);
-        $newsletter = Tools::getValue('newsletter', 0) ==  1 ? true : false;
+        $exportSettings = new GetResponseExportSettings(
+            Tools::getValue('campaign'),
+            Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
+            Tools::getValue('contactInfo', 0) ==  1 ? true : false,
+            Tools::getValue('newsletter', 0) ==  1 ? true : false,
+            Tools::getValue('asyncExport_1', 0) ==  1 ? true : false,
+            Tools::getValue('exportEcommerce_1', 0) ==  1 ? true : false
+        );
 
-        if (empty($campaign)) {
+        if (empty($exportSettings->getListId())) {
             $this->errors[] = $this->l('You need to select list');
             $this->exportCustomersView();
             return;
         }
 
-        if (!empty($errors)) {
-            $this->addErrorMessage(implode(',', $errors));
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $export = new GrExport($exportSettings, $repository);
+
+        if ($exportSettings->isAsyncExport()) {
+
+            //@TODO: przygotowanie eksportu
+
+            $export->createAsyncExportRequest();
+            $this->confirmations[] = $this->l('Customer data will be exported by Cron Task Manager');
             $this->exportCustomersView();
             return;
         }
 
-        $errorMessages = array();
-        $api = $this->getGrAPI();
-
-        // get contacts
-        $contacts = $this->db->getContacts(!empty($newsletter) ? true : false);
-
-        if (empty($contacts)) {
-            $this->errors[] = $this->l('No contacts to export');
+        try {
+            $export->export();
+        } catch (GetresponseApiException $e) {
+            $this->errors[] = $this->l($e->getMessage());
             $this->exportCustomersView();
             return;
-        }
-
-        foreach ($contacts as $contact) {
-            if ($updateAddress == 1) {
-                $customs = $api->mapCustoms($contact, $_POST, $this->db->getCustoms(), 'export');
-            } else {
-                $customs = array();
-            }
-
-            if (!empty($customs['custom_error']) && $customs['custom_error'] == true) {
-                $this->errors[] = $this->l('Incorrect field name: ') . $customs['custom_message'];
-                return;
-            }
-
-            $r = $api->addContact(
-                $campaign,
-                $contact['firstname'],
-                $contact['lastname'],
-                $contact['email'],
-                $addToCycle == 1 ? $cycleDay : null,
-                $customs
-            );
-
-            if (isset($r->httpStatus) && $r->httpStatus >= 400) {
-                $errorMessages[] = '[' . $r->code . '] ' . $r->message;
-            }
+        } catch (GrApiTypeException $e) {
+            $this->errors[] = $this->l($e->getMessage());
+            $this->exportCustomersView();
+            return;
+        } catch (GrGeneralException $e) {
+            $this->errors[] = $this->l($e->getMessage());
+            $this->exportCustomersView();
+            return;
+        } catch (PrestaShopDatabaseException $e) {
+            $this->errors[] = $this->l($e->getMessage());
+            $this->exportCustomersView();
+            return;
         }
 
         $this->confirmations[] = $this->l('Customer data exported');
+        $this->exportCustomersView();
     }
+
+
+    /**
+     * @param array $product
+     * @return GrProduct
+     */
+    private function createGrProductObject($product)
+    {
+        $categoryCollection = new GrCategoryCollection();
+        $coreProduct = new Product($product['id_product']);
+        $categories = $coreProduct->getCategories();
+
+        foreach ($categories as $category) {
+            $coreCategory = new Category($category);
+            $categoryCollection->add(new GrCategory($coreCategory->getName()));
+        }
+
+        $grVariant = new GrVariant(
+            (int)$product['id_product'],
+            $product['name'],
+            $coreProduct->getPrice(false),
+            $coreProduct->getPrice(),
+            $product['reference']
+        );
+
+        return new GrProduct(
+            (int)$product['id_product'],
+            $product['name'],
+            $grVariant,
+            $categoryCollection
+        );
+    }
+
+
+
 }

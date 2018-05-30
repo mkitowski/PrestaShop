@@ -1,0 +1,35 @@
+[
+    {
+        "name": "getresponse/share-code-plugin",
+        "version": "dev-feature/bstepien/initial",
+        "version_normalized": "dev-feature/bstepien/initial",
+        "source": {
+            "type": "git",
+            "url": "git@git.int.getresponse.com:integrations/share-code-plugin.git",
+            "reference": "e13dce2d0934b04d00f8e74cb733e27a5cdefca5"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "^5"
+        },
+        "time": "2018-05-29T12:59:32+00:00",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "GrShareCode\\": "src/"
+            }
+        },
+        "autoload-dev": {
+            "psr-4": {
+                "GrShareCode\\Tests\\": "tests/"
+            }
+        },
+        "authors": [
+            {
+                "name": "GetResponse",
+                "email": "team@getresponse.com"
+            }
+        ],
+        "description": "Share code plugin"
+    }
+]
