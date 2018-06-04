@@ -220,7 +220,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'id' => $custom['id_custom'],
                     'customer_detail' => $custom['custom_field'],
                     'gr_custom' => $custom['custom_name'],
-                    'default' => $custom['default'] == 'yes' ? 1 : 0,
+                    'default' => 0,
                     'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
                 );
             }
@@ -262,7 +262,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                         'id' => $custom['id_custom'],
                         'customer_detail' => $custom['custom_field'],
                         'gr_custom' => $custom['custom_name'],
-                        'default' => $custom['default'] == 'yes' ? 1 : 0,
+                        'default' => 0,
                         'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0,
                         'actions' => array()
                     );

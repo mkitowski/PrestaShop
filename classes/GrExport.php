@@ -34,6 +34,9 @@ class GrExport
     /** @var GetResponseRepository */
     private $repository;
 
+    /** @var GrCustomFieldsCollection */
+    private $grCustoms;
+
     /**
      * @param GetResponseExportSettings $exportSettings
      * @param GetResponseRepository $getResponseRepository
@@ -63,7 +66,7 @@ class GrExport
         $orderService = new GrOrderService($api, $repository, $productService);
         $exportService = new GrExportContactService($contactService, $cartService, $orderService);
         $contacts = $repository->getContacts($this->exportSettings->isNewsletter());
-        $grCustoms = $contactService->getAllCustomFields();
+        $this->grCustoms = $contactService->getAllCustomFields();
         $settings = new GrExportSettings(
             $this->exportSettings->getListId(),
             $this->exportSettings->getCycleDay(),
@@ -110,8 +113,7 @@ class GrExport
                     $contact['email'],
                     $contact['firstname'] . ' ' . $contact['lastname'],
                     $settings,
-                    $this->mapCustomFields($grCustoms, $contact,
-                        $settings->isUpdateContactEnabled()),
+                    $this->mapCustomFields($contact, $settings->isUpdateContactEnabled()),
                     $orders
                 );
 
@@ -139,18 +141,17 @@ class GrExport
     }
 
     /**
-     * @param GrCustomFieldsCollection $grCustoms
      * @param array $contact
      * @param bool $useCustoms
      * @return GrCustomFieldsCollection
      * @throws PrestaShopDatabaseException
      */
-    private function mapCustomFields($grCustoms, $contact, $useCustoms)
+    private function mapCustomFields($contact, $useCustoms)
     {
         $c = array();
 
         /** @var GrCustomField $grCustom */
-        foreach ($grCustoms as $grCustom) {
+        foreach ($this->grCustoms as $grCustom) {
             $c[$grCustom->getName()] = $grCustom->getId();
         }
 
@@ -163,11 +164,6 @@ class GrExport
         $mappingCollection = $this->repository->getCustoms();
 
         foreach ($mappingCollection as $mapping) {
-            if (!isset($c[$mapping['custom_name']])) {
-                continue;
-                //@TODO: zrob customa
-            }
-
             if ('yes' === $mapping['active_custom'] && isset($contact[$mapping['custom_name']])) {
                 $collection->add(new GrCustomField($c[$mapping['custom_name']], $mapping['custom_name'], $contact[$mapping['custom_name']]));
             }

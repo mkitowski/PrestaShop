@@ -1064,17 +1064,17 @@ class DbConnection
             `active_custom`
         )
         VALUES
-            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'firstname\', \'yes\', \'yes\'),
-            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'lastname\', \'yes\', \'yes\'),
-            (' . (int) $storeId . ', \'email\', \'email\', \'email\', \'yes\', \'yes\'),
-            (' . (int) $storeId . ', \'address\', \'address1\', \'address\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'postal\', \'postcode\', \'postal\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'city\', \'city\', \'city\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'phone\', \'phone\', \'phone\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'country\', \'country\', \'country\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'birthday\', \'birthday\', \'birthday\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'company\', \'company\', \'company\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'category\', \'category\', \'category\', \'no\', \'no\');';
+            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'phone\', \'phone\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'country\', \'country\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'birthday\', \'birthday\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'company\', \'company\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'category\', \'category\', \'\', \'no\', \'no\');';
     }
 
     public function clearDatabase()

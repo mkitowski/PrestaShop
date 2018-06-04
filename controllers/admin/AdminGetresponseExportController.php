@@ -4,27 +4,8 @@ ini_set('display_errors', 1);
 require_once 'AdminGetresponseController.php';
 
 use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\GetresponseApi;
-use GrShareCode\Api\ApiType as GrApiType;
-use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
-use GrShareCode\Contact\CustomField as GrCustomField;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
-use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
-use GrShareCode\Cart\Cart as GrCart;
-use GrShareCode\Product\ProductsCollection as GrProductsCollection;
-use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
-use GrShareCode\Product\Category\Category as GrCategory;
-use GrShareCode\Product\Variant\Variant as GrVariant;
-use GrShareCode\Product\Product as GrProduct;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
-use GrShareCode\Product\ProductService as GrProductService;
-use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\Order\OrderService as GrOrderService;
-use GrShareCode\Export\ExportCustomersService as GrExportCustomersService;
-use GrShareCode\Export\Settings\ExportSettings as GrExportSettings;
-use GrShareCode\Export\Settings\EcommerceSettings as GrEcommerceSettings;
-use GrShareCode\Export\ExportContactCommand as GrExportContactCommand;
 
 /**
  * Class AdminGetresponseExportController
@@ -73,12 +54,13 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 'gr_custom' => array(
                     'label' => $this->l('Getresponse custom field name'),
                     'required'  => true,
-                    'desc' => $this->l('
-                        You can use lowercase English alphabet characters, numbers,
-                        and underscore ("_"). Maximum 32 characters.
-                    '),
-                    'type' => 'text',
-                    'name' => 'gr_custom'
+                    'type' => 'select',
+                    'name' => 'gr_custom',
+                    'options' => array(
+                        'query' => $this->getGetResponseCustomFields(),
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    )
                 ),
                 'default' => array(
                     'required'  => true,
@@ -126,7 +108,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                     'id' => $custom['id_custom'],
                     'customer_detail' => $custom['custom_field'],
                     'gr_custom' => $custom['custom_name'],
-                    'default' => $custom['default'] == 'yes' ? 1 : 0,
+                    'default' => 0,
                     'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
                 );
             }
@@ -447,7 +429,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'id' => $custom['id_custom'],
                         'customer_detail' => $custom['custom_field'],
                         'gr_custom' => $custom['custom_name'],
-                        'default' => $custom['default'] == 'yes' ? 1 : 0,
+                        'default' => 0,
                         'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
                     );
                 }
@@ -510,5 +492,25 @@ class AdminGetresponseExportController extends AdminGetresponseController
         }
 
         $this->exportCustomersView();
+    }
+
+    /**
+     * @return array
+     */
+    private function getGetResponseCustomFields()
+    {
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $dbSettings = $repository->getSettings();
+        $api = GrTools::getApiInstance($dbSettings);
+        $contactService = new GrContactService($api);
+        $getresponseCustoms = $contactService->getAllCustomFields();
+        $availableCustoms = array();
+
+        /** @var \GrShareCode\Contact\CustomField $getresponseCustom */
+        foreach ($getresponseCustoms as $getresponseCustom) {
+            $availableCustoms[] = array('id_option' => $getresponseCustom->getName(), 'name' => $getresponseCustom->getName());
+        }
+
+        return $availableCustoms;
     }
 }

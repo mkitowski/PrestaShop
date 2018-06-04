@@ -428,11 +428,6 @@ class AdminGetresponseController extends ModuleAdminController
             'active' => Tools::getValue('mapping_on') == 1 ? 'yes' : 'no'
         );
 
-        if (Tools::getValue('default') == 1) {
-            $this->errors[] = $this->l('Default mappings cannot be changed!');
-            return;
-        }
-
         $error = $this->validateCustom($custom['name']);
 
         if (empty($error)) {
@@ -549,7 +544,7 @@ class AdminGetresponseController extends ModuleAdminController
                 'id' => $custom['id_custom'],
                 'customer_detail' => $custom['custom_field'],
                 'gr_custom' => $custom['custom_name'],
-                'default' => $custom['default'] == 'yes' ? 1 : 0,
+                'default' => 0,
                 'on' => $custom['active_custom'] == 'yes' ? 1 : 0
             );
         }

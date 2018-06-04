@@ -65,12 +65,4 @@ $(function () {
     } else {
         $('#form-AdminGetresponseExport').hide();
     }
-
-    $('table.AdminGetresponseExport tr').each(function () {
-        if (['firstname', 'lastname', 'email'].indexOf($(this).find('td').first().text().trim()) >= 0) {
-            var td = $(this).find('td');
-            td.attr('onclick', '').removeClass('pointer');
-            td.last().html('<span class="btn btn-default disabled">Default</span>');
-        }
-    });
 });
