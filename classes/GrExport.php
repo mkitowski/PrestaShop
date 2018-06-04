@@ -164,6 +164,9 @@ class GrExport
         $mappingCollection = $this->repository->getCustoms();
 
         foreach ($mappingCollection as $mapping) {
+            if (!isset($c[$mapping['custom_name']])) {
+                continue;
+            }
             if ('yes' === $mapping['active_custom'] && isset($contact[$mapping['custom_name']])) {
                 $collection->add(new GrCustomField($c[$mapping['custom_name']], $mapping['custom_name'], $contact[$mapping['custom_name']]));
             }
