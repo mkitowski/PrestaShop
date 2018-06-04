@@ -2,6 +2,8 @@
 
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
+use GrShareCode\Job\Job as GrJob;
+use GrShareCode\Job\JobCollection as GrJobCollection;
 
 class GetResponseRepository implements DbRepositoryInterface
 {
@@ -41,7 +43,7 @@ class GetResponseRepository implements DbRepositoryInterface
                      `gr_variant_id`,
                      `variant_id`
                FROM
-                    ' . _DB_PREFIX_ . 'gr_products
+                    ' . _DB_PREFIX_ . 'getresponse_products
                WHERE
                     `gr_shop_id` = "' . $grShopId . '" AND
                     `product_id` = ' . $externalProductId . ' AND
@@ -70,7 +72,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function saveCartMapping($grShopId, $externalCartId, $grCartId)
     {
-        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'gr_carts 
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_carts 
                 SET
                     `gr_shop_id` = ' . $grShopId . ',
                     `gr_cart_id` = ' . $grCartId .',
@@ -86,7 +88,7 @@ class GetResponseRepository implements DbRepositoryInterface
     public function getGrCartIdFromMapping($grShopId, $externalCartId)
     {
         $sql = 'SELECT `gr_cart_id` FROM
-                    ' . _DB_PREFIX_ . 'gr_carts 
+                    ' . _DB_PREFIX_ . 'getresponse_carts 
                 WHERE
                     `gr_shop_id` = ' . $grShopId . ' AND 
                     `cart_id` = ' . (int) $externalCartId;
@@ -102,7 +104,7 @@ class GetResponseRepository implements DbRepositoryInterface
     public function getGrOrderIdFromMapping($grShopId, $externalOrderId)
     {
         $sql = 'SELECT `gr_order_id` FROM
-                    ' . _DB_PREFIX_ . 'gr_orders
+                    ' . _DB_PREFIX_ . 'getresponse_orders
                 WHERE
                     `gr_shop_id` = ' . $grShopId . ' AND 
                     `order_id` = ' . (int) $externalOrderId;
@@ -117,7 +119,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function saveOrderMapping($grShopId, $externalOrderId, $grOrderId)
     {
-        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'gr_orders
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_orders
                 SET
                     `gr_shop_id` = ' . $grShopId . ',
                     `gr_order_id` = ' . $grOrderId .',
@@ -140,7 +142,7 @@ class GetResponseRepository implements DbRepositoryInterface
                      `gr_variant_id`,
                      `variant_id`
                FROM
-                    ' . _DB_PREFIX_ . 'gr_products
+                    ' . _DB_PREFIX_ . 'getresponse_products
                WHERE
                     `gr_shop_id` = ' . $grShopId . ' AND
                     `product_id` = ' . $externalProductId . '
@@ -166,7 +168,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function saveProductMapping(ProductMapping $productMapping)
     {
-        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'gr_products
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_products
                 SET
                     `product_id` = "' . $productMapping->getExternalProductId() . '",
                     `gr_product_id` = "' . $productMapping->getGrProductId() . '",
@@ -405,34 +407,51 @@ class GetResponseRepository implements DbRepositoryInterface
     }
 
     /**
-     * @param \GrShareCode\Job\Job $job
+     * @param GrJob $job
      */
-    public function addJob(\GrShareCode\Job\Job $job)
+    public function addJob(GrJob $job)
     {
-    }
-
-    /**
-     * @return \GrShareCode\Job\JobCollection
-     */
-    public function getJobsToProcess()
-    {
-    }
-
-    /**
-     * @param \GrShareCode\Job\Job $job
-     */
-    public function deleteJob(\GrShareCode\Job\Job $job)
-    {
-    }
-
-    public function insertExportRequest($type, $payload)
-    {
-        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'gr_crons
+        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_jobs
                 SET
-                    `type` = "' . $this->db->escape($type) . '",
-                    `payload` = \'' . $this->db->escape($payload) . '\'';
+                    `name` = "' . $this->db->escape($job->getName()) . '",
+                    `content` = "' . $this->db->escape($job->getMessageContent()) .'"';
         $this->db->execute($sql);
     }
 
+    /**
+     * @return GrJobCollection
+     */
+    public function getJobsToProcess()
+    {
+        $collection = new GrJobCollection();
+
+        $sql = '
+        SELECT
+            `name`,
+            `content`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_jobs'
+        ;
+
+        if ($results = $this->db->ExecuteS($sql)) {
+            foreach ($results as $result) {
+                $collection->add(new GrJob($result['name'], $result['content']));
+            }
+        }
+
+        return $collection;
+    }
+
+    /**
+     * @param GrJob $job
+     */
+    public function deleteJob(GrJob $job)
+    {
+        $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'getresponse_jobs
+                WHERE
+                    `name` = "' . $this->db->escape($job->getName()) . '" AND
+                    `content` = "' . $this->db->escape($job->getMessageContent()) . '"';
+        $this->db->execute($sql);
+    }
 
 }

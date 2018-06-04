@@ -483,16 +483,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $export = new GrExport($exportSettings, $repository);
 
-        if ($exportSettings->isAsyncExport()) {
-
-            //@TODO: przygotowanie eksportu
-
-            $export->createAsyncExportRequest();
-            $this->confirmations[] = $this->l('Customer data will be exported by Cron Task Manager');
-            $this->exportCustomersView();
-            return;
-        }
-
         try {
             $export->export();
         } catch (GetresponseApiException $e) {
@@ -503,52 +493,22 @@ class AdminGetresponseExportController extends AdminGetresponseController
             $this->errors[] = $this->l($e->getMessage());
             $this->exportCustomersView();
             return;
-        } catch (GrGeneralException $e) {
-            $this->errors[] = $this->l($e->getMessage());
-            $this->exportCustomersView();
-            return;
         } catch (PrestaShopDatabaseException $e) {
             $this->errors[] = $this->l($e->getMessage());
             $this->exportCustomersView();
             return;
+        } catch (PrestaShopException $e) {
+            $this->errors[] = $this->l($e->getMessage());
+            $this->exportCustomersView();
+            return;
         }
 
-        $this->confirmations[] = $this->l('Customer data exported');
+        if ($exportSettings->isAsyncExport()) {
+            $this->confirmations[] = $this->l('Customer data will be exported by Cron Task Manager');
+        } else {
+            $this->confirmations[] = $this->l('Customer data exported');
+        }
+
         $this->exportCustomersView();
     }
-
-
-    /**
-     * @param array $product
-     * @return GrProduct
-     */
-    private function createGrProductObject($product)
-    {
-        $categoryCollection = new GrCategoryCollection();
-        $coreProduct = new Product($product['id_product']);
-        $categories = $coreProduct->getCategories();
-
-        foreach ($categories as $category) {
-            $coreCategory = new Category($category);
-            $categoryCollection->add(new GrCategory($coreCategory->getName()));
-        }
-
-        $grVariant = new GrVariant(
-            (int)$product['id_product'],
-            $product['name'],
-            $coreProduct->getPrice(false),
-            $coreProduct->getPrice(),
-            $product['reference']
-        );
-
-        return new GrProduct(
-            (int)$product['id_product'],
-            $product['name'],
-            $grVariant,
-            $categoryCollection
-        );
-    }
-
-
-
 }

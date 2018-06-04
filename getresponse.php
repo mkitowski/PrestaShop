@@ -21,9 +21,15 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php')
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrTools.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
+
+use GrShareCode\Api\ApiTypeException as GrApiTypeException;
+use GrShareCode\GetresponseApiException;
+use GrShareCode\Job\JobException as GrJobException;
+use GrShareCode\Job\RunCommand as GrRunCommand;
 
 class Getresponse extends Module
 {
@@ -48,14 +54,15 @@ class Getresponse extends Module
         'cart',
         'postUpdateOrderStatus',
         'hookOrderConfirmation',
-        'displayBackOfficeHeader'
+        'displayBackOfficeHeader',
+        'actionCronJob'
     );
 
     public function __construct()
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '16.2.10';
+        $this->version                = '16.3.0';
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -673,5 +680,36 @@ class Getresponse extends Module
                 $customs
             );
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getCronFrequency()
+    {
+        return array('hour' => -1, 'day' => -1, 'month' => -1, 'day_of_week' => -1);
+    }
+
+    /**
+     * @param array $params
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws GrApiTypeException
+     * @throws GetresponseApiException
+     * @throws GrJobException
+     */
+    public function hookActionCronJob($params = array())
+    {
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $dbSettings = $repository->getSettings();
+
+        if (empty($dbSettings['api_key'])) {
+            return true;
+        }
+
+        $api = GrTools::getApiInstance($dbSettings);
+        $command = new GrRunCommand($api, $repository);
+        $command->execute();
+        return true;
     }
 }

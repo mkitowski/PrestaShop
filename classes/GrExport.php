@@ -1,32 +1,30 @@
 <?php
 
 use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\GetresponseApi;
-use GrShareCode\Api\ApiType as GrApiType;
 use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
 use GrShareCode\Contact\CustomField as GrCustomField;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
-use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Product\ProductsCollection as GrProductsCollection;
 use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
 use GrShareCode\Product\Category\Category as GrCategory;
 use GrShareCode\Product\Variant\Variant as GrVariant;
 use GrShareCode\Product\Product as GrProduct;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Product\ProductService as GrProductService;
 use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\Export\Settings\EcommerceSettings as GrEcommerceSettings;
 use GrShareCode\Export\Settings\ExportSettings as GrExportSettings;
 use GrShareCode\Order\OrderService as GrOrderService;
-use GrShareCode\Export\ExportCustomersService as GrExportCustomersService;
 use GrShareCode\Export\ExportContactService as GrExportContactService;
 use GrShareCode\Export\ExportContactCommand as GrExportContactCommand;
-use GrShareCode\Export\Settings\ExportSettings;
 use GrShareCode\Export\HistoricalOrder\HistoricalOrderCollection as GrHistoricalOrderCollection;
 use GrShareCode\Export\HistoricalOrder\HistoricalOrder as GrHistoricalOrder;
 use GrShareCode\Address\Address as GrAddress;
+use GrShareCode\Product\Variant\Images\Image as GrImage;
+use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
+use GrShareCode\CountryCodeConverter as GrCountryCodeConverter;
+use GrShareCode\Job\JobFactory as GrJobFactory;
 
 class GrExport
 {
@@ -51,14 +49,14 @@ class GrExport
     /**
      * @throws GetresponseApiException
      * @throws GrApiTypeException
-     * @throws GrGeneralException
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function export()
     {
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $dbSettings = $repository->getSettings();
-        $api = new GetresponseApi($dbSettings['api_key'], GrApiType::createForSMB(), 'xapp');
+        $api = GrTools::getApiInstance($dbSettings);
         $contactService = new GrContactService($api);
         $productService = new GrProductService($api, $repository);
         $cartService = new GrCartService($api, $repository, $productService);
@@ -79,39 +77,49 @@ class GrExport
 
         foreach ($contacts as $contact) {
             $orders = new GrHistoricalOrderCollection();
-            $customerOrders = $this->repository->getOrders($contact['id']);
 
-            foreach ($customerOrders as $customerOrder) {
-                $orderCore = new Order($customerOrder['id_order']);
-                $date = DateTime::createFromFormat('Y-m-d H:i:s', $orderCore->date_add);
-                $orders->add(new GrHistoricalOrder(
-                    (int) $customerOrder['id_order'],
-                    $this->getOrderProductsCollection($orderCore),
-                    floatval($orderCore->total_paid_tax_excl),
-                    floatval($orderCore->total_paid_tax_incl),
-                    Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $orderCore->id,
-                    (new Currency((int)$orderCore->id_currency))->iso_code,
-                    $this->getOrderStatus($orderCore),
-                    (int)$orderCore->id_cart,
-                    '',
-                    floatval($orderCore->total_shipping_tax_incl),
-                    $this->getOrderStatus($orderCore),
-                    $date->format('Y-m-d\TH:i:sO'),
-                    $this->getOrderShippingAddress($orderCore),
-                    $this->getOrderBillingAddress($orderCore),
-                    $this->getCartForOrder($orderCore)
-                ));
+            if ($this->exportSettings->isExportEcommerce()) {
+                $customerOrders = $this->repository->getOrders($contact['id']);
+
+                foreach ($customerOrders as $customerOrder) {
+                    $orderCore = new Order($customerOrder['id_order']);
+                    $date = DateTime::createFromFormat('Y-m-d H:i:s',
+                        $orderCore->date_add);
+                    $orders->add(new GrHistoricalOrder(
+                        (int)$customerOrder['id_order'],
+                        $this->getOrderProductsCollection($orderCore),
+                        floatval($orderCore->total_paid_tax_excl),
+                        floatval($orderCore->total_paid_tax_incl),
+                        Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $orderCore->id,
+                        (new Currency((int)$orderCore->id_currency))->iso_code,
+                        $this->getOrderStatus($orderCore),
+                        (int)$orderCore->id_cart,
+                        '',
+                        floatval($orderCore->total_shipping_tax_incl),
+                        $this->getOrderStatus($orderCore),
+                        $date->format('Y-m-d\TH:i:sO'),
+                        $this->getOrderShippingAddress($orderCore),
+                        $this->getOrderBillingAddress($orderCore),
+                        $this->getCartForOrder($orderCore)
+                    ));
+                }
             }
 
             try {
-                $exportService->exportContact(new GrExportContactCommand(
+                $exportCommand = new GrExportContactCommand(
                     $contact['email'],
                     $contact['firstname'] . ' ' . $contact['lastname'],
                     $settings,
                     $this->mapCustomFields($grCustoms, $contact,
                         $settings->isUpdateContactEnabled()),
                     $orders
-                ));
+                );
+
+                if ($settings->isJobSchedulerEnabled()) {
+                    $this->repository->addJob(GrJobFactory::createForContactExportCommand($exportCommand));
+                } else {
+                    $exportService->exportContact($exportCommand);
+                }
             } catch (GetresponseApiException $e) {
                 if ($e->getMessage() !== 'Cannot add contact that is blacklisted') {
                     throw $e;
@@ -127,7 +135,6 @@ class GrExport
     private function getOrderStatus($order)
     {
         $status = (new OrderState((int)$order->getCurrentState(), $order->id_lang))->name;
-
         return empty($status) ? 'new' : $status;
     }
 
@@ -156,6 +163,11 @@ class GrExport
         $mappingCollection = $this->repository->getCustoms();
 
         foreach ($mappingCollection as $mapping) {
+            if (!isset($c[$mapping['custom_name']])) {
+                continue;
+                //@TODO: zrob customa
+            }
+
             if ('yes' === $mapping['active_custom'] && isset($contact[$mapping['custom_name']])) {
                 $collection->add(new GrCustomField($c[$mapping['custom_name']], $mapping['custom_name'], $contact[$mapping['custom_name']]));
             }
@@ -165,19 +177,20 @@ class GrExport
     }
 
     /**
-     * @param array $product
+     * @param $product
      * @return GrProduct
+     * @throws PrestaShopException
      */
     private function createGrProductObject($product)
     {
-        $imagesCollection = new \GrShareCode\Product\Variant\Images\ImagesCollection();
+        $imagesCollection = new GrImagesCollection();
         $categoryCollection = new GrCategoryCollection();
         $coreProduct = new Product($product['id_product']);
         $categories = $coreProduct->getCategories();
 
         foreach ($coreProduct->getImages(null) as $image) {
             $imagePath = (new Link())->getImageLink($coreProduct->link_rewrite, $image['id_image'], 'home_default');
-            $imagesCollection->add(new \GrShareCode\Product\Variant\Images\Image(Tools::getProtocol() . $imagePath, (int)$image['position']));
+            $imagesCollection->add(new GrImage(Tools::getProtocol(Tools::usingSecureMode()) . $imagePath, (int)$image['position']));
         }
 
         foreach ($categories as $category) {
@@ -203,16 +216,10 @@ class GrExport
         );
     }
 
-    public function createAsyncExportRequest()
-    {
-
-        $request = serialize($this->exportSettings->getSettings());
-        $this->repository->insertExportRequest('export', $request);
-    }
-
     /**
      * @param Order $order
      * @return GrProductsCollection
+     * @throws PrestaShopException
      */
     private function getOrderProductsCollection(Order $order)
     {
@@ -234,7 +241,10 @@ class GrExport
     {
         $address = new Address($order->id_address_delivery);
         $country = new Country($address->id_country);
-        return new GrAddress(\GrShareCode\CountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code), $this->normalizeToString($country->name));
+        return new GrAddress(
+            GrCountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code),
+            $this->normalizeToString($country->name)
+        );
     }
 
     /**
@@ -245,23 +255,27 @@ class GrExport
     {
         $address = new Address($order->id_address_invoice);
         $country = new Country($address->id_country);
-        return new GrAddress(\GrShareCode\CountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code), $this->normalizeToString($country->name));
+        return new GrAddress(
+            GrCountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code),
+            $this->normalizeToString($country->name)
+        );
     }
 
     /**
      * @param Order $order
      * @return GrCart
+     * @throws PrestaShopException
      */
     private function getCartForOrder(Order $order)
     {
         $coreCart = new Cart((int)$order->id_cart);
-        $productsCollection = new \GrShareCode\Product\ProductsCollection();
+        $productsCollection = new GrProductsCollection();
 
         foreach ($coreCart->getProducts() as $product) {
             $productsCollection->add($this->createGrProductObject($product));
         }
 
-        return new GrShareCode\Cart\Cart(
+        return new GrCart(
             $coreCart->id,
             $productsCollection,
             (new Currency((int)$coreCart->id_currency))->iso_code,

@@ -924,10 +924,14 @@ class DbConnection
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_products` (
-            `id_product` int(11) unsigned NOT NULL,
-            `gr_id_product` varchar(32) DEFAULT NULL,
-            UNIQUE KEY (`id_product`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `product_id` int(11) DEFAULT NULL,
+              `gr_product_id` varchar(16) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `gr_variant_id` varchar(16) DEFAULT NULL,
+              `variant_id` int(11) DEFAULT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers` (
             `id_user` int(11) unsigned NOT NULL,
@@ -935,6 +939,31 @@ class DbConnection
             `gr_id_user` varchar(16) DEFAULT NULL,           
             `email` varchar(128) DEFAULT NULL,
             UNIQUE KEY `id_user` (`id_user`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_jobs` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `name` varchar(32) DEFAULT NULL,
+              `content` text,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_carts` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `shop_id` int(11) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `cart_id` int(11) DEFAULT NULL,
+              `gr_cart_id` varchar(16) DEFAULT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE `ps_getresponse_orders` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `shop_id` int(11) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `order_id` int(11) DEFAULT NULL,
+              `gr_order_id` varchar(16) DEFAULT NULL,
+              PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
         $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `cart_hash` varchar(32);';
@@ -1057,5 +1086,8 @@ class DbConnection
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_jobs`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_carts`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_orders`;');
     }
 }
