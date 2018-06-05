@@ -24,6 +24,19 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->idShop = $shopId;
     }
 
+    public function getGrShopId()
+    {
+        $sql = 'SELECT 
+                    `gr_id_shop` 
+                FROM 
+                    `ps_getresponse_ecommerce`
+                WHERE
+                    `id_shop` = ' . $this->idShop . ' 
+                LIMIT 1';
+
+        return $this->db->getValue($sql);
+    }
+
     /**
      * @param string $grShopId
      * @param int $externalProductId
@@ -53,7 +66,7 @@ class GetResponseRepository implements DbRepositoryInterface
         $mapping = $this->db->ExecuteS($sql);
 
         if (empty($mapping)) {
-            return null;
+            return new ProductMapping(null, null, null, null, null);
         }
 
         return new ProductMapping(
@@ -74,8 +87,8 @@ class GetResponseRepository implements DbRepositoryInterface
     {
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_carts 
                 SET
-                    `gr_shop_id` = ' . $grShopId . ',
-                    `gr_cart_id` = ' . $grCartId .',
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '",
+                    `gr_cart_id` = "' . $grCartId .'",
                     `cart_id` = ' . (int) $externalCartId;
         $this->db->execute($sql);
     }
@@ -90,7 +103,7 @@ class GetResponseRepository implements DbRepositoryInterface
         $sql = 'SELECT `gr_cart_id` FROM
                     ' . _DB_PREFIX_ . 'getresponse_carts 
                 WHERE
-                    `gr_shop_id` = ' . $grShopId . ' AND 
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
                     `cart_id` = ' . (int) $externalCartId;
 
         return $this->db->getValue($sql);
@@ -106,7 +119,7 @@ class GetResponseRepository implements DbRepositoryInterface
         $sql = 'SELECT `gr_order_id` FROM
                     ' . _DB_PREFIX_ . 'getresponse_orders
                 WHERE
-                    `gr_shop_id` = ' . $grShopId . ' AND 
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
                     `order_id` = ' . (int) $externalOrderId;
 
         return $this->db->getValue($sql);
@@ -121,8 +134,8 @@ class GetResponseRepository implements DbRepositoryInterface
     {
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_orders
                 SET
-                    `gr_shop_id` = ' . $grShopId . ',
-                    `gr_order_id` = ' . $grOrderId .',
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '",
+                    `gr_order_id` = "' . $this->db->escape($grOrderId) .'",
                     `order_id` = ' . (int) $externalOrderId;
         $this->db->execute($sql);
     }
@@ -144,14 +157,14 @@ class GetResponseRepository implements DbRepositoryInterface
                FROM
                     ' . _DB_PREFIX_ . 'getresponse_products
                WHERE
-                    `gr_shop_id` = ' . $grShopId . ' AND
-                    `product_id` = ' . $externalProductId . '
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND
+                    `product_id` = "' . $this->db->escape($externalProductId) . '"
                ';
 
         $mapping = $this->db->ExecuteS($sql);
 
         if (empty($mapping)) {
-            return null;
+            return new ProductMapping(null, null, null, null, null);
         }
 
         return new ProductMapping(

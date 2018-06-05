@@ -462,10 +462,9 @@ class AdminGetresponseExportController extends AdminGetresponseController
             return;
         }
 
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $export = new GrExport($exportSettings, $repository);
-
         try {
+            $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+            $export = new GrExport($exportSettings, $repository);
             $export->export();
         } catch (GetresponseApiException $e) {
             $this->errors[] = $this->l($e->getMessage());

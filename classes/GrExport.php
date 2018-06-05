@@ -74,7 +74,7 @@ class GrExport
             $this->exportSettings->isUpdateAddress(),
             new GrEcommerceSettings(
                 $this->exportSettings->isExportEcommerce(),
-                GrShop::getUserShopId()
+                $repository->getGrShopId()
             )
         );
 
@@ -89,14 +89,14 @@ class GrExport
                     $date = DateTime::createFromFormat('Y-m-d H:i:s',
                         $orderCore->date_add);
                     $orders->add(new GrHistoricalOrder(
-                        (int)$customerOrder['id_order'],
+                        (string)$customerOrder['id_order'],
                         $this->getOrderProductsCollection($orderCore),
                         floatval($orderCore->total_paid_tax_excl),
                         floatval($orderCore->total_paid_tax_incl),
                         Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $orderCore->id,
                         (new Currency((int)$orderCore->id_currency))->iso_code,
                         $this->getOrderStatus($orderCore),
-                        (int)$orderCore->id_cart,
+                        (string)$orderCore->id_cart,
                         '',
                         floatval($orderCore->total_shipping_tax_incl),
                         $this->getOrderStatus($orderCore),
@@ -204,6 +204,8 @@ class GrExport
             $coreProduct->getPrice(),
             $product['reference']
         );
+        //@TODO: pobrac ilosc
+        $grVariant->setQuantity(100);
         $grVariant->setImages($imagesCollection);
         $grVariant->setUrl((new Link())->getProductLink($coreProduct));
 
@@ -275,7 +277,7 @@ class GrExport
         }
 
         return new GrCart(
-            $coreCart->id,
+            (string)$coreCart->id,
             $productsCollection,
             (new Currency((int)$coreCart->id_currency))->iso_code,
             $coreCart->getOrderTotal(false),
