@@ -153,7 +153,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderView()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         $this->context->smarty->assign(array(
@@ -243,7 +243,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
     {
         $this->redirectIfNotAuthorized();
 
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $api = $this->getGrAPI();
 
         $this->context->smarty->assign(array(

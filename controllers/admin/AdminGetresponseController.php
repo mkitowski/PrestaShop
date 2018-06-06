@@ -24,7 +24,10 @@
 
 class AdminGetresponseController extends ModuleAdminController
 {
-    /** @var DbConnection */
+    /**
+     * @var DbConnection
+     * @deprecated
+     * */
     public $db;
 
     /** @var GetResponseRepository */
@@ -51,7 +54,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         if ('AdminGetresponseAccount' !== Tools::getValue('controller') && false === $isConnected) {
@@ -98,7 +101,7 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function renderView()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         $this->context->smarty->assign(array(
@@ -123,7 +126,7 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function apiView()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
 
         if (!empty($settings['api_key'])) {
             $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
@@ -211,7 +214,7 @@ class AdminGetresponseController extends ModuleAdminController
         $confirmationSubject,
         $confirmationBody
     ) {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         // required params
         if (empty($settings['api_key'])) {
             return;
@@ -257,7 +260,7 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function redirectIfNotAuthorized()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
 
         if (empty($settings['api_key'])) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
