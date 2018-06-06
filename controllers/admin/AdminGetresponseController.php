@@ -27,6 +27,9 @@ class AdminGetresponseController extends ModuleAdminController
     /** @var DbConnection */
     public $db;
 
+    /** @var GetResponseRepository */
+    public $repository;
+
     public function __construct()
     {
         parent::__construct();
@@ -264,8 +267,10 @@ class AdminGetresponseController extends ModuleAdminController
 
     public function getGrAPI()
     {
-        $settings = $this->db->getSettings();
-        return new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $dbSettings = $repository->getSettings();
+
+        return GrTools::getApiInstance($dbSettings);
     }
 
     /**

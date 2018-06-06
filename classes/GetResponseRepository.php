@@ -29,10 +29,22 @@ class GetResponseRepository implements DbRepositoryInterface
         $sql = 'SELECT 
                     `gr_id_shop` 
                 FROM 
-                    `ps_getresponse_ecommerce`
+                    `' . _DB_PREFIX_ . 'getresponse_ecommerce`
                 WHERE
                     `id_shop` = ' . $this->idShop . ' 
                 LIMIT 1';
+
+        return $this->db->getValue($sql);
+    }
+
+    public function getApiKey()
+    {
+        $sql = 'SELECT 
+                    `api_key` 
+                FROM 
+                    `' . _DB_PREFIX_ . 'getresponse_settings`
+                WHERE
+                    `id_shop` = ' . $this->idShop;
 
         return $this->db->getValue($sql);
     }
@@ -467,4 +479,41 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($sql);
     }
 
+    /**
+     * @param string $apiKey
+     * @param string $accountType
+     * @param string $crypto
+     */
+    public function updateApiSettings($apiKey, $accountType, $crypto)
+    {
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `api_key` = "' . pSQL($apiKey) . '",
+            `account_type` = "' . pSQL($accountType) . '",
+            `crypto` = "' . pSQL($crypto) . '"
+         WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @param $activeTracking
+     * @param $snippet
+     */
+    public function updateTracking($activeTracking, $snippet)
+    {
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_settings
+        SET
+            `active_tracking` = "' . pSQL($activeTracking) . '",
+            `tracking_snippet` = "' . pSQL($snippet, true) . '"
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
+    }
 }

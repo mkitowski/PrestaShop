@@ -1,6 +1,8 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 /**
  * Class AdminGetresponseAccountController
  * @author Getresponse <grintegrations@getresponse.com>
@@ -23,7 +25,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             'base_url', __PS_BASE_URI__
         ));
 
-        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+        $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
         if (Tools::isSubmit('connectToGetResponse')) {
             $this->connectToGetResponse();
@@ -34,7 +36,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     public function initContent()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $this->display = !empty($settings['api_key']) ? 'view' : 'edit';
         $this->show_form_cancel_button = false;
 
@@ -55,35 +57,34 @@ class AdminGetresponseAccountController extends AdminGetresponseController
      */
     public function apiView()
     {
-        $settings = $this->db->getSettings();
+        $api = $this->getGrAPI();
+        $grAccount = new GrAccount($api, $this->repository);
 
-        if (!empty($settings['api_key'])) {
-            $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
-            $data = $api->getAccounts();
+        if (!empty($grAccount->getApiKey())) {
+            $data = $grAccount->getInfo();
 
             $this->context->smarty->assign(array(
-                'gr_acc_name' => $data->firstName . ' ' . $data->lastName,
-                'gr_acc_email' => $data->email,
-                'gr_acc_company' => $data->companyName,
-                'gr_acc_phone' => $data->phone,
-                'gr_acc_address' => $data->city . ' ' . $data->street . ' ' . $data->zipCode,
+                'gr_acc_name' => $data['firstName'] . ' ' . $data['lastName'],
+                'gr_acc_email' => $data['email'],
+                'gr_acc_company' => $data['companyName'],
+                'gr_acc_phone' => $data['phone'],
+                'gr_acc_address' => $data['city'] . ' ' . $data['street'] . ' ' . $data['zipCode'],
             ));
         }
 
         $this->context->smarty->assign(array(
-            'api_key' => $this->hideApiKey($settings['api_key']),
-            'is_connected' => !empty($settings['api_key']) ? true : false
+            'api_key' => $this->hideApiKey($grAccount->getApiKey()),
+            'is_connected' => !empty($api) ? true : false
         ));
     }
 
     /**
-     *
      * render main view
      * @return mixed
      */
     public function renderView()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         $this->context->smarty->assign(array(
@@ -199,7 +200,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function disconnectFromGetResponse()
     {
-        $this->db->updateApiSettings(null, 'gr', null);
+        $grAccount = new GrAccount(GrTools::getApiInstance($this->repository->getSettings()), $this->repository);
+        $grAccount->updateApiSettings(null, 'gr', null);
 
         /** @var CacheCore $cache */
         $cache = Cache::getInstance();
@@ -220,17 +222,16 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             return;
         }
 
-        $api = new GrApi($apiKey, $accountType, $domain);
-
         try {
-            if (true === $api->checkConnection()) {
-                $this->db->updateApiSettings($apiKey, $accountType, $domain);
-                $this->confirmations[] = $this->l('GetResponse account connected');
+            $grAccount = new GrAccount(
+                GrTools::getApiInstance(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]),
+                $this->repository
+            );
 
-                $this->db->updateTracking(
-                    (false === $api->getFeatures()->feature_tracking) ? 'disabled': 'no',
-                    ''
-                );
+            if ($grAccount->checkConnection()) {
+                $grAccount->updateApiSettings($apiKey, $accountType, $domain);
+                $this->confirmations[] = $this->l('GetResponse account connected');
+                $grAccount->updateTracking((false === $grAccount->isTrackingAvailable()) ? 'disabled': 'no', '');
             } else {
                 $msg = $accountType !== 'gr'
                     ? 'The API key or domain seems incorrect.'
@@ -239,7 +240,9 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     If you recently generated a new key, please make sure you\'re using the right one';
                 $this->errors[] = $this->l($msg);
             }
-        } catch (GrApiException $e) {
+        } catch (\GrShareCode\GetresponseApiException $e) {
+            $this->errors[] = $e->getMessage();
+        } catch (\GrShareCode\Api\ApiTypeException $e) {
             $this->errors[] = $e->getMessage();
         }
     }
