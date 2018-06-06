@@ -24,6 +24,30 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->idShop = $shopId;
     }
 
+    /**
+     * @param string $activeSubscription
+     * @param string $campaignId
+     * @param string $updateAddress
+     * @param string $cycleDay
+     * @param string $newsletter
+     */
+    public function updateSettings($activeSubscription, $campaignId, $updateAddress, $cycleDay, $newsletter)
+    {
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `active_subscription` = "' . pSQL($activeSubscription) . '",
+            `active_newsletter_subscription` = "' . pSQL($newsletter) . '",
+            `campaign_id` = "' . pSQL($campaignId) . '",
+            `update_address` = "' . pSQL($updateAddress) . '",
+            `cycle_day` = "' . pSQL($cycleDay) . '"
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
+    }
+
     public function getGrShopId()
     {
         $sql = 'SELECT 

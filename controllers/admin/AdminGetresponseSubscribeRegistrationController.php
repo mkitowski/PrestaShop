@@ -71,7 +71,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function renderView()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         $this->context->smarty->assign(array(
@@ -213,7 +213,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $helper->token = $this->getToken();
         $helper->fields_value = array('mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false);
 
-        $customs = $this->db->getCustoms();
+        $customs = $this->repository->getCustoms();
         foreach ($customs as $custom) {
             if (Tools::getValue('id') == $custom['id_custom']) {
                 $helper->fields_value = array(
@@ -246,7 +246,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     public function getFieldsValue($obj)
     {
         if ($this->display == 'view') {
-            $settings = $this->db->getSettings();
+            $settings = $this->repository->getSettings();
             return array(
                 'subscriptionSwitch' => $settings['active_subscription'] == 'yes' ? 1 : 0,
                 'campaign' => $settings['campaign_id'],
@@ -255,7 +255,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                 'newsletter' => $settings['active_newsletter_subscription'] == 'yes' ? 1 : 0
             );
         } else {
-            $customs = $this->db->getCustoms();
+            $customs = $this->repository->getCustoms();
             foreach ($customs as $custom) {
                 if (Tools::getValue('id') == $custom['id_custom']) {
                     return array(
@@ -399,7 +399,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     {
         $this->redirectIfNotAuthorized();
 
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $api = $this->getGrAPI();
 
         $this->context->smarty->assign(array(
@@ -451,7 +451,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         }
 
         $cycleDay = 1 == $addToCycle ? $cycleDay : null;
-        $this->db->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
+        $this->repository->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
 
         $this->confirmations[] = $this->l('Settings saved');
     }
