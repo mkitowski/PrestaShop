@@ -53,11 +53,9 @@ class GrAccount
      * @return bool
      * @throws GetresponseApiException
      */
-    public function isTrackingAvailable()
+    public function getTrackingCode()
     {
-        $tracking = $this->api->getTrackingCode();
-
-        return !empty($tracking);
+        return $this->api->getTrackingCode();
     }
 
     /**

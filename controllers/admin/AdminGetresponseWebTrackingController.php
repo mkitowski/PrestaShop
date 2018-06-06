@@ -32,7 +32,7 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
             $this->updateTracking();
         }
 
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $this->show_form_cancel_button = false;
 
         if ($settings['active_tracking'] != 'disabled') {
@@ -91,21 +91,17 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
     public function updateTracking()
     {
         $tracking = Tools::getValue('tracking');
-        $settings = $this->db->getSettings();
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+        $grAccount = new GrAccount($this->getGrAPI(), $this->repository);
         $snippet = '';
 
         if ($tracking == 1) {
-            $code = (array)$api->getTrackingCode();
-            if (!empty($code) && is_object($code[0]) && 0 < strlen($code[0]->snippet)) {
-                $snippet = $code[0]->snippet;
-            }
+            $snippet = $grAccount->getTrackingCode();
             $this->confirmations[] = $this->l('Web event traffic tracking enabled');
         } elseif ($tracking == 0) {
             $this->confirmations[] = $this->l('Web event traffic tracking disabled');
         }
 
-        $this->db->updateTracking($tracking == 1 ? 'yes' : 'no', $snippet);
+        $grAccount->updateTracking($tracking == 1 ? 'yes' : 'no', $snippet);
     }
 
     /**
