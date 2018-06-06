@@ -22,7 +22,7 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrAccount.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrTools.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiFactory.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
@@ -34,6 +34,9 @@ use GrShareCode\Job\RunCommand as GrRunCommand;
 
 class Getresponse extends Module
 {
+    const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
+    const VERSION = '16.3.0';
+
     /** @var DbConnection */
     private $db;
 
@@ -63,7 +66,7 @@ class Getresponse extends Module
     {
         $this->name                   = 'getresponse';
         $this->tab                    = 'emailing';
-        $this->version                = '16.3.0';
+        $this->version                = self::VERSION;
         $this->author                 = 'GetResponse';
         $this->need_instance          = 0;
         $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -708,7 +711,7 @@ class Getresponse extends Module
             return true;
         }
 
-        $api = GrTools::getApiInstance($dbSettings);
+        $api = GrApiFactory::createFromSettings($dbSettings);
         $command = new GrRunCommand($api, $repository);
         $command->execute();
         return true;

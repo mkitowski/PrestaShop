@@ -198,7 +198,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function disconnectFromGetResponse()
     {
-        $grAccount = new GrAccount(GrTools::getApiInstance($this->repository->getSettings()), $this->repository);
+        $grAccount = new GrAccount(GrApiFactory::createFromSettings($this->repository->getSettings()), $this->repository);
         $grAccount->updateApiSettings(null, 'gr', null);
 
         /** @var CacheCore $cache */
@@ -222,7 +222,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
         try {
             $grAccount = new GrAccount(
-                GrTools::getApiInstance(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]),
+                GrApiFactory::createFromSettings(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]),
                 $this->repository
             );
 

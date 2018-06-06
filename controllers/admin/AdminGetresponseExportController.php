@@ -515,7 +515,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
     private function getGetResponseCustomFields()
     {
         $dbSettings = $this->repository->getSettings();
-        $api = GrTools::getApiInstance($dbSettings);
+        $api = GrApiFactory::createFromSettings($dbSettings);
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
         $availableCustoms = array();

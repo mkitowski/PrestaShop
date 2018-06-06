@@ -1,4 +1,9 @@
 <?php
+
+use GrShareCode\WebForm\WebForm;
+use GrShareCode\WebForm\WebFormCollection;
+use GrShareCode\WebForm\WebFormService;
+
 require_once 'AdminGetresponseController.php';
 
 /**
@@ -8,7 +13,6 @@ require_once 'AdminGetresponseController.php';
  * @copyright GetResponse
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 {
     public function __construct()
@@ -20,7 +24,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeForm'),
-            'base_url', __PS_BASE_URI__
+            'base_url' => __PS_BASE_URI__
         ));
     }
 
@@ -46,7 +50,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     public function renderForm()
     {
         $this->show_form_cancel_button = false;
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;
 
         $this->context->smarty->assign(array(
@@ -56,6 +60,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
         if (false === $isConnected) {
             $this->apiView();
+
             return parent::renderView();
         }
 
@@ -68,6 +73,94 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         return $this->subscribeViaFormView();
     }
 
+    public function performSubscribeViaForm()
+    {
+        $this->redirectIfNotAuthorized();
+        $webFormId = Tools::getValue('form', null);
+        $webFormSidebar = Tools::getValue('position', null);
+        $webFormStyle = Tools::getValue('style', null);
+        $subscription = Tools::getValue('subscription', null);
+
+        $this->repository->updateWebformSubscription($subscription === '1' ? 'yes' : 'no');
+
+        if (empty($webFormId) || empty($webFormSidebar)) {
+            $this->errors[] = $this->l('You need to select a form and its placement');
+
+            return;
+        }
+
+        $dbSettings = $this->repository->getSettings();
+        $api = GrApiFactory::createFromSettings($dbSettings);
+        $formService = new WebFormService($api);
+        $webForms = $formService->getAllWebForms();
+        $mergedWebForms = array();
+
+        /** @var WebForm $form */
+        foreach ($webForms as $form) {
+            $mergedWebForms[$form->getWebFormId()] = $form->getScriptUrl();
+        }
+
+        // set web form info to DB
+        $this->repository->updateWebformSettings(
+            $webFormId,
+            $subscription === '1' ? 'yes' : 'no',
+            $webFormSidebar,
+            $webFormStyle,
+            $mergedWebForms[$webFormId]
+        );
+        if ($subscription) {
+            $this->confirmations[] = $this->l('Form published');
+        } else {
+            $this->confirmations[] = $this->l('Form unpublished');
+        }
+
+        $this->subscribeViaFormView();
+    }
+
+    /**
+     * Subscription via webform
+     */
+    public function subscribeViaFormView()
+    {
+        $this->redirectIfNotAuthorized();
+
+        $this->context->smarty->assign(array('selected_tab' => 'subscribe_via_form'));
+
+        $dbSettings = $this->repository->getSettings();
+        $api = GrApiFactory::createFromSettings($dbSettings);
+        $formService = new WebFormService($api);
+        $webforms = $formService->getAllWebForms();
+
+        $options = $this->convertFormsToDisplayArray($webforms);
+
+        return $this->renderSubscribeForm($options);
+    }
+
+    /**
+     * @param WebFormCollection $webforms
+     * @return array
+     */
+    public function convertFormsToDisplayArray(WebFormCollection $webforms)
+    {
+        $options = array(
+            array(
+                'id_option' => '',
+                'name' => 'Select a form you want to display'
+            )
+        );
+
+        /** @var WebForm $form */
+        foreach ($webforms as $form) {
+            $disabled = $form->isEnabled() ? '' : $this->l('(DISABLED IN GR)');
+            $options[] = array(
+                'id_option' => $form->getWebFormId(),
+                'name' => $form->getName() . ' (' . $form->getCampaignName() . ') ' . $disabled
+            );
+        }
+
+        return $options;
+    }
+
     public function renderSubscribeForm($forms = [])
     {
         $this->fields_form = array(
@@ -77,12 +170,12 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             ),
             'input' => array(
                 array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Add contacts to GetResponse via forms (or exit popups)'),
-                    'name'      => 'subscription',
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
+                    'type' => 'switch',
+                    'label' => $this->l('Add contacts to GetResponse via forms (or exit popups)'),
+                    'name' => 'subscription',
+                    'class' => 't',
+                    'is_bool' => true,
+                    'values' => array(
                         array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
                         array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
                     ),
@@ -143,98 +236,14 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
     public function getFieldsValue($obj)
     {
-        $webformSettings = $this->db->getWebformSettings();
+        $webformSettings = $this->repository->getWebformSettings();
 
         return array(
             'position' => $webformSettings['sidebar'],
             'form' => $webformSettings['webform_id'],
             'style' => $webformSettings['style'],
-            'subscription' => $webformSettings['active_subscription'] == 'yes' ? 1 : 0
+            'subscription' => $webformSettings['active_subscription'] === 'yes' ? 1 : 0
         );
-    }
-
-    public function performSubscribeViaForm()
-    {
-        $this->redirectIfNotAuthorized();
-        $webFormId      = Tools::getValue('form', null);
-        $webFormSidebar = Tools::getValue('position', null);
-        $webFormStyle = Tools::getValue('style', null);
-        $subscription = Tools::getValue('subscription', null);
-
-        $this->db->updateWebformSubscription($subscription == 1 ? 'yes' : 'no');
-
-        if (empty($webFormId) || empty($webFormSidebar)) {
-            $this->errors[] = $this->l('You need to select a form and its placement');
-            return;
-        }
-
-        $api = $this->getGrAPI();
-
-        $webForms = array_merge($api->getWebForms(), $api->getForms());
-        $mergedWebForms = array();
-
-        foreach ($webForms as $form) {
-            $mergedWebForms[$form->webformId] = $form->scriptUrl;
-        }
-
-        // set web form info to DB
-        $this->db->updateWebformSettings(
-            $webFormId,
-            $subscription == 1 ? 'yes' : 'no',
-            $webFormSidebar,
-            $webFormStyle,
-            $mergedWebForms[$webFormId]
-        );
-        if ($subscription) {
-            $this->confirmations[] = $this->l('Form published');
-        } else {
-            $this->confirmations[] = $this->l('Form unpublished');
-        }
-
-        $this->subscribeViaFormView();
-    }
-
-    /**
-     * Subscription via webform
-     */
-    public function subscribeViaFormView()
-    {
-        $this->redirectIfNotAuthorized();
-
-        $api = $this->getGrAPI();
-        $this->context->smarty->assign(array('selected_tab' => 'subscribe_via_form'));
-
-        // get old webforms
-        $webforms = $api->getWebForms();
-
-        // get new forms
-        $forms = $api->getForms();
-
-        $options = $this->convertFormsToDisplayArray($webforms, $forms);
-
-        return $this->renderSubscribeForm($options);
-    }
-
-    public function convertFormsToDisplayArray($webforms, $old)
-    {
-        $options = array(array('id_option' => '', 'name' => 'Select a form you want to display'));
-        foreach ($webforms as $form) {
-            $disabled = $form->status != 'enabled' ? $this->l('(DISABLED IN GR)') : '';
-            $options[] = array(
-                'id_option' => $form->webformId,
-                'name' => $form->name . ' (' . $form->campaign->name . ') ' . $disabled
-            );
-        }
-
-        foreach ($old as $form) {
-            $disabled = $form->status != 'published' ? $this->l('(DISABLED IN GR)') : '';
-            $options[] = array(
-                'id_option' => $form->webformId,
-                'name' => $form->name . ' (' . $form->campaign->name . ') ' . $disabled
-            );
-        }
-
-        return $options;
     }
 
     /**

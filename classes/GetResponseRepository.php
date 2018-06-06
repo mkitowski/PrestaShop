@@ -516,4 +516,69 @@ class GetResponseRepository implements DbRepositoryInterface
 
         $this->db->execute($query);
     }
+
+    /**
+     * @return array
+     */
+    public function getWebformSettings()
+    {
+        $query = '
+        SELECT
+            `webform_id`, 
+            `active_subscription`, 
+            `sidebar`, 
+            `style`, 
+            `url`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_webform
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        if ($results = $this->db->ExecuteS($query)) {
+            return $results[0];
+        }
+
+        return array();
+    }
+
+    /**
+     * @param string $activeSubscription
+     */
+    public function updateWebformSubscription($activeSubscription)
+    {
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_webform 
+        SET
+            `active_subscription` = "' . pSQL($activeSubscription) . '"
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @param int $webformId
+     * @param string $activeSubscription
+     * @param string $sidebar
+     * @param string $style
+     * @param string $url
+     */
+    public function updateWebformSettings($webformId, $activeSubscription, $sidebar, $style, $url)
+    {
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_webform
+        SET
+            `webform_id` = "' . pSQL($webformId) . '",
+            `active_subscription` = "' . pSQL($activeSubscription) . '",
+            `sidebar` = "' . pSQL($sidebar) . '",
+            `style` = "' . pSQL($style) . '",
+            `url` = "' . pSQL($url) . '"
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
+    }
+
 }

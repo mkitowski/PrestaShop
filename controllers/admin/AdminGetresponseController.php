@@ -272,7 +272,7 @@ class AdminGetresponseController extends ModuleAdminController
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $dbSettings = $repository->getSettings();
 
-        return GrTools::getApiInstance($dbSettings);
+        return GrApiFactory::createFromSettings($dbSettings);
     }
 
     /**
