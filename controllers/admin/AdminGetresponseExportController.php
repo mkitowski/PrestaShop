@@ -229,15 +229,14 @@ class AdminGetresponseExportController extends AdminGetresponseController
     public function exportCustomersView()
     {
         $this->redirectIfNotAuthorized();
-
         $settings = $this->repository->getSettings();
-        $api = $this->getGrAPI();
+        $campaignService = new \GrShareCode\Campaign\CampaignService($this->getGrAPI());
 
         $this->context->smarty->assign(array(
             'selected_tab' => 'export_customers',
             'export_customers_form' => $this->renderExportForm(),
             'export_customers_list' => $this->renderCustomList(),
-            'campaign_days' => json_encode($this->getCampaignDays($api->getAutoResponders())),
+            'campaign_days' => json_encode($this->getCampaignDays($campaignService->getAutoresponders())),
             'cycle_day' => $settings['cycle_day'],
             'token' => $this->getToken(),
         ));
@@ -396,17 +395,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'autoresponder_day' => false,
             'contactInfo' => Tools::getValue('mapping', 0),
             'newsletter' => 0,
-            'autoresponders' => json_encode(array()), //json_encode($api->getAutoResponders()),
+            'autoresponders' => json_encode(array()),
             'cycle_day_selected' => 0
         );
 
         return $helper->generateForm(array($fieldsForm)) . $this->renderList();
-    }
-
-
-    private function getAutoresponders()
-    {
-        $campaignService = new \GrShareCode\Campaign\CampaignService();
     }
 
     /**

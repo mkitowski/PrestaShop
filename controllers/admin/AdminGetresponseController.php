@@ -277,32 +277,26 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * @param array $autoresponders
+     * @param \GrShareCode\Campaign\AutorespondersCollection $autoresponders
      * @return array
      */
     public function getCampaignDays($autoresponders)
     {
         $campaignDays = array();
-        if (!empty($autoresponders)) {
-            foreach ($autoresponders as $autoresponder) {
-                if ($autoresponder->triggerSettings->dayOfCycle == null) {
-                    continue;
-                }
 
-                $cycleDay = $autoresponder->triggerSettings->dayOfCycle;
-                $campaignId = $autoresponder->campaignId;
-
-                $campaignDays[$campaignId][$cycleDay] =
-                    array('day' => $autoresponder->triggerSettings->dayOfCycle,
-                          'name' => $autoresponder->subject,
-                          'campaign_id' => $autoresponder->campaignId,
-                          'status' => $autoresponder->status,
-                          'full_name' => '(' . $this->l('Day') . ': ' .
-                              $cycleDay . ') ' . $autoresponder->name .
-                              ' (' . $this->l('Subject') . ': ' . $autoresponder->subject . ')'
-                    );
-            }
+        /** @var \GrShareCode\Campaign\Autoresponder $autoresponder */
+        foreach ($autoresponders as $autoresponder) {
+            $campaignDays[$autoresponder->getCampaignId()][$autoresponder->getCycleDay()] =
+                array('day' => $autoresponder->getCycleDay(),
+                      'name' => $autoresponder->getSubject(),
+                      'campaign_id' => $autoresponder->getCampaignId(),
+                      'status' => $autoresponder->getStatus(),
+                      'full_name' => '(' . $this->l('Day') . ': ' .
+                          $autoresponder->getCycleDay() . ') ' . $autoresponder->getName() .
+                          ' (' . $this->l('Subject') . ': ' . $autoresponder->getSubject() . ')'
+                );
         }
+
         return $campaignDays;
     }
 
