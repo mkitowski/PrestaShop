@@ -49,8 +49,7 @@ class AdminGetresponseController extends ModuleAdminController
             'base_url', __PS_BASE_URI__
         ));
 
-        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
-
+        $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
         $settings = $this->db->getSettings();
         $isConnected = !empty($settings['api_key']) ? true : false;

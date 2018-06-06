@@ -25,8 +25,6 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             'base_url', __PS_BASE_URI__
         ));
 
-        $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-
         if (Tools::isSubmit('connectToGetResponse')) {
             $this->connectToGetResponse();
         } elseif (Tools::isSubmit('disconnectFromGetResponse')) {

@@ -272,6 +272,23 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('Export Customer Data on Demand');
     }
 
+    /**
+     * @param \GrShareCode\GetresponseApi $api
+     */
+    private function getCampaigns($api)
+    {
+        $campaignService = new \GrShareCode\Campaign\CampaignService($api);
+        $campaignsCollection = $campaignService->getAllCampaigns();
+        $campaigns = array();
+
+        /** @var \GrShareCode\Campaign\Campaign $campaignItem */
+        foreach ($campaignsCollection as $campaignItem) {
+            $campaigns[] = array('id' => $campaignItem->getId(), 'name' => $campaignItem->getName());
+        }
+
+        return $campaigns;
+    }
+
     public function renderExportForm()
     {
         $api = $this->getGrAPI();
@@ -293,7 +310,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'options' => array(
                             'query' => array(
                                 array('id' => '', 'name' => $this->l('Select a list'))
-                                ) + $api->getCampaigns(),
+                                ) + $this->getCampaigns($api),
                             'id' => 'id',
                             'name' => 'name'
                         )
@@ -392,7 +409,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'autoresponder_day' => false,
             'contactInfo' => Tools::getValue('mapping', 0),
             'newsletter' => 0,
-            'autoresponders' => json_encode($api->getAutoResponders()),
+            'autoresponders' => json_encode(array()), //json_encode($api->getAutoResponders()),
             'cycle_day_selected' => 0
         );
 
@@ -463,8 +480,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         }
 
         try {
-            $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-            $export = new GrExport($exportSettings, $repository);
+            $export = new GrExport($exportSettings, $this->repository);
             $export->export();
         } catch (GetresponseApiException $e) {
             $this->errors[] = $this->l($e->getMessage());
@@ -498,8 +514,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getGetResponseCustomFields()
     {
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $dbSettings = $repository->getSettings();
+        $dbSettings = $this->repository->getSettings();
         $api = GrTools::getApiInstance($dbSettings);
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
