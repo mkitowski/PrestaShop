@@ -229,7 +229,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             if ($grAccount->checkConnection()) {
                 $grAccount->updateApiSettings($apiKey, $accountType, $domain);
                 $this->confirmations[] = $this->l('GetResponse account connected');
-                $grAccount->updateTracking((false === $grAccount->isTrackingAvailable()) ? 'disabled': 'no', '');
+                $grAccount->updateTracking(empty($grAccount->getTrackingCode()) ? 'disabled': 'no', '');
             } else {
                 $msg = $accountType !== 'gr'
                     ? 'The API key or domain seems incorrect.'
