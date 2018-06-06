@@ -406,7 +406,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     private function getAutoresponders()
     {
-        $campaignService = new \GrShareCode\Campaign\CampaignService()
+        $campaignService = new \GrShareCode\Campaign\CampaignService();
     }
 
     /**
@@ -507,7 +507,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getGetResponseCustomFields()
     {
-        $api = $this->getGrAPI();
+        $dbSettings = $this->repository->getSettings();
+        $api = GrApiFactory::createFromSettings($dbSettings);
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
         $availableCustoms = array();

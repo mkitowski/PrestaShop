@@ -283,8 +283,6 @@ class GrApi
         $cache->set($cacheKey, $accounts, self::CACHE_TTL);
 
         return $accounts;
-
-
     }
 
     /**

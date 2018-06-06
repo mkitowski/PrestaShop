@@ -59,7 +59,7 @@ class GrExport
     {
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $dbSettings = $repository->getSettings();
-        $api = GrTools::getApiInstance($dbSettings);
+        $api = GrApiFactory::createFromSettings($dbSettings);
         $contactService = new GrContactService($api);
         $productService = new GrProductService($api, $repository);
         $cartService = new GrCartService($api, $repository, $productService);
