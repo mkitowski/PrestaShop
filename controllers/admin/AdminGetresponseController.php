@@ -21,7 +21,8 @@
  * @copyright GetResponse
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 class AdminGetresponseController extends ModuleAdminController
 {
     /**
@@ -544,7 +545,7 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function getCustomList()
     {
-        $customs = $this->db->getCustoms();
+        $customs = $this->repository->getCustoms();
         $result = array();
         foreach ($customs as $custom) {
             $result[] = array(

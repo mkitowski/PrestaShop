@@ -101,7 +101,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $helper->token = $this->getToken();
         $helper->fields_value = array('mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false);
 
-        $customs = $this->db->getCustoms();
+        $customs = $this->repository->getCustoms();
         foreach ($customs as $custom) {
             if (Tools::getValue('id') == $custom['id_custom']) {
                 $helper->fields_value = array(
@@ -153,19 +153,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderView()
     {
-        $settings = $this->repository->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
-
-        $this->context->smarty->assign(array(
-            'is_connected' => $isConnected,
-            'active_tracking' => $settings['active_tracking']
-        ));
-
-        if (false === $isConnected) {
-            $this->apiView();
-            return parent::renderView();
-        }
-
         if (Tools::getValue('action', null) == 'addCampaign') {
             $api = $this->getGrAPI();
             $fromFields = $this->normalizeFormFields($api->getFromFields());
@@ -416,6 +403,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
         return $helper->generateForm(array($fieldsForm)) . $this->renderList();
     }
 
+
+    private function getAutoresponders()
+    {
+        $campaignService = new \GrShareCode\Campaign\CampaignService()
+    }
+
     /**
      * Assigns values to forms
      * @param $obj
@@ -438,7 +431,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 'newsletter' => Tools::getValue('newsletter', null)
             );
         } else {
-            $customs = $this->db->getCustoms();
+            $customs = $this->repository->getCustoms();
 
             foreach ($customs as $custom) {
                 if (Tools::getValue('id') == $custom['id_custom']) {
@@ -514,8 +507,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getGetResponseCustomFields()
     {
-        $dbSettings = $this->repository->getSettings();
-        $api = GrTools::getApiInstance($dbSettings);
+        $api = $this->getGrAPI();
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
         $availableCustoms = array();
