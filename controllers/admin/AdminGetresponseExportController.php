@@ -5,6 +5,8 @@ require_once 'AdminGetresponseController.php';
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
+use GrShareCode\Campaign\CampaignService as GrCampaignService;
+use GrShareCode\GetresponseApi;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
@@ -221,7 +223,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
     {
         $this->redirectIfNotAuthorized();
         $settings = $this->repository->getSettings();
-        $campaignService = new \GrShareCode\Campaign\CampaignService($this->getGrAPI());
+        $campaignService = new GrCampaignService($this->getGrAPI());
 
         $this->context->smarty->assign(array(
             'selected_tab' => 'export_customers',
@@ -250,11 +252,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
-     * @param \GrShareCode\GetresponseApi $api
+     * @param GetresponseApi $api
      */
     private function getCampaigns($api)
     {
-        $campaignService = new \GrShareCode\Campaign\CampaignService($api);
+        $campaignService = new GrCampaignService($api);
         $campaignsCollection = $campaignService->getAllCampaigns();
         $campaigns = array();
 

@@ -19,6 +19,7 @@
  */
 
 use GrShareCode\GetresponseApi;
+use GrShareCode\Campaign\AutorespondersCollection as GrAutorespondersCollection;
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -277,7 +278,7 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * @param \GrShareCode\Campaign\AutorespondersCollection $autoresponders
+     * @param GrAutorespondersCollection $autoresponders
      * @return array
      */
     public function getCampaignDays($autoresponders)

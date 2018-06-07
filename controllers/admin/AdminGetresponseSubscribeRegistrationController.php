@@ -1,6 +1,8 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+use GrShareCode\Campaign\CampaignService as GrCampaignService;
+
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
     public $name = 'GRSubscribeRegistration';
@@ -383,7 +385,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * @param \GrShareCode\Campaign\CampaignService $campaignService
+     * @param GrCampaignService $campaignService
      */
     private function getCampaigns($campaignService)
     {
@@ -405,7 +407,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     {
         $settings = $this->repository->getSettings();
         $api = $this->getGrAPI();
-        $campaignService = new \GrShareCode\Campaign\CampaignService($api);
+        $campaignService = new GrCampaignService($api);
 
         $this->context->smarty->assign(array(
             'selected_tab' => 'subscribe_via_registration',
