@@ -1,4 +1,7 @@
 <?php
+
+use GrShareCode\TrackingCode\TrackingCodeService;
+
 require_once 'AdminGetresponseController.php';
 
 error_reporting(E_ALL);
@@ -221,15 +224,16 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         }
 
         try {
-            $grAccount = new GrAccount(
-                GrApiFactory::createFromSettings(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]),
-                $this->repository
-            );
+            $grApi = GrApiFactory::createFromSettings(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]);
+            $grAccount = new GrAccount($grApi, $this->repository);
 
             if ($grAccount->checkConnection()) {
                 $grAccount->updateApiSettings($apiKey, $accountType, $domain);
                 $this->confirmations[] = $this->l('GetResponse account connected');
-                $grAccount->updateTracking(empty($grAccount->getTrackingCode()) ? 'disabled': 'no', '');
+
+                $trackingCodeService = new TrackingCodeService($grApi);
+                $trackingCode = $trackingCodeService->getTrackingCode();
+                $grAccount->updateTracking($trackingCode->isFeatureEnabled() ? 'no' : 'disabled', '');
             } else {
                 $msg = $accountType !== 'gr'
                     ? 'The API key or domain seems incorrect.'
