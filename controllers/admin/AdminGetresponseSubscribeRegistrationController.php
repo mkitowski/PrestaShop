@@ -280,10 +280,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     /**
      * Returns subscribe on register form
-     *
      * @param array $campaigns
-     * @param null $addToCycle
-     *
+     * @param null|int $addToCycle
      * @return mixed
      */
     public function renderSubscribeRegistrationForm($campaigns = array(), $addToCycle = null)
@@ -357,7 +355,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'label' => $this->l('Autoresponder Day'),
                     'name' => 'cycledays',
                     'options' => array(
-                        'query' => $this->getCycleDays(),
+                        'query' => array(),
                         'id' => 'id_option',
                         'name' => 'name'
                     )
@@ -393,46 +391,41 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
+     * @param \GrShareCode\Campaign\CampaignService $campaignService
+     */
+    private function getCampaigns($campaignService)
+    {
+        $campaignsCollection = $campaignService->getAllCampaigns();
+        $campaigns = array(array('id_option' => 0, 'name' => $this->l('Select a list')));
+
+        /** @var \GrShareCode\Campaign\Campaign $campaignItem */
+        foreach ($campaignsCollection as $campaignItem) {
+            $campaigns[] = array('id_option' => $campaignItem->getId(), 'name' => $campaignItem->getName());
+        }
+
+        return $campaigns;
+    }
+
+    /**
      * Subscription via registration page
      */
     public function subscribeViaRegistrationView()
     {
-        $this->redirectIfNotAuthorized();
-
         $settings = $this->repository->getSettings();
         $api = $this->getGrAPI();
+        $campaignService = new \GrShareCode\Campaign\CampaignService($api);
 
         $this->context->smarty->assign(array(
             'selected_tab' => 'subscribe_via_registration',
             'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
-                $this->convertCampaignsToDisplayArray($api->getCampaigns()),
+                $this->getCampaigns($campaignService),
                 $settings['cycle_day']
             ),
             'subscribe_via_registration_list' => $this->renderList(),
-            'campaign_days' => json_encode($this->getCampaignDays($api->getAutoResponders())),
+            'campaign_days' => json_encode($this->getCampaignDays($campaignService->getAutoResponders())),
             'cycle_day' => $settings['cycle_day'],
             'token' => $this->getToken(),
         ));
-    }
-
-    /**
-     * @return array
-     */
-    public function getCycleDays()
-    {
-        $result = array();
-        $api = $this->getGrAPI();
-        $responders = $api->getAutoResponders();
-
-        foreach ($responders as $responder) {
-            $result[] = array(
-                'id_option' => $responder->triggerSettings->dayOfCycle,
-                'name' => '(' . $this->l('Day') . ': ' . $responder->triggerSettings->dayOfCycle . ') ' .
-                    $responder->name . ' (' . $this->l('Subject') . ': ' . $responder->subject . ')'
-            );
-        }
-
-        return $result;
     }
 
     public function performSubscribeViaRegistration()
