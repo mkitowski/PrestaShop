@@ -1,6 +1,5 @@
 <?php
 /**
- * Class AdminGetresponseController
  * @static $currentIndex
  * @property $display
  * @property $confirmations
@@ -17,9 +16,6 @@
  * @method void addJs() addJs($path)
  * @method void addJquery()
  * @method null initContent()
- * @author Getresponse <grintegrations@getresponse.com>
- * @copyright GetResponse
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
 use GrShareCode\GetresponseApi;

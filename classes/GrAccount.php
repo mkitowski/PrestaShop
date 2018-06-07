@@ -2,13 +2,7 @@
 
 use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
-/**
- * Class GrAccount
- *
- *  @author Getresponse <grintegrations@getresponse.com>
- *  @copyright GetResponse
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+
 class GrAccount
 {
     /** @var GetresponseApi $api */

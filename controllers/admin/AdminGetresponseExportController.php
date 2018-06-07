@@ -6,14 +6,6 @@ use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 
-/**
- * Class AdminGetresponseExportController
- *
- * @author Getresponse <grintegrations@getresponse.com>
- * @copyright GetResponse
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
-
 class AdminGetresponseExportController extends AdminGetresponseController
 {
     public $name = 'AdminGetresponseExport';
