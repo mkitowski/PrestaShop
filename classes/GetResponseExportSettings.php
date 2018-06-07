@@ -2,13 +2,17 @@
 
 class GetResponseExportSettings
 {
-
-
+    /** @var string */
     private $listId;
+    /** @var int|null */
     private $cycleDay;
+    /** @var bool */
     private $updateAddress;
+    /** @var bool */
     private $newsletter;
+    /** @var bool */
     private $asyncExport;
+    /** @var bool */
     private $exportEcommerce;
 
     /**
