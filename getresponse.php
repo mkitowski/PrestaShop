@@ -37,6 +37,11 @@ use GrShareCode\GetresponseApi;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
 use GetResponse\Config\ConfigService as GrConfigService;
+use GrShareCode\Product\ProductService as GrProductService;
+use GrShareCode\Cart\CartService as GrCartService;
+use GrShareCode\Product\ProductsCollection as GrProductsCollection;
+use GrShareCode\Cart\Cart as GrCart;
+use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
 
 class Getresponse extends Module
 {
@@ -284,31 +289,24 @@ class Getresponse extends Module
         }
 
         $customer = new Customer($cart->id_customer);
-        $settings = $this->repository->getSettings();
-        $ecommerce = new GrEcommerce($this->db);
-        $idSubscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
+        $settings = GrSettingsFactory::fromDb($this->getSettings());
 
-        if (empty($idSubscriber)) {
-            return;
-        }
+        $api = $this->getGrAPI();
+        $productService = new GrProductService($api, $this->repository);
+        $cartService = new GrCartService($api, $this->repository,$productService);
+        $productsCollection = new GrProductsCollection();
 
-        $products = $cart->getProducts(true);
-        $md5 = md5(json_encode($products));
+        $grCart = new GrCart(
+            $cart->id,
+            $productsCollection,
+            (new Currency((int)$cart->id_currency))->iso_code,
+            $cart->getOrderTotal(false),
+            $cart->getOrderTotal(true)
+        );
 
-        // Cart didn't change
-        if ($this->db->getGetResponseCartMD5($cart->id) === $md5) {
-            return;
-        }
-
-        $grIdCart = $this->db->getGetResponseCartId($cart->id);
-
-        if (count($products) === 0) {
-            $ecommerce->removeCart($cart->id, $grIdCart, $grIdShop);
-        } else {
-            $ecommerce->sendCartDataToGR($cart, $grIdShop, $grIdCart, $idSubscriber);
-        }
-
-        $this->db->updateGetResponseCartMD5($cart->id, $md5);
+        $cartService->sendCart(
+            new GrAddCartCommand($grCart, $customer->email, $settings->getCampaignId())
+        );
     }
 
     /**
