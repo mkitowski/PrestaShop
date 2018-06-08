@@ -18,6 +18,7 @@
  * @method null initContent()
  */
 
+use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\GetresponseApi;
 use GrShareCode\Campaign\AutorespondersCollection as GrAutorespondersCollection;
 
@@ -271,10 +272,9 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function getGrAPI()
     {
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $dbSettings = $repository->getSettings();
+        $settingsService = SettingsServiceFactory::create();
 
-        return GrApiFactory::createFromSettings($dbSettings);
+        return GrApiFactory::createFromSettings($settingsService->getSettings());
     }
 
     /**

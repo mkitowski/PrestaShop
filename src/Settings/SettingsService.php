@@ -26,4 +26,12 @@ class SettingsService
         return $this->repository->getSettings();
     }
 
+    /**
+     * @param string $trackingStatus
+     * @param string $snippet
+     */
+    public function updateTracking($trackingStatus, $snippet)
+    {
+        $this->repository->updateTracking($trackingStatus, $snippet);
+    }
 }

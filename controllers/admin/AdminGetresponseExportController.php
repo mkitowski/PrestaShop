@@ -2,6 +2,7 @@
 
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
@@ -493,8 +494,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getGetResponseCustomFields()
     {
-        $dbSettings = $this->repository->getSettings();
-        $api = GrApiFactory::createFromSettings($dbSettings);
+        $settingsService = SettingsServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
         $availableCustoms = array();

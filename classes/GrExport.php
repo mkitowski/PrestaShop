@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
 use GrShareCode\Contact\CustomField as GrCustomField;
@@ -58,8 +59,8 @@ class GrExport
     public function export()
     {
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $dbSettings = $repository->getSettings();
-        $api = GrApiFactory::createFromSettings($dbSettings);
+        $settingsService = SettingsServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
         $contactService = new GrContactService($api);
         $productService = new GrProductService($api, $repository);
         $cartService = new GrCartService($api, $repository, $productService);

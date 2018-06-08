@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\TrackingCode\TrackingCodeService;
 
 require_once 'AdminGetresponseController.php';
@@ -192,7 +193,9 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function disconnectFromGetResponse()
     {
-        $grAccount = new GrAccount(GrApiFactory::createFromSettings($this->repository->getSettings()), $this->repository);
+        $settingsService = SettingsServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
+        $grAccount = new GrAccount($api, $this->repository);
         $grAccount->updateApiSettings(null, 'gr', null);
 
         /** @var CacheCore $cache */
@@ -215,7 +218,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         }
 
         try {
-            $grApi = GrApiFactory::createFromSettings(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]);
+
+            $grApi = GrApiFactory::createFromArray(['api_key' => $apiKey, 'account_type' => $accountType, 'crypto' => $domain]);
             $grAccount = new GrAccount($grApi, $this->repository);
 
             if ($grAccount->checkConnection()) {

@@ -27,27 +27,28 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
+use GetResponse\Config\ConfigService as GrConfigService;
+use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
+use GetResponse\Settings\SettingsServiceFactory;
+use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GrShareCode\Cart\Cart as GrCart;
+use GrShareCode\Cart\CartService as GrCartService;
+use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
+use GrShareCode\Contact\ContactService as GrContactService;
+use GrShareCode\Contact\CustomField as GrCustomField;
+use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
+use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Job\JobException as GrJobException;
 use GrShareCode\Job\RunCommand as GrRunCommand;
-use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
-use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
-use GrShareCode\Contact\CustomField as GrCustomField;
-use GrShareCode\GetresponseApi;
-use GrShareCode\Contact\ContactService as GrContactService;
-use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
-use GetResponse\Config\ConfigService as GrConfigService;
-use GrShareCode\Product\ProductService as GrProductService;
-use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\Product\ProductsCollection as GrProductsCollection;
-use GrShareCode\Cart\Cart as GrCart;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
-use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
-use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
-use GrShareCode\Product\Variant\Images\Image as GrImage;
 use GrShareCode\Product\Category\Category as GrCategory;
-use GrShareCode\Product\Variant\Variant as GrVariant;
+use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
 use GrShareCode\Product\Product as GrProduct;
+use GrShareCode\Product\ProductsCollection as GrProductsCollection;
+use GrShareCode\Product\ProductService as GrProductService;
+use GrShareCode\Product\Variant\Images\Image as GrImage;
+use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
+use GrShareCode\Product\Variant\Variant as GrVariant;
 
 class Getresponse extends Module
 {
@@ -506,16 +507,15 @@ class Getresponse extends Module
         return $collection;
     }
 
-
     /**
      * @return GetresponseApi
      */
     public function getGrAPI()
     {
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $dbSettings = $repository->getSettings();
+        $settingsService = SettingsServiceFactory::create();
 
-        return GrApiFactory::createFromSettings($dbSettings);
+        return GrApiFactory::createFromSettings($settingsService->getSettings());
     }
 
     /**
@@ -758,7 +758,9 @@ class Getresponse extends Module
             return true;
         }
 
-        $api = GrApiFactory::createFromSettings($dbSettings);
+        $settingsService = SettingsServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
+
         $command = new GrRunCommand($api, $repository);
         $command->execute();
         return true;

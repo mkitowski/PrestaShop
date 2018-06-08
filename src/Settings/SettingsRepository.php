@@ -48,7 +48,7 @@ class SettingsRepository
         FROM
             ' . _DB_PREFIX_ . 'getresponse_settings
         WHERE
-            `id_shop` = ' . (int) $this->idShop;
+            `id_shop` = ' . (int)$this->idShop;
 
         if ($results = $this->db->ExecuteS($sql)) {
             return SettingsFactory::fromDb($results[0]);
@@ -56,4 +56,23 @@ class SettingsRepository
 
         return null;
     }
+
+    /**
+     * @param string $trackingStatus
+     * @param string $snippet
+     */
+    public function updateTracking($trackingStatus, $snippet)
+    {
+        $query = '
+        UPDATE 
+            ' . _DB_PREFIX_ . 'getresponse_settings
+        SET
+            `active_tracking` = "' . pSQL($trackingStatus) . '",
+            `tracking_snippet` = "' . pSQL($snippet, true) . '"
+        WHERE
+            `id_shop` = ' . (int)$this->idShop;
+
+        $this->db->execute($query);
+    }
+
 }

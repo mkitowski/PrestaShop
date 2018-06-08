@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\WebForm\WebForm;
 use GrShareCode\WebForm\WebFormCollection;
 use GrShareCode\WebForm\WebFormService;
@@ -25,10 +26,8 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'selected_tab' => 'subscribe_via_registration'
         ));
 
-        $grWebForm = new GrWebForm();
-
-        $dbSettings = $this->repository->getSettings();
-        $api = GrApiFactory::createFromSettings($dbSettings);
+        $settingsService = SettingsServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
         $formService = new WebFormService($api);
         $this->webFormsCollection = $formService->getAllWebForms();
 
@@ -40,19 +39,21 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
         $this->display = 'edit';
         $this->show_form_cancel_button = false;
+        $this->toolbar_title[] = $this->l('GetResponse');
+        $this->toolbar_title[] = $this->l('Add Contacts via GetResponse Forms');
 
         parent::initContent();
     }
 
     public function initToolBarTitle()
     {
-        $this->toolbar_title[] = $this->l('GetResponse');
-        $this->toolbar_title[] = $this->l('Add Contacts via GetResponse Forms');
+
     }
 
     public function postProcess()
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
+
             $webFormId = Tools::getValue('form', null);
             $webFormSidebar = Tools::getValue('position', null);
             $webFormStyle = Tools::getValue('style', null);

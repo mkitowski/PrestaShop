@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\Settings\Settings;
 use GrShareCode\Api\ApiType;
 use GrShareCode\Api\UserAgentHeader;
 use GrShareCode\GetresponseApi;
@@ -7,10 +8,22 @@ use GrShareCode\GetresponseApi;
 class GrApiFactory
 {
     /**
-     * @param array $settings
+     * @param Settings $settings
      * @return GetresponseApi
      */
-    public static function createFromSettings(array $settings)
+    public static function createFromSettings(Settings $settings)
+    {
+        $userAgentHeader = new UserAgentHeader('PrestaShop', _PS_VERSION_, Getresponse::VERSION);
+        $type = self::getApiType($settings->getAccountType(), $settings->getDomain());
+
+        return new GetresponseApi($settings->getApiKey(), $type, Getresponse::X_APP_ID, $userAgentHeader);
+    }
+
+    /**
+     * @param Settings $settings
+     * @return GetresponseApi
+     */
+    public static function createFromArray(array $settings)
     {
         $userAgentHeader = new UserAgentHeader('PrestaShop', _PS_VERSION_, Getresponse::VERSION);
         $type = self::getApiType($settings['account_type'], $settings['crypto']);

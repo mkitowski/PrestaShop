@@ -13,9 +13,9 @@ class Settings
     const NEWSLETTER_SUBSCRIPTION_ACTIVE_YES = 'yes';
     const NEWSLETTER_SUBSCRIPTION_ACTIVE_NO = 'no';
 
-    const TRACKING_ACTIVE_YES = 'yes';
-    const TRACKING_ACTIVE_NO = 'no';
-    const TRACKING_ACTIVE_DISABLED = 'disabled';
+    const TRACKING_ACTIVE = 'yes';
+    const TRACKING_INACTIVE = 'no';
+    const TRACKING_DISABLED = 'disabled';
 
     const UPDATE_ADDRESS_YES = 'yes';
     const UPDATE_ADDRESS_NO = 'no';
@@ -203,7 +203,7 @@ class Settings
      */
     public function isTrackingDisabled()
     {
-        return $this->getActiveTracking() === self::TRACKING_ACTIVE_DISABLED;
+        return $this->getActiveTracking() === self::TRACKING_DISABLED;
     }
 
     /**
@@ -211,6 +211,6 @@ class Settings
      */
     public function isTrackingActive()
     {
-        return $this->getActiveTracking() === self::TRACKING_ACTIVE_YES;
+        return $this->getActiveTracking() === self::TRACKING_ACTIVE;
     }
 }
