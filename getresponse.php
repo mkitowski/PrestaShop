@@ -36,6 +36,8 @@ use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
 use GrShareCode\Contact\CustomField as GrCustomField;
 use GrShareCode\GetresponseApi;
 use GrShareCode\Contact\ContactService as GrContactService;
+use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
+use GetResponse\Config\Config as GrConfig;
 
 class Getresponse extends Module
 {
@@ -56,22 +58,6 @@ class Getresponse extends Module
 
     /** @var array */
     private $settings;
-
-    private $usedHooks = array(
-        'newOrder',
-        'createAccount',
-        'leftColumn',
-        'rightColumn',
-        'header',
-        'footer',
-        'top',
-        'home',
-        'cart',
-        'postUpdateOrderStatus',
-        'hookOrderConfirmation',
-        'displayBackOfficeHeader',
-        'actionCronJob'
-    );
 
     public function __construct()
     {
@@ -153,37 +139,7 @@ class Getresponse extends Module
     public function createSubTabs($tabId)
     {
         $langs = Language::getLanguages();
-        $tabvalue = array(
-            array(
-                'class_name' => 'AdminGetresponseAccount',
-                'name' => 'GetResponse Account',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseExport',
-                'name' => 'Export Customer Data',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseSubscribeRegistration',
-                'name' => 'Subscribe via Registration',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseSubscribeForm',
-                'name' => 'Subscribe via Forms',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseContactList',
-                'name' => 'Contact List Rules',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseWebTracking',
-                'name' => 'Web Event Tracking',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseEcommerce',
-                'name' => 'GetResponse Ecommerce',
-            ),
-        );
-        foreach ($tabvalue as $tab) {
+        foreach (GrConfig::BACKOFFICE_TABS as $tab) {
             $newtab = new Tab();
             $newtab->class_name = $tab['class_name'];
             $newtab->id_parent = $tabId;
@@ -206,7 +162,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach ($this->usedHooks as $hook) {
+        foreach (GrConfig::USED_HOOKS as $hook) {
             if (!$this->registerHook($hook)) {
                 return false;
             }
@@ -227,20 +183,8 @@ class Getresponse extends Module
 
     public function uninstallTab()
     {
-        $classes = array(
-            'AdminGetresponseExport',
-            'AdminGetresponseSubscribeRegistration',
-            'AdminGetresponseSubscribeForm',
-            'AdminGetresponseContactList',
-            'AdminGetresponseWebTracking',
-            'AdminGetresponseEcommerce',
-            'AdminGetresponseAccount',
-            'AdminGetresponse',
-            'Getresponse'
-        );
-
         $result = true;
-        foreach ($classes as $class) {
+        foreach (GrConfig::INSTALLED_CLASSES as $class) {
             $idTab = (int) Tab::getIdFromClassName($class);
             if (false === $idTab) {
                 return false;
@@ -266,7 +210,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach ($this->usedHooks as $hook) {
+        foreach (GrConfig::USED_HOOKS as $hook) {
             if (!$this->unregisterHook($hook)) {
                 return false;
             }
@@ -455,7 +399,7 @@ class Getresponse extends Module
      */
     public function createSubscriber(array $params)
     {
-        $settings = \GetResponse\Settings\SettingsFactory::fromDb($this->getSettings());
+        $settings = GrSettingsFactory::fromDb($this->getSettings());
 
         if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
             $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
