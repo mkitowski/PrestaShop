@@ -605,4 +605,155 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($query);
     }
 
+    public function clearDatabase()
+    {
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_jobs`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_carts`;');
+        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_orders`;');
+    }
+
+    public function prepareDatabase()
+    {
+        $sql = array();
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_settings` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` char(32) NOT NULL,
+			`api_key` char(32) NOT NULL,
+			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_tracking` enum(\'yes\',\'no\', \'disabled\') NOT NULL DEFAULT \'disabled\',
+			`tracking_snippet` text,
+			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`campaign_id` char(5) NOT NULL,
+			`cycle_day` char(5) NOT NULL,
+			`account_type` enum(\'gr\',\'360en\',\'360pl\') NOT NULL DEFAULT \'gr\',
+			`crypto` char(32) NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_customs` (
+			`id_custom` int(11) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`custom_field` char(32) NOT NULL,
+			`custom_value` char(32) NOT NULL,
+			`custom_name` char(32) NOT NULL,
+			`default` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`active_custom` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			PRIMARY KEY (`id_custom`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_webform` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`webform_id` char(32) NOT NULL,
+			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
+			`sidebar` enum(\'left\',\'right\',\'header\',\'top\',\'footer\',\'home\') NOT NULL DEFAULT \'home\',
+			`style` enum(\'webform\',\'prestashop\') NOT NULL DEFAULT \'webform\',
+			`url` varchar(255) DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_automation` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`id_shop` int(6) NOT NULL,
+			`category_id` char(32) NOT NULL,
+			`campaign_id` char(32) NOT NULL,
+			`action` char(32) NOT NULL DEFAULT \'move\',
+			`cycle_day` char(5) NOT NULL,
+			`active` enum(\'yes\',\'no\') NOT NULL DEFAULT \'yes\',
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `id_shop` (`id_shop`,`category_id`,`campaign_id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce` (
+            `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `id_shop` int(11) DEFAULT NULL,
+            `gr_id_shop` varchar(16) DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_products` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `product_id` int(11) DEFAULT NULL,
+              `gr_product_id` varchar(16) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `gr_variant_id` varchar(16) DEFAULT NULL,
+              `variant_id` int(11) DEFAULT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers` (
+            `id_user` int(11) unsigned NOT NULL,
+            `id_campaign` varchar(16) DEFAULT NULL,
+            `gr_id_user` varchar(16) DEFAULT NULL,           
+            `email` varchar(128) DEFAULT NULL,
+            UNIQUE KEY `id_user` (`id_user`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_jobs` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `name` varchar(32) DEFAULT NULL,
+              `content` text,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_carts` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `shop_id` int(11) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `cart_id` int(11) DEFAULT NULL,
+              `gr_cart_id` varchar(16) DEFAULT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'CREATE TABLE `ps_getresponse_orders` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `shop_id` int(11) DEFAULT NULL,
+              `gr_shop_id` varchar(16) DEFAULT NULL,
+              `order_id` int(11) DEFAULT NULL,
+              `gr_order_id` varchar(16) DEFAULT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `cart_hash` varchar(32);';
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `gr_id_cart` varchar(32);';
+        $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `gr_id_order` varchar(32);';
+
+        //multistore
+        if (Shop::isFeatureActive()) {
+            Shop::setContext(Shop::CONTEXT_ALL);
+            $shops = Shop::getShops();
+
+            if (!empty($shops) && is_array($shops)) {
+                foreach ($shops as $shop) {
+                    if (empty($shop['id_shop'])) {
+                        continue;
+                    }
+                    $sql[] = $this->sqlMainSetting($shop['id_shop']);
+                    $sql[] = $this->sqlWebformSetting($shop['id_shop']);
+                    $sql[] = $this->sqlCustomsSetting($shop['id_shop']);
+                }
+            }
+        } else {
+            $sql[] = $this->sqlMainSetting('1');
+            $sql[] = $this->sqlWebformSetting('1');
+            $sql[] = $this->sqlCustomsSetting('1');
+        }
+
+        //Install SQL
+        foreach ($sql as $s) {
+            try {
+                Db::getInstance()->Execute($s);
+            } catch (Exception $e) {
+            }
+        }
+    }
 }

@@ -31,14 +31,25 @@ use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Job\JobException as GrJobException;
 use GrShareCode\Job\RunCommand as GrRunCommand;
+use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
+use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
+use GrShareCode\Contact\CustomField as GrCustomField;
+use GrShareCode\GetresponseApi;
+use GrShareCode\Contact\ContactService as GrContactService;
 
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
     const VERSION = '16.3.0';
 
-    /** @var DbConnection */
+    /**
+     * @deprecated
+     * @var DbConnection
+     */
     private $db;
+
+    /** @var GetResponseRepository */
+    private $repository;
 
     /** @var GrApi */
     private $api;
@@ -84,6 +95,7 @@ class Getresponse extends Module
         parent::__construct();
 
         $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+        $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
         if (version_compare(_PS_VERSION_, '1.5') === -1) {
             $this->context->smarty->assign(array('flash_message' => array(
@@ -205,7 +217,7 @@ class Getresponse extends Module
             return false;
         }
 
-        $this->db->prepareDatabase();
+        $this->repository->prepareDatabase();
         return true;
     }
 
@@ -265,7 +277,7 @@ class Getresponse extends Module
             return false;
         }
 
-        $this->db->clearDatabase();
+        $this->repository->clearDatabase();
         return true;
     }
 
@@ -290,7 +302,7 @@ class Getresponse extends Module
     private function getSettings()
     {
         if (empty($this->settings)) {
-            $this->settings = $this->db->getSettings();
+            $this->settings = $this->repository->getSettings();
         }
 
         if (empty($this->settings['api_key'])) {
@@ -322,7 +334,8 @@ class Getresponse extends Module
      */
     public function hookCart($params)
     {
-        $grIdShop = $this->db->getGetResponseShopId();
+        $grIdShop = $this->repository->getGrShopId();
+
         if (empty($grIdShop)) {
             return; // E-commerce is disabled
         }
@@ -334,7 +347,7 @@ class Getresponse extends Module
         }
 
         $customer = new Customer($cart->id_customer);
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $ecommerce = new GrEcommerce($this->db);
         $idSubscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
 
@@ -385,7 +398,7 @@ class Getresponse extends Module
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        $grIdShop = $this->db->getGetResponseShopId();
+        $grIdShop = $this->repository->getGrShopId();
         if (empty($grIdShop)) {
             return; // E-commerce is disabled
         }
@@ -403,7 +416,7 @@ class Getresponse extends Module
     {
         /** @var OrderCore $order */
         $order = $params['order'];
-        $grIdShop = $this->db->getGetResponseShopId();
+        $grIdShop = $this->repository->getGrShopId();
 
         if (empty($grIdShop) || empty($order) || 0 === (int)$order->id_customer) {
             return;
@@ -411,7 +424,7 @@ class Getresponse extends Module
 
         /** @var CustomerCore $customer */
         $customer = new Customer($order->id_customer);
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
         $ecommerce = new GrEcommerce($this->db);
         $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
 
@@ -440,34 +453,77 @@ class Getresponse extends Module
     public function createSubscriber($params)
     {
         $settings = $this->getSettings();
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
 
         if (isset($settings['active_subscription'])
             && $settings['active_subscription'] == 'yes'
             && !empty($settings['campaign_id'])
         ) {
-            if (isset($params['newNewsletterContact'])) {
-                $prefix = 'newNewsletterContact';
-            } else {
-                $prefix  = 'newCustomer';
-            }
 
-            $customs = $api->mapCustoms((array)$params[$prefix], null, $this->db->getCustoms(), 'create');
+            $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
 
             if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $api->addContact(
-                    $settings['campaign_id'],
-                    $params[$prefix]->firstname,
-                    $params[$prefix]->lastname,
+                $addContact = new GrAddContactCommand(
                     $params[$prefix]->email,
+                    $params[$prefix]->firstname . ' ' . $params[$prefix]->lastname,
+                    $settings['campaign_id'],
                     $settings['cycle_day'],
-                    $customs
+                    $this->mapCustomFields((array)$params[$prefix], true)
                 );
+                //@TODO check if mapping is enabled in settings
 
-                $ecommerce = new GrEcommerce($this->db);
-                $ecommerce->getSubscriberId($params[$prefix]->email, $settings['campaign_id'], true);
+                $contactService = new GrContactService($this->getGrAPI());
+                $contactService->addContact($addContact);
             }
         }
+    }
+
+
+
+    /**
+     * @param array $contact
+     * @param bool $useCustoms
+     * @return GrCustomFieldsCollection
+     * @throws PrestaShopDatabaseException
+     */
+    private function mapCustomFields($contact, $useCustoms)
+    {
+        $c = array();
+
+        /** @var GrCustomField $grCustom */
+        foreach ($this->grCustoms as $grCustom) {
+            $c[$grCustom->getName()] = $grCustom->getId();
+        }
+
+        $collection = new GrCustomFieldsCollection();
+
+        if (false === $useCustoms) {
+            return $collection;
+        }
+
+        $mappingCollection = $this->repository->getCustoms();
+
+        foreach ($mappingCollection as $mapping) {
+            if (!isset($c[$mapping['custom_name']])) {
+                continue;
+            }
+            if ('yes' === $mapping['active_custom'] && isset($contact[$mapping['custom_name']])) {
+                $collection->add(new GrCustomField($c[$mapping['custom_name']], $mapping['custom_name'], $contact[$mapping['custom_name']]));
+            }
+        }
+
+        return $collection;
+    }
+
+
+    /**
+     * @return GetresponseApi
+     */
+    public function getGrAPI()
+    {
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $dbSettings = $repository->getSettings();
+
+        return GrApiFactory::createFromSettings($dbSettings);
     }
 
     /**
@@ -562,7 +618,7 @@ class Getresponse extends Module
      */
     public function hookDisplayHeader()
     {
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
 
         if (isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes') {
             $this->smarty->assign(array('gr_tracking_snippet' => $settings['tracking_snippet']));
@@ -586,7 +642,7 @@ class Getresponse extends Module
     public function hookDisplayFooter()
     {
         $email = false;
-        $settings = $this->db->getSettings();
+        $settings = $this->repository->getSettings();
 
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
