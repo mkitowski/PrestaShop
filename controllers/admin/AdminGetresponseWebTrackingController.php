@@ -1,4 +1,7 @@
 <?php
+
+use GetResponse\Settings\SettingsServiceFactory;
+
 require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseWebTrackingController extends AdminGetresponseController
@@ -24,10 +27,12 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
             $this->updateTracking();
         }
 
-        $settings = $this->repository->getSettings();
+        $settingsService = SettingsServiceFactory::create();
+        $settings = $settingsService->getSettings();
+
         $this->show_form_cancel_button = false;
 
-        if ($settings['active_tracking'] != 'disabled') {
+        if (!$settings->isTrackingDisabled()) {
             $this->fields_form = array(
                 'legend' => array(
                     'title' => $this->l('Web Event Tracking'),
@@ -56,7 +61,7 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                 )
             );
 
-            $this->fields_value['tracking'] = ($settings['active_tracking'] == 'yes');
+            $this->fields_value['tracking'] = $settings->isTrackingActive();
         } else {
             $this->fields_form = array(
                 'legend' => array(
