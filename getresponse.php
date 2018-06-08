@@ -449,35 +449,34 @@ class Getresponse extends Module
 
     /**
      * @param array $params
+     * @throws GetresponseApiException
+     * @throws GrConfigurationNotFoundException
+     * @throws PrestaShopDatabaseException
      */
-    public function createSubscriber($params)
+    public function createSubscriber(array $params)
     {
-        $settings = $this->getSettings();
+        $settings = \GetResponse\Settings\SettingsFactory::fromDb($this->getSettings());
 
-        if (isset($settings['active_subscription'])
-            && $settings['active_subscription'] == 'yes'
-            && !empty($settings['campaign_id'])
-        ) {
-
+        if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
             $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
 
             if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
                 $addContact = new GrAddContactCommand(
                     $params[$prefix]->email,
                     $params[$prefix]->firstname . ' ' . $params[$prefix]->lastname,
-                    $settings['campaign_id'],
-                    $settings['cycle_day'],
-                    $this->mapCustomFields((array)$params[$prefix], true)
+                    $settings->getCampaignId(),
+                    $settings->getCycleDay(),
+                    $this->mapCustomFields(
+                        (array)$params[$prefix],
+                        $settings->getUpdateAddress() == 'yes'
+                    )
                 );
-                //@TODO check if mapping is enabled in settings
 
                 $contactService = new GrContactService($this->getGrAPI());
                 $contactService->addContact($addContact);
             }
         }
     }
-
-
 
     /**
      * @param array $contact
