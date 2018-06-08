@@ -42,6 +42,12 @@ use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\Product\ProductsCollection as GrProductsCollection;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
+use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
+use GrShareCode\Product\Variant\Images\Image as GrImage;
+use GrShareCode\Product\Category\Category as GrCategory;
+use GrShareCode\Product\Variant\Variant as GrVariant;
+use GrShareCode\Product\Product as GrProduct;
 
 class Getresponse extends Module
 {
@@ -296,6 +302,10 @@ class Getresponse extends Module
         $cartService = new GrCartService($api, $this->repository,$productService);
         $productsCollection = new GrProductsCollection();
 
+        foreach ($cart->getProducts() as $product) {
+            $productsCollection->add($this->createGrProductObject($product));
+        }
+
         $grCart = new GrCart(
             $cart->id,
             $productsCollection,
@@ -308,6 +318,54 @@ class Getresponse extends Module
             new GrAddCartCommand($grCart, $customer->email, $settings->getCampaignId())
         );
     }
+
+
+    /**
+     * @todo move method to external servie (used in GrExport)
+     * @param $product
+     * @return GrProduct
+     * @throws PrestaShopException
+     */
+    private function createGrProductObject($product)
+    {
+        $imagesCollection = new GrImagesCollection();
+        $categoryCollection = new GrCategoryCollection();
+        $coreProduct = new Product($product['id_product']);
+        $categories = $coreProduct->getCategories();
+
+        foreach ($coreProduct->getImages(null) as $image) {
+            $imagePath = (new Link())->getImageLink($coreProduct->link_rewrite, $image['id_image'], 'home_default');
+            $imagesCollection->add(new GrImage(Tools::getProtocol(Tools::usingSecureMode()) . $imagePath, (int)$image['position']));
+        }
+
+        foreach ($categories as $category) {
+            $coreCategory = new Category($category);
+            $categoryCollection->add(new GrCategory($coreCategory->getName()));
+        }
+
+        $grVariant = new GrVariant(
+            (int)$product['id_product'],
+            $this->normalizeToString($coreProduct->name),
+            $coreProduct->getPrice(false),
+            $coreProduct->getPrice(),
+            $product['reference']
+        );
+        //@TODO: pobrac ilosc
+        $grVariant->setQuantity(100);
+        $grVariant->setImages($imagesCollection);
+        $grVariant->setUrl((new Link())->getProductLink($coreProduct));
+
+        return new GrProduct(
+            (int)$product['id_product'],
+            $this->normalizeToString($coreProduct->name),
+            $grVariant,
+            $categoryCollection
+        );
+    }
+
+
+
+
 
     /**
      * @param array $params
