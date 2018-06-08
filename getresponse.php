@@ -27,7 +27,6 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
-use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Job\JobException as GrJobException;
 use GrShareCode\Job\RunCommand as GrRunCommand;
@@ -37,7 +36,7 @@ use GrShareCode\Contact\CustomField as GrCustomField;
 use GrShareCode\GetresponseApi;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
-use GetResponse\Config\Config as GrConfig;
+use GetResponse\Config\ConfigService as GrConfigService;
 
 class Getresponse extends Module
 {
@@ -53,7 +52,10 @@ class Getresponse extends Module
     /** @var GetResponseRepository */
     private $repository;
 
-    /** @var GrApi */
+    /**
+     * @deprecated
+     * @var GrApi
+     */
     private $api;
 
     /** @var array */
@@ -61,22 +63,16 @@ class Getresponse extends Module
 
     public function __construct()
     {
-        $this->name                   = 'getresponse';
-        $this->tab                    = 'emailing';
-        $this->version                = self::VERSION;
-        $this->author                 = 'GetResponse';
-        $this->need_instance          = 0;
-        $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
+        $this->name = 'getresponse';
+        $this->tab = 'emailing';
+        $this->version = self::VERSION;
+        $this->author = 'GetResponse';
+        $this->need_instance = 0;
+        $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
-        $this->displayName            = $this->l('GetResponse');
-
-        $this->description            = $this->l('
-            Add your Prestashop contacts to GetResponse or manage them via automation rules.
-            Automatically follow-up new subscriptions with engaging email marketing campaigns
-            ');
-        $this->confirmUninstall       = $this->l(
-            'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
-        );
+        $this->displayName = $this->l('GetResponse');
+        $this->description = $this->l(GrConfigService::MODULE_DESCRIPTION);
+        $this->confirmUninstall = $this->l(GrConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
 
@@ -107,26 +103,22 @@ class Getresponse extends Module
     /** Install Methods ***********************************************/
     /******************************************************************/
 
+    /**
+     * @return bool
+     */
     public function installTab()
     {
         new TabCore();
-        $tab             = new Tab();
-        $tab->active     = 1;
+        $tab = new Tab();
+        $tab->active = 1;
         $tab->class_name = 'Getresponse';
-        $tab->name       = array();
+        $tab->name = array();
+        $tab->id_parent = substr(_PS_VERSION_, 0, 3) === '1.6' ? 0 : (int) Tab::getIdFromClassName('AdminAdmin');
+        $tab->module = $this->name;
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'GetResponse';
         }
-
-        if (substr(_PS_VERSION_, 0, 3) === '1.6') {
-            $tab->id_parent = 0;
-        } else {
-            $tab->id_parent = (int) Tab::getIdFromClassName('AdminAdmin');
-        }
-        $tab->module = $this->name;
-
         $tab->add();
-
         $this->createSubTabs($tab->id);
 
         return true;
@@ -139,7 +131,7 @@ class Getresponse extends Module
     public function createSubTabs($tabId)
     {
         $langs = Language::getLanguages();
-        foreach (GrConfig::BACKOFFICE_TABS as $tab) {
+        foreach (GrConfigService::BACKOFFICE_TABS as $tab) {
             $newtab = new Tab();
             $newtab->class_name = $tab['class_name'];
             $newtab->id_parent = $tabId;
@@ -162,7 +154,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach (GrConfig::USED_HOOKS as $hook) {
+        foreach (GrConfigService::USED_HOOKS as $hook) {
             if (!$this->registerHook($hook)) {
                 return false;
             }
@@ -184,7 +176,7 @@ class Getresponse extends Module
     public function uninstallTab()
     {
         $result = true;
-        foreach (GrConfig::INSTALLED_CLASSES as $class) {
+        foreach (GrConfigService::INSTALLED_CLASSES as $class) {
             $idTab = (int) Tab::getIdFromClassName($class);
             if (false === $idTab) {
                 return false;
@@ -210,7 +202,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach (GrConfig::USED_HOOKS as $hook) {
+        foreach (GrConfigService::USED_HOOKS as $hook) {
             if (!$this->unregisterHook($hook)) {
                 return false;
             }
@@ -226,6 +218,7 @@ class Getresponse extends Module
     }
 
     /**
+     * @deprecated
      * @return GrApi
      * @throws GrConfigurationNotFoundException
      */
@@ -697,7 +690,6 @@ class Getresponse extends Module
      * @param array $params
      * @return bool
      * @throws PrestaShopDatabaseException
-     * @throws GrApiTypeException
      * @throws GetresponseApiException
      * @throws GrJobException
      */
