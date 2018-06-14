@@ -31,27 +31,22 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         parent::initPageHeaderToolbar();
     }
 
-    public function initProcess()
-    {
-        if (Tools::isSubmit('update' . $this->name)) {
-            $this->display = 'edit';
-        }
-        if (Tools::isSubmit('create' . $this->name) || Tools::isSubmit('submit' . $this->name)) {
-            $this->display = 'add';
-        }
-    }
-
     public function initToolBarTitle()
     {
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Contact List Rules');
     }
 
-    /**
-     * @return mixed
-     */
-    public function renderList()
+    public function postProcess()
     {
+        if (Tools::isSubmit('update' . $this->name)) {
+            $this->display = 'edit';
+        }
+
+        if (Tools::isSubmit('create' . $this->name) || Tools::isSubmit('submit' . $this->name)) {
+            $this->display = 'add';
+        }
+
         if (Tools::isSubmit('delete'.$this->name)) {
             $this->db->deleteAutomationSettings(Tools::getValue('id'));
             $this->confirmations[] = $this->l('Rule deleted');
@@ -65,6 +60,14 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             $this->confirmations[] = $this->l('Rules deleted');
         }
 
+        parent::postProcess();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function renderList()
+    {
         $fieldsList = array(
             'category' => array('title' => $this->l('If customer buys in the category'), 'type' => 'text'),
             'action' => array('title' => $this->l('they are'), 'type' => 'text'),
@@ -107,9 +110,10 @@ class AdminGetresponseContactListController extends AdminGetresponseController
      */
     private function getAutomationList()
     {
-        $api = $this->getGrAPI();
+        $settings = $this->repository->getSettings();
+        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
         $automations = array();
-        $automationSettings = $this->db->getAutomationSettings();
+        $automationSettings = $this->repository->getAutomationSettings();
         $categories = Category::getCategories(1, true, false);
         $autoresponders = $api->getAutoResponders();
         $campaigns = $api->getCampaigns();
@@ -271,7 +275,10 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             }
         }
 
-        $api = $this->getGrAPI();
+
+        $settings = $this->repository->getSettings();
+        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+
         $fieldsForm = array(
             'form' => array(
             'legend' => array(

@@ -2,6 +2,7 @@
 namespace GetResponse\Settings;
 
 use Db;
+use GrShareCode\TrackingCode\TrackingCode;
 
 /**
  * Class Repository
@@ -71,6 +72,26 @@ class SettingsRepository
             `tracking_snippet` = "' . pSQL($snippet, true) . '"
         WHERE
             `id_shop` = ' . (int)$this->idShop;
+
+        $this->db->execute($query);
+    }
+
+    /**
+     * @param string $apiKey
+     * @param string $accountType
+     * @param string $domain
+     */
+    public function updateApiSettings($apiKey, $accountType, $domain)
+    {
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `api_key` = "' . pSQL($apiKey) . '",
+            `account_type` = "' . pSQL($accountType) . '",
+            `crypto` = "' . pSQL($domain) . '"
+         WHERE
+            `id_shop` = ' . (int) $this->idShop;
 
         $this->db->execute($query);
     }

@@ -1,18 +1,20 @@
 <?php
 
-use GetResponse\Settings\SettingsServiceFactory;
-use GrShareCode\WebForm\WebForm;
+use GetResponse\WebForm\Status;
+use GetResponse\WebForm\WebFormFactory;
+use GetResponse\WebForm\WebFormServiceFactory;
+use GrShareCode\WebForm\WebForm as GetResponseForm;
 use GrShareCode\WebForm\WebFormCollection;
-use GrShareCode\WebForm\WebFormService;
 
 require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 {
-    /**
-     * @var WebFormCollection
-     */
-    private $webFormsCollection;
+    /** @var \GetResponse\WebForm\WebFormService */
+    private $webFormService;
+
+    /** @var WebFormCollection */
+    private $getResponseWebFormCollection;
 
     public function __construct()
     {
@@ -26,11 +28,8 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'selected_tab' => 'subscribe_via_registration'
         ));
 
-        $settingsService = SettingsServiceFactory::create();
-        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
-        $formService = new WebFormService($api);
-        $this->webFormsCollection = $formService->getAllWebForms();
-
+        $this->webFormService = WebFormServiceFactory::create();
+        $this->getResponseWebFormCollection = $this->webFormService->getGetResponseFormCollection();
     }
 
     public function initContent()
@@ -45,11 +44,6 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         parent::initContent();
     }
 
-    public function initToolBarTitle()
-    {
-
-    }
-
     public function postProcess()
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
@@ -57,36 +51,32 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             $webFormId = Tools::getValue('form', null);
             $webFormSidebar = Tools::getValue('position', null);
             $webFormStyle = Tools::getValue('style', null);
-            $subscription = Tools::getValue('subscription', null);
+            $status = Status::fromRequest(Tools::getValue('subscription', null));
 
-            $this->repository->updateWebformSubscription($subscription === '1' ? 'yes' : 'no');
+            if ($status->isEnabled()) {
+                if (empty($webFormId) || empty($webFormSidebar)) {
+                    $this->errors[] = $this->l('You need to select a form and its placement');
 
-            if (empty($webFormId) || empty($webFormSidebar)) {
-                $this->errors[] = $this->l('You need to select a form and its placement');
-
-                return;
+                    return;
+                }
             }
 
-            $mergedWebForms = array();
+            $webFormUrl = $status->isEnabled()
+                ? $this->getResponseWebFormCollection->findOneById($webFormId)->getScriptUrl()
+                : '';
 
-            /** @var WebForm $form */
-            foreach ($this->webFormsCollection as $form) {
-                $mergedWebForms[$form->getWebFormId()] = $form->getScriptUrl();
-            }
-
-            // set web form info to DB
-            $this->repository->updateWebformSettings(
-                $webFormId,
-                $subscription === '1' ? 'yes' : 'no',
-                $webFormSidebar,
-                $webFormStyle,
-                $mergedWebForms[$webFormId]
+            $this->webFormService->updateWebForm(
+                WebFormFactory::fromRequest(array(
+                    'formId' => $webFormId,
+                    'status' => $status->getSubscription(),
+                    'sidebar' => $webFormSidebar,
+                    'style' => $webFormStyle,
+                    'url' => $webFormUrl
+                ))
             );
-            if ($subscription) {
-                $this->confirmations[] = $this->l('Form published');
-            } else {
-                $this->confirmations[] = $this->l('Form unpublished');
-            }
+
+            $this->confirmations[] = $status->isEnabled() ? $this->l('Form published') : $this->l('Form unpublished');
+
         }
         parent::postProcess();
     }
@@ -100,23 +90,55 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'fields_value' => $this->getFormFieldsValue()
         );
 
-        $optionList = $this->convertFormsToDisplayArray($this->webFormsCollection);
+        $optionList = $this->getFormsToDisplay();
 
         return $helper->generateForm(array($this->getFormFields($optionList)));
     }
 
+    /**
+     * @return array
+     */
     private function getFormFieldsValue()
     {
-        $webformSettings = $this->repository->getWebformSettings();
+        $webForm = $this->webFormService->getWebForm();
 
         return array(
-            'position' => $webformSettings['sidebar'],
-            'form' => $webformSettings['webform_id'],
-            'style' => $webformSettings['style'],
-            'subscription' => $webformSettings['active_subscription'] === 'yes' ? 1 : 0
+            'position' => Tools::getValue('position', $webForm->getSidebar()),
+            'form' => Tools::getValue('form', $webForm->getId()),
+            'style' => Tools::getValue('style', $webForm->getStyle()),
+            'subscription' => Tools::getValue('subscription', $webForm->getStatus() === Status::SUBSCRIPTION_ACTIVE ? 1 : 0)
         );
     }
 
+    /**
+     * @param WebFormCollection $webforms
+     * @return array
+     */
+    private function getFormsToDisplay()
+    {
+        $options = array(
+            array(
+                'id_option' => '',
+                'name' => 'Select a form you want to display'
+            )
+        );
+
+        /** @var GetResponseForm $form */
+        foreach ($this->getResponseWebFormCollection as $form) {
+            $disabled = $form->isEnabled() ? '' : $this->l('(DISABLED IN GR)');
+            $options[] = array(
+                'id_option' => $form->getWebFormId(),
+                'name' => $form->getName() . ' (' . $form->getCampaignName() . ') ' . $disabled
+            );
+        }
+
+        return $options;
+    }
+
+    /**
+     * @param array $options
+     * @return array
+     */
     private function getFormFields($options = [])
     {
         return array(
@@ -188,40 +210,6 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
                 )
             )
         );
-    }
-
-    /**
-     * Get Admin Token
-     * @return bool|string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponseSubscribeForm');
-    }
-
-    /**
-     * @param WebFormCollection $webforms
-     * @return array
-     */
-    private function convertFormsToDisplayArray(WebFormCollection $webforms)
-    {
-        $options = array(
-            array(
-                'id_option' => '',
-                'name' => 'Select a form you want to display'
-            )
-        );
-
-        /** @var WebForm $form */
-        foreach ($webforms as $form) {
-            $disabled = $form->isEnabled() ? '' : $this->l('(DISABLED IN GR)');
-            $options[] = array(
-                'id_option' => $form->getWebFormId(),
-                'name' => $form->getName() . ' (' . $form->getCampaignName() . ') ' . $disabled
-            );
-        }
-
-        return $options;
     }
 
 }

@@ -1,6 +1,8 @@
 <?php
 namespace GetResponse\Settings;
 
+use GrShareCode\TrackingCode\TrackingCode;
+
 /**
  * Class Service
  * @package GetResponse\Settings
@@ -33,5 +35,20 @@ class SettingsService
     public function updateTracking($trackingStatus, $snippet)
     {
         $this->repository->updateTracking($trackingStatus, $snippet);
+    }
+
+    public function disconnectFromGetResponse()
+    {
+        $this->repository->updateApiSettings(null, 'gr', null);
+    }
+
+    /**
+     * @param string $apiKey
+     * @param string $accountType
+     * @param string $domain
+     */
+    public function updateApiSettings($apiKey, $accountType, $domain)
+    {
+        $this->repository->updateApiSettings($apiKey, $accountType, $domain);
     }
 }

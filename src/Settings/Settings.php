@@ -121,33 +121,9 @@ class Settings
     /**
      * @return string
      */
-    public function getApiKey()
-    {
-        return $this->apiKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getActiveSubscription()
-    {
-        return $this->active_subscription;
-    }
-
-    /**
-     * @return string
-     */
     public function getActiveNewsletterSubscription()
     {
         return $this->active_newsletter_subscription;
-    }
-
-    /**
-     * @return string
-     */
-    public function getActiveTracking()
-    {
-        return $this->active_tracking;
     }
 
     /**
@@ -207,10 +183,62 @@ class Settings
     }
 
     /**
+     * @return string
+     */
+    public function getActiveTracking()
+    {
+        return $this->active_tracking;
+    }
+
+    /**
      * @return bool
      */
     public function isTrackingActive()
     {
         return $this->getActiveTracking() === self::TRACKING_ACTIVE;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSubscriptionActive()
+    {
+        return $this->getActiveSubscription() === self::SUBSCRIPTION_ACTIVE_YES;
+    }
+
+    /**
+     * @return string
+     */
+    public function getActiveSubscription()
+    {
+        return $this->active_subscription;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConnectedWithGetResponse()
+    {
+        return !empty($this->getApiKey());
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiKey()
+    {
+        return $this->apiKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHiddenApiKey()
+    {
+        if (strlen($this->getApiKey()) > 0) {
+            return str_repeat('*', strlen($this->getApiKey()) - 6) . substr($this->getApiKey(), -6);
+        }
+
+        return $this->getApiKey();
     }
 }

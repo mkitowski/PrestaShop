@@ -41,9 +41,11 @@ class AdminGetresponseController extends ModuleAdminController
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminHome'));
         }
 
+        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+
+
         $this->bootstrap  = true;
         $this->meta_title = $this->l('GetResponse Integration');
-
         $this->identifier  = 'api_key';
 
         $this->context->smarty->assign(array(
@@ -95,31 +97,31 @@ class AdminGetresponseController extends ModuleAdminController
         unset($this->page_header_toolbar_btn['back']);
     }
 
-    /**
-     * render main view
-     * @return mixed
-     */
-    public function renderView()
-    {
-        $settings = $this->repository->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
-
-        $this->context->smarty->assign(array(
-            'is_connected' => $isConnected,
-            'gr_base_url' => $this->context->shop->getBaseURL(true),
-            'active_tracking' => $settings['active_tracking']
-        ));
-
-        switch (Tools::getValue('action')) {
-            case 'api':
-                $this->apiView();
-                break;
-            default:
-                break;
-        }
-
-        return parent::renderView();
-    }
+//    /**
+//     * render main view
+//     * @return mixed
+//     */
+//    public function renderView()
+//    {
+//        $settings = $this->repository->getSettings();
+//        $isConnected = !empty($settings['api_key']) ? true : false;
+//
+//        $this->context->smarty->assign(array(
+//            'is_connected' => $isConnected,
+//            'gr_base_url' => $this->context->shop->getBaseURL(true),
+//            'active_tracking' => $settings['active_tracking']
+//        ));
+//
+//        switch (Tools::getValue('action')) {
+//            case 'api':
+//                $this->apiView();
+//                break;
+//            default:
+//                break;
+//        }
+//
+//        return parent::renderView();
+//    }
 
     /**
      * API key settings

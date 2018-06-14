@@ -16,14 +16,32 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
-            'base_url', __PS_BASE_URI__
+            'base_url',
+            __PS_BASE_URI__
         ));
     }
 
     public function initContent()
     {
         $this->display = 'view';
+        $this->toolbar_title[] = $this->l('GetResponse');
+        $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
+        parent::initContent();
+    }
 
+    public function initPageHeaderToolbar()
+    {
+        $this->page_header_toolbar_btn['add_campaign'] = array(
+            'href' => self::$currentIndex . '&action=addCampaign&token=' . $this->getToken(),
+            'desc' => $this->l('Add new contact list'),
+            'icon' => 'process-icon-new'
+        );
+
+        parent::initPageHeaderToolbar();
+    }
+
+    public function postProcess()
+    {
         if (Tools::isSubmit('update' . $this->name)) {
             $this->display = 'edit';
         }
@@ -36,27 +54,21 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             $this->saveCustom();
         }
 
-        parent::initContent();
+        if (Tools::isSubmit('saveSubscribeForm')) {
+            $this->performSubscribeViaRegistration();
+        }
+
+        parent::postProcess();
     }
+
 
     /**
-     * sets toolbar title
+     * Get Admin Token
+     * @return string
      */
-    public function initToolBarTitle()
+    public function getToken()
     {
-        $this->toolbar_title[] = $this->l('GetResponse');
-        $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
-    }
-
-    public function initPageHeaderToolbar()
-    {
-        $this->page_header_toolbar_btn['add_campaign'] = array(
-            'href' => self::$currentIndex . '&action=addCampaign&token=' . $this->getToken(),
-            'desc' => $this->l('Add new contact list'),
-            'icon' => 'process-icon-new'
-        );
-
-        parent::initPageHeaderToolbar();
+        return Tools::getAdminTokenLite('AdminGetresponseSubscribeRegistration');
     }
 
     /**
@@ -73,17 +85,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'active_tracking' => $settings['active_tracking']
         ));
 
-        if (false === $isConnected) {
-            $this->apiView();
-            return parent::renderView();
-        }
-
-        if (Tools::isSubmit('saveSubscribeForm')) {
-            $this->performSubscribeViaRegistration();
-        }
-
         if (Tools::getValue('action', null) == 'addCampaign') {
-            $api = $this->getGrAPI();
+//            $api = $this->getGrAPI();
+
+            $settings = $this->repository->getSettings();
+            $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+
             $fromFields = $this->normalizeFormFields($api->getFromFields());
             $confirmSubject = $this->normalizeComplexApiData(
                 $api->getSubscriptionConfirmationsSubject(),
@@ -113,6 +120,28 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         }
 
         return parent::renderView();
+    }
+
+    public function performSubscribeViaRegistration()
+    {
+        $this->redirectIfNotAuthorized();
+        $subscription = Tools::getValue('subscriptionSwitch') == 1 ? 'yes' : 'no';
+        $campaign = Tools::getValue('campaign');
+        $addToCycle = Tools::getValue('addToCycle', 0);
+        $cycleDay = Tools::getValue('cycledays');
+        $updateAddress = Tools::getValue('contactInfo', 0) == 1 ? 'yes' : 'no';
+        $newsletter = Tools::getValue('newsletter', 0) == 1 ? 'yes' : 'no';
+
+        if ((empty($campaign) || $campaign == '0') && $subscription === 'yes') {
+            $this->errors[] = $this->l('You need to select list');
+
+            return;
+        }
+
+        $cycleDay = 1 == $addToCycle ? $cycleDay : null;
+        $this->repository->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
+
+        $this->confirmations[] = $this->l('Settings saved');
     }
 
     public function normalizeFormFields($data, $options = array())
@@ -148,128 +177,25 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * Renders form for mapping edition
-     *
-     * @return mixed
+     * Subscription via registration page
      */
-    public function renderForm()
+    public function subscribeViaRegistrationView()
     {
-        $fieldsForm = array(
-            'legend' => array(
-                'title' => $this->l('Update Mapping'),
+        $settings = $this->repository->getSettings();
+        $api = $this->getGrAPI();
+        $campaignService = new GrCampaignService($api);
+
+        $this->context->smarty->assign(array(
+            'selected_tab' => 'subscribe_via_registration',
+            'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
+                $this->getCampaigns($campaignService),
+                $settings['cycle_day']
             ),
-            'input' => array(
-                'id' => array('type' => 'hidden', 'name' => 'id'),
-                'customer_detail' => array(
-                    'label' => $this->l('Customer detail'),
-                    'name' => 'customer_detail',
-                    'type' => 'text',
-                    'disabled' => true
-                ),
-                'gr_custom' => array(
-                    'label' => $this->l('Getresponse custom field name'),
-                    'required'  => true,
-                    'desc' => $this->l('
-                        You can use lowercase English alphabet characters, numbers, 
-                        and underscore ("_"). Maximum 32 characters.
-                    '),
-                    'type' => 'text',
-                    'name' => 'gr_custom'
-                ),
-                'default' => array(
-                    'required'  => true,
-                    'type' => 'hidden',
-                    'name' => 'default'
-                ),
-                'mapping_on' => array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Turn on this mapping'),
-                    'name'      => 'mapping_on',
-                    'required'  => true,
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
-                        array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
-                        array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
-                    ),
-                ),
-            ),
-            'submit' => array(
-                'title' => $this->l('Save'),
-                'name' => 'saveMappingForm',
-                'icon' => 'process-icon-save'
-            )
-        );
-
-        /** @var HelperFormCore $helper */
-        $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex;
-        $helper->token = $this->getToken();
-        $helper->fields_value = array('mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false);
-
-        $customs = $this->repository->getCustoms();
-        foreach ($customs as $custom) {
-            if (Tools::getValue('id') == $custom['id_custom']) {
-                $helper->fields_value = array(
-                    'id' => $custom['id_custom'],
-                    'customer_detail' => $custom['custom_field'],
-                    'gr_custom' => $custom['custom_name'],
-                    'default' => 0,
-                    'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
-                );
-            }
-        }
-
-        return $helper->generateForm(array(array('form' => $fieldsForm)));
-    }
-
-    /**
-     * Renders custom list
-     * @return mixed
-     */
-    public function renderList()
-    {
-        return $this->renderCustomList();
-    }
-
-    /**
-     * Assigns values to forms
-     * @param $obj
-     * @return array
-     */
-    public function getFieldsValue($obj)
-    {
-        if ($this->display == 'view') {
-            $settings = $this->repository->getSettings();
-            return array(
-                'subscriptionSwitch' => $settings['active_subscription'] == 'yes' ? 1 : 0,
-                'campaign' => $settings['campaign_id'],
-                'cycledays' => $settings['cycle_day'],
-                'contactInfo' => $settings['update_address'] == 'yes' ? 1 : 0,
-                'newsletter' => $settings['active_newsletter_subscription'] == 'yes' ? 1 : 0
-            );
-        } else {
-            $customs = $this->repository->getCustoms();
-            foreach ($customs as $custom) {
-                if (Tools::getValue('id') == $custom['id_custom']) {
-                    return array(
-                        'id' => $custom['id_custom'],
-                        'customer_detail' => $custom['custom_field'],
-                        'gr_custom' => $custom['custom_name'],
-                        'default' => 0,
-                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0,
-                        'actions' => array()
-                    );
-                }
-            }
-            return array(
-                'id' => 1,
-                'customer_detail' => '',
-                'gr_custom' => '',
-                'default' => 0,
-                'on' => 0
-            );
-        }
+            'subscribe_via_registration_list' => $this->renderList(),
+            'campaign_days' => json_encode($this->getCampaignDays($campaignService->getAutoResponders())),
+            'cycle_day' => $settings['cycle_day'],
+            'token' => $this->getToken(),
+        ));
     }
 
     /**
@@ -281,9 +207,9 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     public function renderSubscribeRegistrationForm($campaigns = array(), $addToCycle = null)
     {
         if (is_string($addToCycle) && strlen($addToCycle) > 0) {
-            $addToCycle='checked="checked"';
+            $addToCycle = 'checked="checked"';
         } else {
-            $addToCycle='';
+            $addToCycle = '';
         }
 
         $this->fields_form = array(
@@ -401,54 +327,131 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * Subscription via registration page
+     * Renders custom list
+     * @return mixed
      */
-    public function subscribeViaRegistrationView()
+    public function renderList()
     {
-        $settings = $this->repository->getSettings();
-        $api = $this->getGrAPI();
-        $campaignService = new GrCampaignService($api);
-
-        $this->context->smarty->assign(array(
-            'selected_tab' => 'subscribe_via_registration',
-            'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
-                $this->getCampaigns($campaignService),
-                $settings['cycle_day']
-            ),
-            'subscribe_via_registration_list' => $this->renderList(),
-            'campaign_days' => json_encode($this->getCampaignDays($campaignService->getAutoResponders())),
-            'cycle_day' => $settings['cycle_day'],
-            'token' => $this->getToken(),
-        ));
-    }
-
-    public function performSubscribeViaRegistration()
-    {
-        $this->redirectIfNotAuthorized();
-        $subscription = Tools::getValue('subscriptionSwitch') == 1 ? 'yes' : 'no';
-        $campaign = Tools::getValue('campaign');
-        $addToCycle = Tools::getValue('addToCycle', 0);
-        $cycleDay = Tools::getValue('cycledays');
-        $updateAddress = Tools::getValue('contactInfo', 0) == 1 ? 'yes' : 'no';
-        $newsletter = Tools::getValue('newsletter', 0) == 1 ? 'yes' : 'no';
-
-        if ((empty($campaign) || $campaign == '0') && $subscription === 'yes') {
-            $this->errors[] = $this->l('You need to select list');
-            return;
-        }
-
-        $cycleDay = 1 == $addToCycle ? $cycleDay : null;
-        $this->repository->updateSettings($subscription, $campaign, $updateAddress, $cycleDay, $newsletter);
-
-        $this->confirmations[] = $this->l('Settings saved');
+        return $this->renderCustomList();
     }
 
     /**
-     * Get Admin Token
-     * @return string
+     * Renders form for mapping edition
+     *
+     * @return mixed
      */
-    public function getToken()
+    public function renderForm()
     {
-        return Tools::getAdminTokenLite('AdminGetresponseSubscribeRegistration');
+        $fieldsForm = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Update Mapping'),
+                ),
+                'input' => array(
+                    'id' => array('type' => 'hidden', 'name' => 'id'),
+                    'customer_detail' => array(
+                        'label' => $this->l('Customer detail'),
+                        'name' => 'customer_detail',
+                        'type' => 'text',
+                        'disabled' => true
+                    ),
+                    'gr_custom' => array(
+                        'label' => $this->l('Getresponse custom field name'),
+                        'required' => true,
+                        'desc' => $this->l('
+                        You can use lowercase English alphabet characters, numbers, 
+                        and underscore ("_"). Maximum 32 characters.
+                    '),
+                        'type' => 'text',
+                        'name' => 'gr_custom'
+                    ),
+                    'default' => array(
+                        'required' => true,
+                        'type' => 'hidden',
+                        'name' => 'default'
+                    ),
+                    'mapping_on' => array(
+                        'type' => 'switch',
+                        'label' => $this->l('Turn on this mapping'),
+                        'name' => 'mapping_on',
+                        'required' => true,
+                        'class' => 't',
+                        'is_bool' => true,
+                        'values' => array(
+                            array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
+                            array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
+                        ),
+                    ),
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save'),
+                    'name' => 'saveMappingForm',
+                    'icon' => 'process-icon-save'
+                )
+            )
+        );
+
+        /** @var HelperFormCore $helper */
+        $helper = new HelperForm();
+        $helper->currentIndex = AdminController::$currentIndex;
+        $helper->token = $this->getToken();
+        $helper->fields_value = ['mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false];
+
+        $customs = $this->repository->getCustoms();
+        foreach ($customs as $custom) {
+            if (Tools::getValue('id') == $custom['id_custom']) {
+                $helper->fields_value = array(
+                    'id' => $custom['id_custom'],
+                    'customer_detail' => $custom['custom_field'],
+                    'gr_custom' => $custom['custom_name'],
+                    'default' => 0,
+                    'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
+                );
+            }
+        }
+
+        return $helper->generateForm(array(array('form' => $fieldsForm)));
+    }
+
+    /**
+     * Assigns values to forms
+     * @param $obj
+     * @return array
+     */
+    public function getFieldsValue($obj)
+    {
+        if ($this->display == 'view') {
+            $settings = $this->repository->getSettings();
+
+            return array(
+                'subscriptionSwitch' => $settings['active_subscription'] == 'yes' ? 1 : 0,
+                'campaign' => $settings['campaign_id'],
+                'cycledays' => $settings['cycle_day'],
+                'contactInfo' => $settings['update_address'] == 'yes' ? 1 : 0,
+                'newsletter' => $settings['active_newsletter_subscription'] == 'yes' ? 1 : 0
+            );
+        } else {
+            $customs = $this->repository->getCustoms();
+            foreach ($customs as $custom) {
+                if (Tools::getValue('id') == $custom['id_custom']) {
+                    return array(
+                        'id' => $custom['id_custom'],
+                        'customer_detail' => $custom['custom_field'],
+                        'gr_custom' => $custom['custom_name'],
+                        'default' => 0,
+                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0,
+                        'actions' => array()
+                    );
+                }
+            }
+
+            return array(
+                'id' => 1,
+                'customer_detail' => '',
+                'gr_custom' => '',
+                'default' => 0,
+                'on' => 0
+            );
+        }
     }
 }

@@ -48,6 +48,31 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($query);
     }
 
+    /**
+     * @param bool $isActive
+     * @return array
+     */
+    public function getAutomationSettings($isActive = false)
+    {
+        $sql = '
+        SELECT
+            `id`, `id_shop`, `category_id`, `campaign_id`, `action`, `cycle_day`, `active`
+        FROM
+            ' .  _DB_PREFIX_ . 'getresponse_automation
+        WHERE
+            id_shop = ' . (int) $this->idShop;
+
+        if ($isActive) {
+            $sql .= ' AND `active` = "yes"';
+        }
+
+        if ($results = $this->db->ExecuteS($sql)) {
+            return $results;
+        }
+
+        return array();
+    }
+
     public function getGrShopId()
     {
         $sql = 'SELECT 
