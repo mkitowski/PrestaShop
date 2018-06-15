@@ -18,10 +18,8 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     public function __construct()
     {
         parent::__construct();
-
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-ecommerce.js');
-
         $this->ecommerceService = EcommerceServiceFactory::create();
     }
 

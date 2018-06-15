@@ -47,7 +47,7 @@ class AutomationListHelper
         /** @var Automation $automation */
         foreach ($this->automationService->getAutomation() as $automation) {
             $automationList[] = array(
-                'id' => $this->automationService->getSettingsId(),
+                'id' => $automation->getId(),
                 'category' => $this->getCategoryNameById($automation->getCategoryId()),
                 'action' => Translate::getAdminTranslation($automation->getAction()),
                 'contact_list' => $this->getContactListNameById($automation->getContactListId()),

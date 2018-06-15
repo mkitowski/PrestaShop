@@ -1,14 +1,13 @@
 <?php
-namespace GetResponse\Settings;
+namespace GetResponse\Account;
 
 use Db;
-use GrShareCode\TrackingCode\TrackingCode;
 
 /**
- * Class Repository
- * @package GetResponse\Settings
+ * Class AccountSettingsRepository
+ * @package GetResponse\Account
  */
-class SettingsRepository
+class AccountSettingsRepository
 {
     /** @var Db */
     private $db;
@@ -27,7 +26,7 @@ class SettingsRepository
     }
 
     /**
-     * @return null|Settings
+     * @return null|AccountSettings
      * @throws PrestaShopDatabaseException
      */
     public function getSettings()
@@ -52,7 +51,7 @@ class SettingsRepository
             `id_shop` = ' . (int)$this->idShop;
 
         if ($results = $this->db->ExecuteS($sql)) {
-            return SettingsFactory::fromDb($results[0]);
+            return AccountSettingsFactory::fromDb($results[0]);
         }
 
         return null;

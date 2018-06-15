@@ -124,7 +124,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     public function performSubscribeViaRegistration()
     {
-        $this->redirectIfNotAuthorized();
         $subscription = Tools::getValue('subscriptionSwitch') == 1 ? 'yes' : 'no';
         $campaign = Tools::getValue('campaign');
         $addToCycle = Tools::getValue('addToCycle', 0);

@@ -1,57 +1,64 @@
 <?php
 namespace GetResponse\WebTracking;
 
-use GetResponse\Settings\Settings;
-
 /**
  * Class WebTracking
+ * @package GetResponse\WebTracking
  */
 class WebTracking
 {
-    const TRACKING_ON = '1';
-    const TRACKING_OFF = '0';
+    const TRACKING_ACTIVE = 'yes';
+    const TRACKING_INACTIVE = 'no';
+    const TRACKING_DISABLED = 'disabled';
 
     /** @var string */
-    private $tracking;
+    private $status;
+
+    /** @var string */
+    private $snippet;
 
     /**
-     * @param string $tracking
+     * @param string $snippet
+     * @param string $status
      */
-    public function __construct($tracking)
+    public function __construct($status, $snippet)
     {
-        $this->tracking = $tracking;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTracking()
-    {
-        return $this->tracking;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isEnabled()
-    {
-        return $this->getTracking() === self::TRACKING_ON;
+        $this->status = $status;
+        $this->snippet = $snippet;
     }
 
     /**
      * @return bool
      */
-    public function isDisabled()
+    public function isTrackingDisabled()
     {
-        return $this->getTracking() === self::TRACKING_OFF;
+        return $this->getStatus() === self::TRACKING_DISABLED;
     }
 
     /**
      * @return string
      */
-    public function toSettings()
+    public function getStatus()
     {
-        return $this->getTracking() === self::TRACKING_ON ? Settings::TRACKING_ACTIVE : Settings::TRACKING_INACTIVE;
+        return $this->status;
     }
+
+    /**
+     * @return string
+     */
+    public function getSnippet()
+    {
+        return $this->snippet;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isTrackingActive()
+    {
+        return $this->getStatus() === self::TRACKING_ACTIVE;
+    }
+
 
 }

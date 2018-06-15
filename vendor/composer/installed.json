@@ -6,12 +6,12 @@
         "source": {
             "type": "git",
             "url": "git@git.int.getresponse.com:integrations/share-code-plugin.git",
-            "reference": "e13dce2d0934b04d00f8e74cb733e27a5cdefca5"
+            "reference": "49169288fb64c0ecb3bda0b95fd5c7bfd0771b2e"
         },
         "require-dev": {
             "phpunit/phpunit": "^5"
         },
-        "time": "2018-05-29T12:59:32+00:00",
+        "time": "2018-06-12T10:26:48+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

@@ -1,19 +1,19 @@
 <?php
-namespace GetResponse\Settings;
+namespace GetResponse\Account;
 
 /**
- * Class SettingsFactory
- * @package GetResponse\Settings
+ * Class AccountSettingsFactory
+ * @package GetResponse\Account
  */
-class SettingsFactory
+class AccountSettingsFactory
 {
     /**
      * @param array $dbResults
-     * @return Settings
+     * @return AccountSettings
      */
     public static function fromDb(array $dbResults)
     {
-        return new Settings(
+        return new AccountSettings(
             $dbResults['id'],
             $dbResults['id_shop'],
             $dbResults['api_key'],

@@ -2,7 +2,6 @@
 namespace GetResponse\Account;
 
 use GetResponse\Settings\Settings;
-use GetResponse\Settings\SettingsService;
 use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\GetresponseApiException;
@@ -17,24 +16,24 @@ class AccountService
     /** @var GrAccountService */
     private $grAccountService;
 
-    /** @var SettingsService */
-    private $settingsService;
+    /** @var AccountSettingsRepository */
+    private $repository;
 
     /** @var TrackingCodeService */
     private $trackingCodeService;
 
     /**
      * @param GrAccountService $grAccountService
-     * @param SettingsService $settingsService
+     * @param AccountSettingsRepository $accountSettingsRepository
      * @param TrackingCodeService $trackingCodeService
      */
     public function __construct(
         GrAccountService $grAccountService,
-        SettingsService $settingsService,
+        AccountSettingsRepository $accountSettingsRepository,
         TrackingCodeService $trackingCodeService
     ) {
         $this->grAccountService = $grAccountService;
-        $this->settingsService = $settingsService;
+        $this->repository = $accountSettingsRepository;
         $this->trackingCodeService = $trackingCodeService;
     }
 
@@ -48,11 +47,11 @@ class AccountService
     }
 
     /**
-     * @return Settings
+     * @return AccountSettings
      */
     public function getSettings()
     {
-        return $this->settingsService->getSettings();
+        return $this->repository->getSettings();
     }
 
     /**
@@ -60,7 +59,7 @@ class AccountService
      */
     public function isConnectedToGetResponse()
     {
-        return !empty($this->settingsService->getSettings()->getApiKey());
+        return !empty($this->repository->getSettings()->getApiKey());
     }
 
     /**
@@ -68,7 +67,7 @@ class AccountService
      */
     public function getApiKey()
     {
-        return $this->settingsService->getSettings()->getApiKey();
+        return $this->repository->getSettings()->getApiKey();
     }
 
     /**
@@ -76,12 +75,12 @@ class AccountService
      */
     public function getActiveTracking()
     {
-        return $this->settingsService->getSettings()->getActiveTracking();
+        return $this->repository->getSettings()->getActiveTracking();
     }
 
     public function disconnectFromGetResponse()
     {
-        $this->settingsService->disconnectFromGetResponse();
+        $this->repository->updateApiSettings(null, AccountSettings::ACCOUNT_TYPE_GR, null);
     }
 
     /**
@@ -100,9 +99,12 @@ class AccountService
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
         $trackingCode = $this->trackingCodeService->getTrackingCode();
-        $trackingStatus = $trackingCode->isFeatureEnabled() ? Settings::TRACKING_INACTIVE : Settings::TRACKING_DISABLED;
-        $this->settingsService->updateTracking($trackingStatus, $trackingCode->getSnippet());
+        $trackingStatus = $trackingCode->isFeatureEnabled()
+            ? AccountSettings::TRACKING_INACTIVE
+            : AccountSettings::TRACKING_DISABLED;
 
-        $this->settingsService->updateApiSettings($apiKey, $accountType, $domain);
+        //@todo: Add single method for both down here ↓
+        $this->repository->updateTracking($trackingStatus, $trackingCode->getSnippet());
+        $this->repository->updateApiSettings($apiKey, $accountType, $domain);
     }
 }

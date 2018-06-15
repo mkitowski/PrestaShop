@@ -1,6 +1,7 @@
 <?php
 namespace GetResponse\Automation;
 
+use GetResponse\Account\AccountSettings;
 use GetResponse\Settings\Settings;
 use GrShareCode\Campaign\AutorespondersCollection;
 use GrShareCode\Campaign\CampaignsCollection;
@@ -13,23 +14,22 @@ class AutomationService
 {
     /** @var AutomationRepository */
     private $automationRepository;
-    /**
-     * @var CampaignService
-     */
+
+    /** @var CampaignService */
     private $campaignService;
 
-    /** @var Settings */
+    /** @var AccountSettings */
     private $settings;
 
     /**
      * @param AutomationRepository $automationRepository
      * @param CampaignService $campaignService
-     * @param Settings $settings
+     * @param AccountSettings $settings
      */
     public function __construct(
         AutomationRepository $automationRepository,
         CampaignService $campaignService,
-        Settings $settings
+        AccountSettings $settings
     ) {
         $this->automationRepository = $automationRepository;
         $this->campaignService = $campaignService;
@@ -42,6 +42,16 @@ class AutomationService
     public function deleteAutomationById($automationId)
     {
         $this->automationRepository->deleteAutomationSettings($automationId);
+    }
+
+    /**
+     * @param array $automationIds
+     */
+    public function deleteAutomationByIdList(array $automationIds)
+    {
+        foreach ($automationIds as $automationId) {
+            $this->automationRepository->deleteAutomationSettings($automationId);
+        }
     }
 
     /**
@@ -77,25 +87,29 @@ class AutomationService
     }
 
     /**
-     * @param int $categoryId
-     * @param int $automationId
-     * @param int $contactListId
-     * @param string $action
-     * @param int $cycleDay
+     * @param AutomationDto $automationDto
      */
-    public function updateAutomation($categoryId, $automationId, $contactListId, $action, $cycleDay)
+    public function updateAutomation(AutomationDto $automationDto)
     {
-        $this->automationRepository->updateAutomation($categoryId, $automationId, $contactListId, $action, $cycleDay);
+        $this->automationRepository->updateAutomation(
+            $automationDto->getCategory(),
+            $automationDto->getId(),
+            $automationDto->getContactListId(),
+            $automationDto->getAction(),
+            $automationDto->getCycleDay()
+        );
     }
 
     /**
-     * @param int $categoryId
-     * @param int $contactListId
-     * @param string $action
-     * @param int $cycleDay
+     * @param AutomationDto $automationDto
      */
-    public function addAutomation($categoryId, $contactListId, $action, $cycleDay)
+    public function addAutomation(AutomationDto $automationDto)
     {
-        $this->automationRepository->addAutomation($categoryId, $contactListId, $action, $cycleDay);
+        $this->automationRepository->addAutomation(
+            $automationDto->getCategory(),
+            $automationDto->getContactListId(),
+            $automationDto->getAction(),
+            $automationDto->getCycleDay()
+        );
     }
 }

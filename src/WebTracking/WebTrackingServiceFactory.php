@@ -1,19 +1,20 @@
 <?php
-namespace GetResponse\WebForm;
+namespace GetResponse\WebTracking;
 
 use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
-use GrShareCode\WebForm\WebFormService as GrWebFormService;
+use GrShareCode\TrackingCode\TrackingCodeService;
 use GrShop;
 
 /**
- * Class WebFormServiceFactory
+ * Class WebTrackingServiceFactory
+ * @package GetResponse\WebTracking
  */
-class WebFormServiceFactory
+class WebTrackingServiceFactory
 {
     /**
-     * @return WebFormService
+     * @return WebTrackingService
      */
     public static function create()
     {
@@ -21,9 +22,9 @@ class WebFormServiceFactory
         $settings = $accountSettingsRepository->getSettings();
         $api = ApiFactory::createFromSettings($settings);
 
-        return new WebFormService(
-            new WebFormRepository(Db::getInstance(), GrShop::getUserShopId()),
-            new GrWebFormService($api)
+        return new WebTrackingService(
+            new WebTrackingRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new TrackingCodeService($api)
         );
     }
 }

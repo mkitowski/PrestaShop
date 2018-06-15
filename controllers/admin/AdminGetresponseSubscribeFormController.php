@@ -34,8 +34,6 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 
     public function initContent()
     {
-        $this->redirectIfNotAuthorized();
-
         $this->display = 'edit';
         $this->show_form_cancel_button = false;
         $this->toolbar_title[] = $this->l('GetResponse');

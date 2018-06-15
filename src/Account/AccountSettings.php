@@ -1,11 +1,11 @@
 <?php
-namespace GetResponse\Settings;
+namespace GetResponse\Account;
 
 /**
- * Class Settings
- * @package GetResponse\Settings
+ * Class AccountSettings
+ * @package GetResponse\Account
  */
-class Settings
+class AccountSettings
 {
     const SUBSCRIPTION_ACTIVE_YES = 'yes';
     const SUBSCRIPTION_ACTIVE__NO = 'no';

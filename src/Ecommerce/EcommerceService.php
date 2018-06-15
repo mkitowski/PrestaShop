@@ -1,6 +1,7 @@
 <?php
 namespace GetResponse\Ecommerce;
 
+use GetResponse\Account\AccountSettings;
 use GetResponse\Settings\Settings;
 use GrShareCode\Shop\AddShopCommand;
 use GrShareCode\Shop\ShopsCollection;
@@ -18,14 +19,14 @@ class EcommerceService
     /** @var ShopService */
     private $shopService;
 
-    /** @var Settings */
+    /** @var AccountSettings */
     private $settings;
 
     /**
      * @param EcommerceRepository $repository
      * @param ShopService $shopService
      */
-    public function __construct(EcommerceRepository $repository, ShopService $shopService, Settings $settings)
+    public function __construct(EcommerceRepository $repository, ShopService $shopService, AccountSettings $settings)
     {
         $this->repository = $repository;
         $this->shopService = $shopService;

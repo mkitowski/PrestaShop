@@ -18,9 +18,10 @@
  * @method null initContent()
  */
 
+use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Settings\SettingsServiceFactory;
-use GrShareCode\GetresponseApi;
 use GrShareCode\Campaign\AutorespondersCollection as GrAutorespondersCollection;
+use GrShareCode\GetresponseApi;
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -43,7 +44,6 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
 
-
         $this->bootstrap  = true;
         $this->meta_title = $this->l('GetResponse Integration');
         $this->identifier  = 'api_key';
@@ -56,10 +56,9 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $settings = $this->repository->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
+        $account = AccountServiceFactory::create();
 
-        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && false === $isConnected) {
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$account->isConnectedToGetResponse()) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
         }
     }
@@ -97,58 +96,6 @@ class AdminGetresponseController extends ModuleAdminController
         unset($this->page_header_toolbar_btn['back']);
     }
 
-//    /**
-//     * render main view
-//     * @return mixed
-//     */
-//    public function renderView()
-//    {
-//        $settings = $this->repository->getSettings();
-//        $isConnected = !empty($settings['api_key']) ? true : false;
-//
-//        $this->context->smarty->assign(array(
-//            'is_connected' => $isConnected,
-//            'gr_base_url' => $this->context->shop->getBaseURL(true),
-//            'active_tracking' => $settings['active_tracking']
-//        ));
-//
-//        switch (Tools::getValue('action')) {
-//            case 'api':
-//                $this->apiView();
-//                break;
-//            default:
-//                break;
-//        }
-//
-//        return parent::renderView();
-//    }
-
-    /**
-     * API key settings
-     */
-    public function apiView()
-    {
-        $settings = $this->repository->getSettings();
-
-        if (!empty($settings['api_key'])) {
-            $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
-            $data = $api->getAccounts();
-
-            $this->context->smarty->assign(array(
-                'gr_acc_name' => $data->firstName . ' ' . $data->lastName,
-                'gr_acc_email' => $data->email,
-                'gr_acc_company' => $data->companyName,
-                'gr_acc_phone' => $data->phone,
-                'gr_acc_address' => $data->city . ' ' . $data->street . ' ' . $data->zipCode,
-            ));
-        }
-
-        $this->context->smarty->assign(array(
-            'api_key' => $this->hideApiKey($settings['api_key']),
-            'is_connected' => !empty($settings['api_key']) ? true : false,
-            'form' => $this->renderApiForm()
-        ));
-    }
 
     /**
      * Process Refresh Data
@@ -246,19 +193,6 @@ class AdminGetresponseController extends ModuleAdminController
         }
     }
 
-    /**
-     * @param string $apiKey
-     *
-     * @return string
-     */
-    private function hideApiKey($apiKey)
-    {
-        if (Tools::strlen($apiKey) > 0) {
-            return str_repeat("*", Tools::strlen($apiKey) - 6) . Tools::substr($apiKey, -6);
-        }
-
-        return $apiKey;
-    }
 
     public function redirectIfNotAuthorized()
     {

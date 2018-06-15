@@ -1,23 +1,20 @@
 <?php
 
-use GetResponse\Settings\SettingsService;
-use GetResponse\Settings\SettingsServiceFactory;
-use GetResponse\WebTracking\WebTracking;
-use GrShareCode\TrackingCode\TrackingCodeService;
+use GetResponse\WebTracking\WebTrackingDto;
+use GetResponse\WebTracking\WebTrackingService;
+use GetResponse\WebTracking\WebTrackingServiceFactory;
 
 require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseWebTrackingController extends AdminGetresponseController
 {
-    /**
-     * @var SettingsService
-     */
-    private $settingsService;
+    /** @var WebTrackingService */
+    private $webTrackingService;
 
     public function __construct()
     {
         parent::__construct();
-        $this->settingsService = SettingsServiceFactory::create();
+        $this->webTrackingService = WebTrackingServiceFactory::create();
     }
 
     public function initContent()
@@ -34,25 +31,14 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
     {
         if (Tools::isSubmit('submitWebTrackingForm')) {
 
-            $snippet = '';
+            $tracking = new WebTrackingDto(Tools::getValue('tracking'));
+            $this->webTrackingService->updateTracking($tracking);
 
-            $tracking = new WebTracking(Tools::getValue('tracking'));
-
-            if ($tracking->isEnabled()) {
-
-                $trackingCodeService = new TrackingCodeService($this->getGrAPI());
-                $trackingCode = $trackingCodeService->getTrackingCode();
-                $snippet = $trackingCode->getSnippet();
-                $this->confirmations[] = $this->l('Web event traffic tracking enabled');
-
-            } elseif ($tracking->isDisabled()) {
-
-                $this->confirmations[] = $this->l('Web event traffic tracking disabled');
-            }
-
-            $this->settingsService->updateTracking($tracking->toSettings(), $snippet);
-
+            $this->confirmations[] = $tracking->isEnabled()
+                ? $this->l('Web event traffic tracking enabled')
+                : $this->l('Web event traffic tracking disabled');
         }
+
         parent::postProcess();
     }
 
@@ -61,22 +47,20 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
      */
     public function renderForm()
     {
-        $settings = $this->settingsService->getSettings();
+        $webTracking = $this->webTrackingService->getWebTracking();
 
         $helper = new HelperForm();
         $helper->submit_action = 'submitWebTrackingForm';
         $helper->token = Tools::getAdminTokenLite('AdminGetresponseWebTrackingForm');
 
-        if (!$settings->isTrackingDisabled()) {
-            $helper->tpl_vars = array(
-                'fields_value' => array('tracking' => $settings->isTrackingActive())
-            );
+        if ($webTracking !== null && !$webTracking->isTrackingDisabled()) {
+            $helper->tpl_vars = ['fields_value' => ['tracking' => $webTracking->isTrackingActive()]];
             $fields_form = $this->getFormForTrackingEnabled();
         } else {
             $fields_form = $this->getFormFieldsForTrackingDisabled();
         }
 
-        return $helper->generateForm(array($fields_form));
+        return $helper->generateForm([$fields_form]);
     }
 
     /**
@@ -84,35 +68,35 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
      */
     private function getFormForTrackingEnabled()
     {
-        return array(
-            'form' => array(
-                'legend' => array(
+        return [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Web Event Tracking'),
-                ),
+                ],
                 'description' => $this->l('
                     Enable event tracking in GetResponse to uncover who is visiting your stores, 
                     how often, and why. Analyze and react to customer buying habits.
                 '),
-                'input' => array(
-                    array(
+                'input' => [
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Send web event data to GetResponse'),
                         'name' => 'tracking',
                         'class' => 't',
                         'is_bool' => true,
-                        'values' => array(
-                            array('id' => 'active_on', 'value' => WebTracking::TRACKING_ON, 'label' => $this->l('Yes')),
-                            array('id' => 'active_off', 'value' => WebTracking::TRACKING_OFF, 'label' => $this->l('No'))
-                        ),
-                    )
-                ),
-                'submit' => array(
+                        'values' => [
+                            ['id' => 'active_on', 'value' => WebTrackingDto::TRACKING_ON, 'label' => $this->l('Yes')],
+                            ['id' => 'active_off', 'value' => WebTrackingDto::TRACKING_OFF, 'label' => $this->l('No')]
+                        ],
+                    ]
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
                     'name' => 'submitTracking',
                     'icon' => 'process-icon-save'
-                )
-            )
-        );
+                ]
+            ]
+        ];
     }
 
     /**
@@ -120,11 +104,11 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
      */
     private function getFormFieldsForTrackingDisabled()
     {
-        return array(
-            'form' => array(
-                'legend' => array(
+        return [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Web Event Tracking'),
-                ),
+                ],
                 'description' =>
                     $this->l('
                         We can’t start sending data from PrestaShop to GetResponse yet. 
@@ -134,8 +118,8 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                         If you have a Max or Pro account, try disconnecting and reconnecting 
                         the GetResponse account within the GetResponse module. This should correct the issue.
                     ')
-            )
-        );
+            ]
+        ];
     }
 
 }

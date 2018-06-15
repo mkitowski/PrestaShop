@@ -1,10 +1,12 @@
 <?php
 namespace GetResponse\Account;
 
-use GetResponse\Settings\SettingsServiceFactory;
+use Db;
+use GetResponse\Api\ApiFactory;
 use GrApiFactory;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\TrackingCode\TrackingCodeService;
+use GrShop;
 
 /**
  * Class AccountServiceFactory
@@ -17,29 +19,27 @@ class AccountServiceFactory
      */
     public static function create()
     {
-        $settings = SettingsServiceFactory::create();
-
-        $api = GrApiFactory::createFromSettings(
-            $settings->getSettings()
-        );
+        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
 
         return new AccountService(
             new GrAccountService($api),
-            $settings,
+            $accountSettingsRepository,
             new TrackingCodeService($api)
         );
     }
 
     /**
+     * @param AccountDto $accountDto
      * @return AccountService
      */
-    public static function createWithSettings(array $settings)
+    public static function createFromAccountDto(AccountDto $accountDto)
     {
-        $api = GrApiFactory::createFromArray($settings);
+        $api = ApiFactory::createFromAccountDto($accountDto);
 
         return new AccountService(
             new GrAccountService($api),
-            SettingsServiceFactory::create(),
+            new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId()),
             new TrackingCodeService($api)
         );
     }

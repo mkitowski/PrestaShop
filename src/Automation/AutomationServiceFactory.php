@@ -2,8 +2,8 @@
 namespace GetResponse\Automation;
 
 use Db;
-use GetResponse\Settings\SettingsServiceFactory;
-use GrApiFactory;
+use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\Api\ApiFactory;
 use GrShareCode\Campaign\CampaignService;
 use GrShop;
 
@@ -18,8 +18,9 @@ class AutomationServiceFactory
      */
     public static function create()
     {
-        $settings = SettingsServiceFactory::create()->getSettings();
-        $api = GrApiFactory::createFromSettings($settings);
+        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $settings = $accountSettingsRepository->getSettings();
+        $api = ApiFactory::createFromSettings($settings);
 
         return new AutomationService(
             new AutomationRepository(Db::getInstance(), GrShop::getUserShopId()),

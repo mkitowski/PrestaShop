@@ -1,7 +1,8 @@
 <?php
 
+use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
-use GetResponse\Settings\Settings;
+use GetResponse\Account\AccountValidator;
 
 require_once 'AdminGetresponseController.php';
 
@@ -52,30 +53,36 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     private function connectToGetResponse()
     {
-        $apiKey = Tools::getValue('api_key');
-        $isEnterprise = Tools::getValue('is_enterprise');
-        $domain = Tools::getValue('domain');
-        $accountType = $isEnterprise === '1' ? Tools::getValue('account_type') : Settings::ACCOUNT_TYPE_GR;
+        $accountDto = AccountDto::fromRequest([
+            'apiKey' => Tools::getValue('api_key'),
+            'enterprisePackage' => Tools::getValue('is_enterprise'),
+            'domain' => Tools::getValue('domain'),
+            'accountType' => Tools::getValue('account_type')
+        ]);
 
-        if (false === $this->validateConnectionFormParams($apiKey, $isEnterprise, $accountType, $domain)) {
+        $validator = new AccountValidator($accountDto);
+        if (!$validator->isValid()) {
+            $this->errors = $validator->getErrors();
+
             return;
         }
 
         try {
-            $accountService = AccountServiceFactory::createWithSettings([
-                'api_key' => $apiKey,
-                'account_type' => $accountType,
-                'domain' => $domain
-            ]);
+            $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
 
             if ($accountService->isConnectionAvailable()) {
 
-                $accountService->updateApiSettings($apiKey, $accountType, $domain);
+                $accountService->updateApiSettings(
+                    $accountDto->getApiKey(),
+                    $accountDto->getAccountTypeForSettings(),
+                    $accountDto->getDomain()
+                );
+
                 $this->confirmations[] = $this->l('GetResponse account connected');
 
             } else {
 
-                $msg = $accountType !== Settings::ACCOUNT_TYPE_GR
+                $msg = !$accountDto->isEnterprisePackage()
                     ? 'The API key or domain seems incorrect.'
                     : 'The API key seems incorrect.';
 
@@ -89,40 +96,6 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         } catch (\GrShareCode\Api\ApiTypeException $e) {
             $this->errors[] = $e->getMessage();
         }
-    }
-
-    /**
-     * @param string $apiKey
-     * @param bool $isEnterprise
-     * @param string $accountType
-     * @param string $domain
-     * @return bool
-     */
-    private function validateConnectionFormParams($apiKey, $isEnterprise, $accountType, $domain)
-    {
-        if (empty($apiKey)) {
-            $this->errors[] = $this->l('You need to enter API key. This field can\'t be empty.');
-
-            return false;
-        }
-
-        if (false === (bool)$isEnterprise) {
-            return true;
-        }
-
-        if (empty($accountType)) {
-            $this->errors[] = $this->l('Invalid account type');
-
-            return false;
-        }
-
-        if (empty($domain)) {
-            $this->errors[] = $this->l('Domain field can not be empty');
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -159,7 +132,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     public function renderForm()
     {
-        $fields_form = array(
+        $fields_form = [
             'form' => [
                 'legend' => [
                     'title' => $this->l('Connect your site and GetResponse'),
@@ -177,7 +150,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                             ) .
                             ' <strong> ' . $this->l('My profile > Integration & API > API') . ' </strong> ' .
                             $this->l('to find the key')
-                    ,
+                        ,
                         'empty_message' => $this->l('You need to enter API key. This field can\'t be empty.'),
                         'required' => true
                     ],
@@ -240,7 +213,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     'icon' => 'icon-getresponse-connect icon-link'
                 ]
             ]
-        );
+        ];
 
         $helper = new HelperForm();
         $helper->submit_action = 'connectToGetResponse';
@@ -248,8 +221,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         $helper->fields_value = [
             'api_key' => Tools::getValue('api_key'),
             'is_enterprise' => Tools::getValue('is_enterprise'),
-            'account_type' => Tools::getValue('domain'),
-            'domain' => Tools::getValue('account_type')
+            'domain' => Tools::getValue('domain'),
+            'account_type' => Tools::getValue('account_type')
         ];
 
         return $helper->generateForm(array($fields_form));

@@ -18,10 +18,14 @@ class AdminGetresponseExportController extends AdminGetresponseController
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
+    }
 
+    public function postProcess()
+    {
         if (Tools::isSubmit($this->name)) {
             $this->performExport();
         }
+        parent::postProcess();
     }
 
     /**
@@ -222,7 +226,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function exportCustomersView()
     {
-        $this->redirectIfNotAuthorized();
         $settings = $this->repository->getSettings();
         $campaignService = new GrCampaignService($this->getGrAPI());
 

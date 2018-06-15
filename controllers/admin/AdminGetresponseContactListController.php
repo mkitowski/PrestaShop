@@ -1,9 +1,11 @@
 <?php
 
 use GetResponse\Automation\Automation;
+use GetResponse\Automation\AutomationDto;
 use GetResponse\Automation\AutomationListHelper;
 use GetResponse\Automation\AutomationService;
 use GetResponse\Automation\AutomationServiceFactory;
+use GetResponse\Automation\AutomationValidator;
 use GrShareCode\Campaign\Autoresponder;
 use GrShareCode\Campaign\Campaign;
 
@@ -78,46 +80,45 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         }
 
         if (Tools::isSubmit('submitBulkdelete' . $this->name)) {
-            $selected = (array)Tools::getValue($this->name . 'Box');
-            foreach ($selected as $toDelete) {
-                $this->automationService->deleteAutomationById($toDelete);
-            }
+            $automationIdList = (array)Tools::getValue($this->name . 'Box');
+            $this->automationService->deleteAutomationByIdList($automationIdList);
             $this->confirmations[] = $this->l('Rules deleted');
         }
 
         if (Tools::isSubmit('submit' . $this->name)) {
 
-            $id = Tools::getValue('id');
-            $category = Tools::getValue('category');
-            $campaign = Tools::getValue('campaign');
-            $action = Tools::getValue('a_action');
-            $addToCycle = Tools::getValue('options_1');
-            $cycleDay = !empty($addToCycle) ? Tools::getValue('autoresponder_day') : null;
+            $automationDto = new AutomationDto(
+                Tools::getValue('id'),
+                Tools::getValue('category'),
+                Tools::getValue('campaign'),
+                Tools::getValue('a_action'),
+                Tools::getValue('options_1'),
+                Tools::getValue('autoresponder_day')
+            );
 
-            if (false === $this->isParamValid($category, $action, $campaign, $addToCycle, $cycleDay)) {
+//            $id = Tools::getValue('id');
+//            $category = Tools::getValue('category');
+//            $campaign = Tools::getValue('campaign');
+//            $action = Tools::getValue('a_action');
+//            $addToCycle = Tools::getValue('options_1');
+//            $cycleDay = !empty($addToCycle) ? Tools::getValue('autoresponder_day') : null;
+
+            $validator = new AutomationValidator($automationDto);
+
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
                 return;
             }
 
-            if (!empty($id)) {
+            if ($automationDto->hasId()) {
                 try {
-                    $this->automationService->updateAutomation(
-                        $category,
-                        $id,
-                        $campaign,
-                        $action,
-                        $cycleDay
-                    );
+                    $this->automationService->updateAutomation($automationDto);
                 } catch (Exception $e) {
                     $this->errors[] = $this->l('Rule has not been updated. Rule already exist.');
                 }
             } else {
                 try {
-                    $this->automationService->addAutomation(
-                        $category,
-                        $campaign,
-                        $action,
-                        $cycleDay
-                    );
+                    $this->automationService->addAutomation($automationDto);
                 } catch (Exception $e) {
                     $this->errors[] = $this->l('Rule has not been created. Rule already exist.');
                 }
@@ -129,33 +130,6 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         }
 
         parent::postProcess();
-    }
-
-    /**
-     * @param string $category
-     * @param string $action
-     * @param string $campaign
-     * @param string $addToCycle
-     * @param string $cycleDay
-     * @return bool
-     */
-    private function isParamValid($category, $action, $campaign, $addToCycle, $cycleDay)
-    {
-        if (empty($category)) {
-            $this->errors[] = $this->l('The "if customer buys in category field" is invalid');
-        }
-        if (empty($action)) {
-            $this->errors[] = $this->l('The "they are" field is required');
-        }
-        if (empty($campaign)) {
-            $this->errors[] = $this->l('The "into the contact list" field is required');
-        }
-
-        if (!empty($addToCycle) && $cycleDay === '') {
-            $this->errors[] = $this->l('The "autoresponder" field is required');
-        }
-
-        return empty($this->errors);
     }
 
     /**
