@@ -96,13 +96,6 @@ class AdminGetresponseContactListController extends AdminGetresponseController
                 Tools::getValue('autoresponder_day')
             );
 
-//            $id = Tools::getValue('id');
-//            $category = Tools::getValue('category');
-//            $campaign = Tools::getValue('campaign');
-//            $action = Tools::getValue('a_action');
-//            $addToCycle = Tools::getValue('options_1');
-//            $cycleDay = !empty($addToCycle) ? Tools::getValue('autoresponder_day') : null;
-
             $validator = new AutomationValidator($automationDto);
 
             if (!$validator->isValid()) {
@@ -137,22 +130,22 @@ class AdminGetresponseContactListController extends AdminGetresponseController
      */
     public function renderList()
     {
-        $fieldsList = array(
-            'category' => array('title' => $this->l('If customer buys in the category'), 'type' => 'text'),
-            'action' => array('title' => $this->l('they are'), 'type' => 'text'),
-            'contact_list' => array('title' => $this->l('Into the contact list'), 'type' => 'text'),
-            'cycle_day' => array(
+        $fieldsList = [
+            'category' => ['title' => $this->l('If customer buys in the category'), 'type' => 'text'],
+            'action' => ['title' => $this->l('they are'), 'type' => 'text'],
+            'contact_list' => ['title' => $this->l('Into the contact list'), 'type' => 'text'],
+            'cycle_day' => [
                 'title' => $this->l('Add into the cycle on day'),
                 'type' => 'bool',
-                'icon' => array(
+                'icon' => [
                     0 => 'disabled.gif',
                     1 => 'enabled.gif',
                     'default' => 'disabled.gif'
-                ),
+                ],
                 'align' => 'center'
-            ),
-            'autoresponder' => array('title' => $this->l('Autoresponder'), 'type' => 'text'),
-        );
+            ],
+            'autoresponder' => ['title' => $this->l('Autoresponder'), 'type' => 'text'],
+        ];
 
         /** @var HelperListCore $helper */
         $helper = new HelperList();
@@ -185,101 +178,101 @@ class AdminGetresponseContactListController extends AdminGetresponseController
     {
         $id = Tools::getValue('id');
 
-        $fieldsForm = array(
-            'form' => array(
-                'legend' => array(
+        $fieldsForm = [
+            'form' => [
+                'legend' => [
                     'title' => $this->l(!empty($id) ? 'Edit rule' : 'Add new rule'),
-                ),
-                'input' => array(
-                    array('type' => 'hidden', 'name' => 'automation_id'),
-                    array('type' => 'hidden', 'name' => 'autoresponders'),
-                    array('type' => 'hidden', 'name' => 'autoresponder_day_selected'),
-                    array('type' => 'hidden', 'name' => 'cycle_day_selected'),
-                    array(
+                ],
+                'input' => [
+                    ['type' => 'hidden', 'name' => 'automation_id'],
+                    ['type' => 'hidden', 'name' => 'autoresponders'],
+                    ['type' => 'hidden', 'name' => 'autoresponder_day_selected'],
+                    ['type' => 'hidden', 'name' => 'cycle_day_selected'],
+                    [
                         'type' => 'select',
                         'label' => $this->l('If customer buys in category'),
                         'class' => 'gr-select',
                         'name' => 'category',
                         'required' => true,
-                        'options' => array(
+                        'options' => [
                             'query' => Category::getCategories(1, true, false),
                             'id' => 'id_category',
                             'name' => 'name'
-                        )
-                    ),
-                    array(
+                        ]
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('They are'),
                         'class' => 'gr-select',
                         'name' => 'a_action',
                         'required' => true,
-                        'options' => array(
-                            'query' => array(
-                                array('id' => '', 'name' => $this->l('Select from field')),
-                                array('id' => 'move', 'name' => $this->l('Moved')),
-                                array('id' => 'copy', 'name' => $this->l('Copied')),
-                            ),
+                        'options' => [
+                            'query' => [
+                                ['id' => '', 'name' => $this->l('Select from field')],
+                                ['id' => 'move', 'name' => $this->l('Moved')],
+                                ['id' => 'copy', 'name' => $this->l('Copied')],
+                            ],
                             'id' => 'id',
                             'name' => 'name'
-                        )
-                    ),
-                    array(
+                        ]
+                    ],
+                    [
                         'type' => 'select',
                         'class' => 'gr-select',
                         'label' => $this->l('Into the contact list'),
                         'name' => 'campaign',
                         'required' => true,
-                        'options' => array(
+                        'options' => [
                             'query' => array_merge(
-                                array(array('id' => '', 'name' => $this->l('Select a list'))),
+                                [['id' => '', 'name' => $this->l('Select a list')]],
                                 $this->getContactListForSelectField()
                             ),
                             'id' => 'id',
                             'name' => 'name'
-                        )
-                    ),
-                    array(
+                        ]
+                    ],
+                    [
                         'type' => 'checkbox',
                         'label' => '',
                         'name' => 'options',
-                        'values' => array(
-                            'query' => array(array('id' => 1, 'name' => $this->l(' Add to autoresponder cycle'))),
+                        'values' => [
+                            'query' => [['id' => 1, 'name' => $this->l(' Add to autoresponder cycle')]],
                             'id' => 'id',
                             'name' => 'name'
-                        ),
-                    ),
-                    array(
+                        ],
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Autoresponder day'),
                         'class' => 'gr-select',
                         'name' => 'autoresponder_day',
                         'data-default' => $this->l('no autoresponders'),
                         'required' => true,
-                        'options' => array(
-                            'query' => array(array('id' => '', 'name' => $this->l('no autoresponders'))),
+                        'options' => [
+                            'query' => [['id' => '', 'name' => $this->l('no autoresponders')]],
                             'id' => 'id',
                             'name' => 'name'
-                        )
-                    ),
-                ),
-                'submit' => array(
+                        ]
+                    ],
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
                     'name' => 'NewAutomationConfiguration'
-                ),
-                'reset' => array(
+                ],
+                'reset' => [
                     'title' => $this->l('Cancel'),
                     'icon' => 'process-icon-cancel'
-                ),
+                ],
                 'show_cancel_button' => true,
-            )
-        );
+            ]
+        ];
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
         $helper->currentIndex = AdminController::$currentIndex;
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
-        $helper->fields_value = array(
+        $helper->fields_value = [
             'category' => false,
             'a_action' => false,
             'campaign' => false,
@@ -288,7 +281,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
             'cycle_day_selected' => false,
             'automation_id' => false,
             'autoresponders' => json_encode($this->getAutoresponderField())
-        );
+        ];
 
         if (!empty($id)) {
             /** @var Automation $automation */

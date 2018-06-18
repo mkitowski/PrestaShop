@@ -83,15 +83,14 @@ class EcommerceService
     }
 
     /**
-     * @param string $grShopId
-     * @param Activity $activity
+     * @param EcommerceDto $ecommerceDto
      */
-    public function updateEcommerceDetails($grShopId, Activity $activity)
+    public function updateEcommerceDetails(EcommerceDto $ecommerceDto)
     {
-        $this->repository->updateEcommerceSubscription($activity);
+        $this->repository->updateEcommerceSubscription($ecommerceDto->isEnabled());
 
-        if ($activity->isEnabled()) {
-            $this->repository->updateEcommerceShopId($grShopId);
+        if ($ecommerceDto->isEnabled()) {
+            $this->repository->updateEcommerceShopId($ecommerceDto->getShopId());
         }
     }
 }

@@ -13,7 +13,7 @@ use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSub
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubjectCollection;
 use GrShareCode\GetresponseApiException;
 
-class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
+class AdminGetresponseAddNewContactListController extends AdminGetresponseController
 {
     public $name = 'GRSubscribeRegistration';
 

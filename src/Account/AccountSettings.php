@@ -8,7 +8,7 @@ namespace GetResponse\Account;
 class AccountSettings
 {
     const SUBSCRIPTION_ACTIVE_YES = 'yes';
-    const SUBSCRIPTION_ACTIVE__NO = 'no';
+    const SUBSCRIPTION_ACTIVE_NO = 'no';
 
     const NEWSLETTER_SUBSCRIPTION_ACTIVE_YES = 'yes';
     const NEWSLETTER_SUBSCRIPTION_ACTIVE_NO = 'no';

@@ -1,8 +1,10 @@
 <?php
 
 use GetResponse\Ecommerce\Activity;
+use GetResponse\Ecommerce\EcommerceDto;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
+use GetResponse\Ecommerce\EcommerceValidator;
 use GrShareCode\Shop\AddShopCommand;
 use GrShareCode\Shop\Shop;
 
@@ -25,12 +27,12 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     public function initPageHeaderToolbar()
     {
-        if (!in_array($this->display, array('edit', 'add'))) {
-            $this->page_header_toolbar_btn['new_shop'] = array(
+        if (!in_array($this->display, ['edit', 'add'])) {
+            $this->page_header_toolbar_btn['new_shop'] = [
                 'href' => self::$currentIndex . '&action=add&token=' . $this->getToken(),
                 'desc' => $this->l('Add new shop', null, null, false),
                 'icon' => 'process-icon-new'
-            );
+            ];
         }
         parent::initPageHeaderToolbar();
     }
@@ -59,26 +61,23 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
 
-            $grShopId = Tools::getValue('shop');
-            $activity = Activity::createFromRequest(Tools::getValue('ecommerce'));
+            $ecommerceDto = new EcommerceDto(
+                Tools::getValue('shop'),
+                Tools::getValue('ecommerce')
+            );
 
-            if ($activity->isEnabled() && empty($grShopId)) {
-                $this->errors[] = $this->l('You need to select shop');
+            $validator = new EcommerceValidator($ecommerceDto, $this->ecommerceService);
 
-                return;
-            }
-
-            if (!$this->ecommerceService->isSubscribeViaRegistrationActive()) {
-                $this->errors[] = $this->l(
-                    'You need to enable adding contacts during registrations to enable ecommerce'
-                );
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
 
                 return;
             }
 
-            $this->ecommerceService->updateEcommerceDetails($grShopId, $activity);
+            $this->ecommerceService->updateEcommerceDetails($ecommerceDto);
             $this->confirmations[] = $this->l('Ecommerce settings saved');
         }
+
 
         if (Tools::getValue('action') == 'add') {
 
@@ -122,7 +121,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     private function generateForm()
     {
-        $shops[] = array('shopId' => '', 'name' => $this->l('Select a shop'));
+        $shops[] = ['shopId' => '', 'name' => $this->l('Select a shop')];
 
         /** @var Shop $shop */
         foreach ($this->ecommerceService->getAllShops() as $shop) {
@@ -198,7 +197,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
         $helper->title = $this->l('Enable GetResponse Ecommerce');
-        $helper->fields_value = array('ecommerce' => 0, 'shop' => '');
+        $helper->fields_value = ['ecommerce' => 0, 'shop' => ''];
         $settings = $this->ecommerceService->getEcommerceSettings();
         $activity = Activity::createFromRequest(Tools::getValue('ecommerce'));
 
@@ -263,38 +262,38 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     public function renderForm()
     {
-        $fieldsForm = array(
-            'form' => array(
-                'legend' => array(
+        $fieldsForm = [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Add new store'),
-                ),
-                'input' => array(
-                    array(
+                ],
+                'input' => [
+                    [
                         'type' => 'text',
                         'label' => $this->l('Store name'),
                         'required' => true,
                         'name' => 'shop_name',
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'hidden',
                         'name' => 'form_name'
-                    ),
-                    array(
+                    ],
+                    [
                         'type' => 'hidden',
                         'name' => 'back_url'
-                    )
-                ),
-                'submit' => array(
+                    ]
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
                     'name' => 'NewAutomationConfiguration'
-                ),
-                'reset' => array(
+                ],
+                'reset' => [
                     'title' => $this->l('Cancel'),
                     'icon' => 'process-icon-cancel'
-                ),
+                ],
                 'show_cancel_button' => true
-            )
-        );
+            ]
+        ];
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
@@ -302,13 +301,13 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
 
-        $helper->fields_value = array(
+        $helper->fields_value = [
             'shop_name' => '',
             'form_name' => 'add_store',
             'back_url' => self::$currentIndex . '&token=' . $this->getToken(),
-        );
+        ];
 
-        return $helper->generateForm(array($fieldsForm));
+        return $helper->generateForm([$fieldsForm]);
     }
 
 }
