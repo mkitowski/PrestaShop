@@ -2,8 +2,11 @@
 
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\Config\ContactListServiceFactory;
 use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
+use GrShareCode\ContactList\FromFields;
+use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\Campaign\CampaignService as GrCampaignService;
@@ -34,64 +37,64 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderForm()
     {
-        $fieldsForm = array(
-            'legend' => array(
+        $fieldsForm = [
+            'legend' => [
                 'title' => $this->l('Update Mapping'),
-            ),
-            'input' => array(
-                'id' => array(
+            ],
+            'input' => [
+                'id' => [
                     'type' => 'hidden',
                     'name' => 'id'
-                ),
-                'customer_detail' => array(
+                ],
+                'customer_detail' => [
                     'label' => $this->l('Customer detail'),
                     'name' => 'customer_detail',
                     'type' => 'text',
                     'disabled' => true
-                ),
-                'gr_custom' => array(
+                ],
+                'gr_custom' => [
                     'label' => $this->l('Getresponse custom field name'),
                     'required'  => true,
                     'type' => 'select',
                     'name' => 'gr_custom',
-                    'options' => array(
+                    'options' => [
                         'query' => $this->getGetResponseCustomFields(),
                         'id' => 'id_option',
                         'name' => 'name'
-                    )
-                ),
-                'default' => array(
+                    ]
+                ],
+                'default' => [
                     'required'  => true,
                     'type' => 'hidden',
                     'name' => 'default'
-                ),
-                'mapping_on' => array(
+                ],
+                'mapping_on' => [
                     'type'      => 'switch',
                     'label'     => $this->l('Turn on this mapping'),
                     'name'      => 'mapping_on',
                     'required'  => true,
                     'class'     => 't',
                     'is_bool'   => true,
-                    'values'    => array(
-                        array(
+                    'values'    => [
+                        [
                             'id'    => 'active_on',
                             'value' => 1,
                             'label' => $this->l('Enabled')
-                        ),
-                        array(
+                        ],
+                        [
                             'id'    => 'active_off',
                             'value' => 0,
                             'label' => $this->l('Disabled')
-                        )
-                    ),
-                ),
-            ),
-            'submit' => array(
+                        ]
+                    ],
+                ],
+            ],
+            'submit' => [
                 'title' => $this->l('Save'),
                 'name' => 'saveMappingForm',
                 'icon' => 'process-icon-save'
-            )
-        );
+            ]
+        ];
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
@@ -152,8 +155,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
     public function renderView()
     {
         if (Tools::getValue('action', null) == 'addCampaign') {
-            $api = $this->getGrAPI();
-            $fromFields = $this->normalizeFormFields($api->getFromFields());
+
+            $contactListService = ContactListServiceFactory::create();
+
+            $fromFields = $this->normalizeFormFields($contactListService->getFromFields());
             $confirmSubject = $this->normalizeComplexApiData(
                 $api->getSubscriptionConfirmationsSubject(),
                 'id',
@@ -165,7 +170,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 'name',
                 'contentPlain'
             );
-            $this->context->smarty->assign(array(
+            $this->context->smarty->assign([
                 'selected_tab' => 'export_customers',
                 'export_customers_form' => $this->renderAddCampaignForm(
                     $this->prependOptionList('Select from field', $fromFields),
@@ -174,7 +179,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                     $this->prependOptionList('Select confirmation message body template', $confirmBody)
                 ),
                 'token' => $this->getToken(),
-            ));
+            ]);
         } else {
             $this->exportCustomersView();
         }
@@ -183,15 +188,15 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
-     * @param array $data
-     *
+     * @param FromFieldsCollection $fromFieldsCollection
      * @return array
      */
-    private function normalizeFormFields($data)
+    private function normalizeFormFields(FromFieldsCollection $fromFieldsCollection)
     {
         $options = array();
 
-        foreach ($data as $row) {
+        /** @var FromFields $fromField */
+        foreach ($fromFieldsCollection as $fromField) {
             $options[] = array(
                 'id_option' => $row['id'],
                 'name' => $row['name'] . '(' . $row['email'] . ')'
@@ -238,7 +243,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'token' => $this->getToken(),
         ));
     }
-
 
     /**
      * Get Admin Token

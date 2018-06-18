@@ -26,10 +26,21 @@ class WebFormService
     }
 
     /**
-     * @param WebForm $webForm
+     * @param WebFormDto $webForm
      */
-    public function updateWebForm(WebForm $webForm)
+    public function updateWebForm(WebFormDto $webForm)
     {
+        $webFormUrl = $webForm->isEnabled()
+            ? $this->getGetResponseFormCollection()->findOneById($webForm->getFormId())->getScriptUrl()
+            : '';
+
+        $webForm = new WebForm(
+            $webForm->getFormId(),
+            empty($webForm->getSubscriptionStatus()) ? WebForm::STATUS_INACTIVE : WebForm::STATUS_ACTIVE,
+            empty($webForm->getPosition()) ? WebForm::SIDEBAR_DEFAULT : $webForm->getPosition(),
+            empty($webForm->getStyle()) ? WebForm::STYLE_DEFAULT : $webForm->getStyle(),
+            $webFormUrl
+        );
         $this->repository->update($webForm);
     }
 

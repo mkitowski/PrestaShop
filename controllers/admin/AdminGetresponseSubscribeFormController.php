@@ -1,8 +1,9 @@
 <?php
 
-use GetResponse\WebForm\Status;
-use GetResponse\WebForm\WebFormFactory;
+use GetResponse\WebForm\WebForm;
+use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormServiceFactory;
+use GetResponse\WebForm\WebFormValidator;
 use GrShareCode\WebForm\WebForm as GetResponseForm;
 use GrShareCode\WebForm\WebFormCollection;
 
@@ -46,34 +47,25 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
 
-            $webFormId = Tools::getValue('form', null);
-            $webFormSidebar = Tools::getValue('position', null);
-            $webFormStyle = Tools::getValue('style', null);
-            $status = Status::fromRequest(Tools::getValue('subscription', null));
-
-            if ($status->isEnabled()) {
-                if (empty($webFormId) || empty($webFormSidebar)) {
-                    $this->errors[] = $this->l('You need to select a form and its placement');
-
-                    return;
-                }
-            }
-
-            $webFormUrl = $status->isEnabled()
-                ? $this->getResponseWebFormCollection->findOneById($webFormId)->getScriptUrl()
-                : '';
-
-            $this->webFormService->updateWebForm(
-                WebFormFactory::fromRequest(array(
-                    'formId' => $webFormId,
-                    'status' => $status->getSubscription(),
-                    'sidebar' => $webFormSidebar,
-                    'style' => $webFormStyle,
-                    'url' => $webFormUrl
-                ))
+            $webFormDto = new WebFormDto(
+                Tools::getValue('form', null),
+                Tools::getValue('position', null),
+                Tools::getValue('style', null),
+                Tools::getValue('subscription', null)
             );
 
-            $this->confirmations[] = $status->isEnabled() ? $this->l('Form published') : $this->l('Form unpublished');
+            $validator = new WebFormValidator($webFormDto);
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
+
+                return;
+            }
+
+            $this->webFormService->updateWebForm($webFormDto);
+
+            $this->confirmations[] = $webFormDto->isEnabled()
+                ? $this->l('Form published')
+                : $this->l('Form unpublished');
 
         }
         parent::postProcess();
@@ -88,7 +80,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'fields_value' => $this->getFormFieldsValue()
         );
 
-        $optionList = $this->getFormsToDisplay();
+        $optionList = $this->getFormsOptions();
 
         return $helper->generateForm(array($this->getFormFields($optionList)));
     }
@@ -100,34 +92,37 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     {
         $webForm = $this->webFormService->getWebForm();
 
-        return array(
+        return [
             'position' => Tools::getValue('position', $webForm->getSidebar()),
             'form' => Tools::getValue('form', $webForm->getId()),
             'style' => Tools::getValue('style', $webForm->getStyle()),
-            'subscription' => Tools::getValue('subscription', $webForm->getStatus() === Status::SUBSCRIPTION_ACTIVE ? 1 : 0)
-        );
+            'subscription' => Tools::getValue(
+                'subscription',
+                $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
+            )
+        ];
     }
 
     /**
      * @param WebFormCollection $webforms
      * @return array
      */
-    private function getFormsToDisplay()
+    private function getFormsOptions()
     {
-        $options = array(
-            array(
+        $options = [
+            [
                 'id_option' => '',
                 'name' => 'Select a form you want to display'
-            )
-        );
+            ]
+        ];
 
         /** @var GetResponseForm $form */
         foreach ($this->getResponseWebFormCollection as $form) {
             $disabled = $form->isEnabled() ? '' : $this->l('(DISABLED IN GR)');
-            $options[] = array(
+            $options[] = [
                 'id_option' => $form->getWebFormId(),
                 'name' => $form->getName() . ' (' . $form->getCampaignName() . ') ' . $disabled
-            );
+            ];
         }
 
         return $options;
@@ -139,75 +134,75 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
      */
     private function getFormFields($options = [])
     {
-        return array(
-            'form' => array(
-                'legend' => array(
+        return [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Add Your GetResponse Forms (or Exit Popups) to Your Shop'),
                     'icon' => 'icon-gears'
-                ),
-                'input' => array(
-                    array(
+                ],
+                'input' => [
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Add contacts to GetResponse via forms (or exit popups)'),
                         'name' => 'subscription',
                         'class' => 't',
                         'is_bool' => true,
-                        'values' => array(
-                            array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
-                            array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
-                        ),
-                    ),
-                    array(
+                        'values' => [
+                            ['id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')],
+                            ['id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled')]
+                        ],
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Form'),
                         'name' => 'form',
                         'required' => true,
-                        'options' => array(
+                        'options' => [
                             'query' => $options,
                             'id' => 'id_option',
                             'name' => 'name'
-                        )
-                    ),
-                    array(
+                        ]
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Block position'),
                         'name' => 'position',
                         'required' => true,
-                        'options' => array(
-                            'query' => array(
-                                array('id_option' => '', 'name' => $this->l('Select where to place the form')),
-                                array('id_option' => 'home', 'name' => $this->l('Homepage')),
-                                array('id_option' => 'left', 'name' => $this->l('Left sidebar')),
-                                array('id_option' => 'right', 'name' => $this->l('Right sidebar')),
-                                array('id_option' => 'top', 'name' => $this->l('Top')),
-                                array('id_option' => 'footer', 'name' => $this->l('Footer')),
-                            ),
+                        'options' => [
+                            'query' => [
+                                ['id_option' => '', 'name' => $this->l('Select where to place the form')],
+                                ['id_option' => 'home', 'name' => $this->l('Homepage')],
+                                ['id_option' => 'left', 'name' => $this->l('Left sidebar')],
+                                ['id_option' => 'right', 'name' => $this->l('Right sidebar')],
+                                ['id_option' => 'top', 'name' => $this->l('Top')],
+                                ['id_option' => 'footer', 'name' => $this->l('Footer')],
+                            ],
                             'id' => 'id_option',
                             'name' => 'name'
-                        )
-                    ),
-                    array(
+                        ]
+                    ],
+                    [
                         'type' => 'select',
                         'label' => $this->l('Style'),
                         'name' => 'style',
                         'required' => true,
-                        'options' => array(
-                            'query' => array(
-                                array('id_option' => 'webform', 'name' => $this->l('Web Form')),
-                                array('id_option' => 'prestashop', 'name' => 'Prestashop'),
-                            ),
+                        'options' => [
+                            'query' => [
+                                ['id_option' => 'webform', 'name' => $this->l('Web Form')],
+                                ['id_option' => 'prestashop', 'name' => 'Prestashop'],
+                            ],
                             'id' => 'id_option',
                             'name' => 'name'
-                        )
-                    )
-                ),
-                'submit' => array(
+                        ]
+                    ]
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
                     'name' => 'saveWebForm',
                     'icon' => 'process-icon-save'
-                )
-            )
-        );
+                ]
+            ]
+        ];
     }
 
 }

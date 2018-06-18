@@ -42,11 +42,11 @@ class EcommerceRepository
     }
 
     /**
-     * @param Activity $activity
+     * @param bool $isEnabled
      */
-    public function updateEcommerceSubscription(Activity $activity)
+    public function updateEcommerceSubscription($isEnabled)
     {
-        if ($activity->isEnabled()) {
+        if ($isEnabled) {
             $query = '
                 INSERT INTO 
                     ' . _DB_PREFIX_ . 'getresponse_ecommerce 
