@@ -28,8 +28,6 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralExcepti
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
 use GetResponse\Config\ConfigService as GrConfigService;
-use GetResponse\Settings\SettingsFactory as GrSettingsFactory;
-use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Cart\CartService as GrCartService;
@@ -51,7 +49,8 @@ use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
 use GrShareCode\Product\Variant\Variant as GrVariant;
 use GetResponse\Hook\FormDisplay as GrFormDisplay;
 use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
-use \GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
+use GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
+use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
 
 class Getresponse extends Module
 {
@@ -456,7 +455,8 @@ class Getresponse extends Module
     public function createSubscriber(array $params)
     {
         try {
-            $settings = GrSettingsFactory::fromDb($this->getSettings());
+            $accountService = GrAccountServiceFactory::create();
+            $settings = $accountService->getSettings();
 
             if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
                 $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
@@ -479,7 +479,6 @@ class Getresponse extends Module
                 }
             }
         } catch (PrestaShopDatabaseException $e) {
-        } catch (GrConfigurationNotFoundException $e) {
         } catch (GetresponseApiException $e) {
         }
     }
