@@ -281,7 +281,7 @@ class Getresponse extends Module
     /******************************************************************/
 
     /**
-     * @param array $params
+     * @param $params
      */
     public function hookCart($params)
     {
@@ -297,29 +297,40 @@ class Getresponse extends Module
             return;
         }
 
-        $customer = new Customer($cart->id_customer);
-        $settings = GrSettingsFactory::fromDb($this->getSettings());
+        try {
+            $customer = new Customer($cart->id_customer);
+            $accountService = GrAccountServiceFactory::create();
+            $settings = $accountService->getSettings();
 
-        $api = $this->getGrAPI();
-        $productService = new GrProductService($api, $this->repository);
-        $cartService = new GrCartService($api, $this->repository,$productService);
-        $productsCollection = new GrProductsCollection();
+            $api = $this->getGrAPI();
+            $productService = new GrProductService($api, $this->repository);
+            $cartService = new GrCartService($api, $this->repository,
+                $productService);
+            $productsCollection = new GrProductsCollection();
 
-        foreach ($cart->getProducts() as $product) {
-            $productsCollection->add($this->createGrProductObject($product));
+            foreach ($cart->getProducts() as $product) {
+                $productsCollection->add($this->createGrProductObject($product));
+            }
+
+            $grCart = new GrCart(
+                $cart->id,
+                $productsCollection,
+                (new Currency((int)$cart->id_currency))->iso_code,
+                $cart->getOrderTotal(false),
+                $cart->getOrderTotal(true)
+            );
+
+            $cartService->sendCart(
+                new GrAddCartCommand(
+                    $grCart,
+                    $customer->email,
+                    $settings->getCampaignId(),
+                    $settings->getShopId()
+                )
+            );
+        } catch (GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
-
-        $grCart = new GrCart(
-            $cart->id,
-            $productsCollection,
-            (new Currency((int)$cart->id_currency))->iso_code,
-            $cart->getOrderTotal(false),
-            $cart->getOrderTotal(true)
-        );
-
-        $cartService->sendCart(
-            new GrAddCartCommand($grCart, $customer->email, $settings->getCampaignId())
-        );
     }
 
 
@@ -588,14 +599,16 @@ class Getresponse extends Module
                 }
 
                 if (!$automationRulesApplied) {
-                    $this->addContact($customerPostData, $customs);
+                    //@TODO add via srcservice
+                    //$this->addContact($customerPostData, $customs);
                 }
                 return; //return so we do not hit standard case
             }
         }
 
         // standard case
-        $this->addContact($customerPostData, $customs);
+        //@TODO add via srcservice
+        //$this->addContact($customerPostData, $customs);
     }
 
     /**
@@ -712,27 +725,6 @@ class Getresponse extends Module
     }
 
     /**
-     * @param object $contact
-     * @param array $customs
-     *
-     * @throws Exception
-     */
-    private function addContact($contact, $customs)
-    {
-        $settings = $this->getSettings();
-        if (isset($contact->newsletter) && $contact->newsletter == 1) {
-            $this->getApi()->addContact(
-                $settings['campaign_id'],
-                $contact->firstname,
-                $contact->lastname,
-                $contact->email,
-                $settings['cycle_day'],
-                $customs
-            );
-        }
-    }
-
-    /**
      * @return array
      */
     public function getCronFrequency()
@@ -756,10 +748,7 @@ class Getresponse extends Module
             return true;
         }
 
-        $settingsService = SettingsServiceFactory::create();
-        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
-
-        $command = new GrRunCommand($api, $repository);
+        $command = new GrRunCommand($this->getGrAPI(), $repository);
         $command->execute();
         return true;
     }
