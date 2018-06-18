@@ -51,6 +51,7 @@ use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
 use GrShareCode\Product\Variant\Variant as GrVariant;
 use GetResponse\Hook\FormDisplay as GrFormDisplay;
 use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
+use \GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
 
 class Getresponse extends Module
 {
@@ -451,32 +452,35 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GetresponseApiException
-     * @throws GrConfigurationNotFoundException
-     * @throws PrestaShopDatabaseException
      */
     public function createSubscriber(array $params)
     {
-        $settings = GrSettingsFactory::fromDb($this->getSettings());
+        try {
+            $settings = GrSettingsFactory::fromDb($this->getSettings());
 
-        if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
-            $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
+            if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
+                $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
+                $contactDto = GrContactDtoFactory::createFromForm($params[$prefix]);
 
-            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $addContact = new GrAddContactCommand(
-                    $params[$prefix]->email,
-                    $params[$prefix]->firstname . ' ' . $params[$prefix]->lastname,
-                    $settings->getCampaignId(),
-                    $settings->getCycleDay(),
-                    $this->mapCustomFields(
-                        (array)$params[$prefix],
-                        $settings->getUpdateAddress() == 'yes'
-                    )
-                );
+                if (true === $contactDto->getNewsletter()) {
+                    $addContact = new GrAddContactCommand(
+                        $contactDto->getEmail(),
+                        $contactDto->getName(),
+                        $settings->getCampaignId(),
+                        $settings->getCycleDay(),
+                        $this->mapCustomFields(
+                            $contactDto->getCustomFields(),
+                            $settings->getUpdateAddress() == 'yes'
+                        )
+                    );
 
-                $contactService = new GrContactService($this->getGrAPI());
-                $contactService->addContact($addContact);
+                    $contactService = new GrContactService($this->getGrAPI());
+                    $contactService->addContact($addContact);
+                }
             }
+        } catch (PrestaShopDatabaseException $e) {
+        } catch (GrConfigurationNotFoundException $e) {
+        } catch (GetresponseApiException $e) {
         }
     }
 
