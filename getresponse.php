@@ -36,6 +36,7 @@ use GetResponse\Hook\NewOrder as GrNewOrderHook;
 use GetResponse\Hook\NewCart as GrNewCartHook;
 use GetResponse\Api\ApiFactory as GrApiFactory;
 use GetResponse\Account\AccountSettings as GrAccountSettings;
+use GetResponse\Hook\NewContact as GrNewContactHook;
 
 class Getresponse extends Module
 {
@@ -56,7 +57,7 @@ class Getresponse extends Module
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
-        $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->displayName = $this->l('GetResponse');
         $this->description = $this->l(GrConfigService::MODULE_DESCRIPTION);
         $this->confirmUninstall = $this->l(GrConfigService::CONFIRM_UNINSTALL);
@@ -65,13 +66,6 @@ class Getresponse extends Module
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $this->settings = (GrAccountServiceFactory::create())->getSettings();
-
-        if (version_compare(_PS_VERSION_, '1.5') === -1) {
-            $this->context->smarty->assign(array('flash_message' => array(
-                'message' => $this->l('Unsupported Prestashop version'),
-                'status' => 'danger'
-            )));
-        }
 
         if (!function_exists('curl_init')) {
             $this->context->smarty->assign(array('flash_message' => array(
@@ -203,16 +197,6 @@ class Getresponse extends Module
         return true;
     }
 
-    /**
-     * @return bool
-     */
-    public function isPluginEnabled()
-    {
-        $accountService = GrAccountServiceFactory::create();
-        $settings = $accountService->getSettings();
-        return $settings->isConnectedWithGetResponse();
-    }
-
     /******************************************************************/
     /** Hook Methods **************************************************/
     /******************************************************************/
@@ -283,7 +267,7 @@ class Getresponse extends Module
         try {
             $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
             $contactDto = GrContactDtoFactory::createFromForm($params[$prefix]);
-            $contactHook = new \GetResponse\Hook\NewContact($this->getGrAPI(), $this->repository, Db::getInstance());
+            $contactHook = new GrNewContactHook($this->getGrAPI(), $this->repository, Db::getInstance());
             $contactHook->sendContact($contactDto);
         } catch (GetresponseApiException $e) {
         } catch (PrestaShopDatabaseException $e) {
