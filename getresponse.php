@@ -392,14 +392,11 @@ class Getresponse extends Module
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        $grIdShop = $this->repository->getGrShopId();
-        if (empty($grIdShop)) {
-            return; // E-commerce is disabled
-        }
-
-        if (isset($params['id_order']) && !empty($params['id_order'])) {
-            $params['order'] = new Order($params['id_order']);
-            $this->convertCartToOrder($params);
+        try {
+            $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
+            $orderHook->sendOrder(new Order($params['id_order']));
+        } catch (GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
     }
 
