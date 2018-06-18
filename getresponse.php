@@ -371,12 +371,7 @@ class Getresponse extends Module
      */
     public function hookNewOrder($params)
     {
-        try {
-            $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
-            $orderHook->sendOrder($params['order']);
-        } catch (GetresponseApiException $e) {
-        } catch (PrestaShopException $e) {
-        }
+        $this->sendOrderToGr($params['order']);
     }
 
     /**
@@ -384,7 +379,7 @@ class Getresponse extends Module
      */
     public function hookHookOrderConfirmation($params)
     {
-        $this->convertCartToOrder($params);
+        $this->sendOrderToGr($params['order']);
     }
 
     /**
@@ -392,48 +387,20 @@ class Getresponse extends Module
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        $grIdShop = $this->repository->getGrShopId();
-        if (empty($grIdShop)) {
-            return; // E-commerce is disabled
-        }
-
-        if (isset($params['id_order']) && !empty($params['id_order'])) {
-            $params['order'] = new Order($params['id_order']);
-            $this->convertCartToOrder($params);
-        }
+        $this->sendOrderToGr($params['order']);
     }
 
     /**
-     * @param array $params
+     * @param Order $order
      */
-    private function convertCartToOrder($params)
+    private function sendOrderToGr(Order $order)
     {
-        /** @var OrderCore $order */
-        $order = $params['order'];
-
-        if (empty($order) || 0 === (int)$order->id_customer) {
-            return;
+        try {
+            $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
+            $orderHook->sendOrder($order);
+        } catch (GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
-
-        $accountService = GrAccountServiceFactory::create();
-        $settings = $accountService->getSettings();
-
-        if (empty($settings->getShopId())) {
-            return;
-        }
-
-        /** @var CustomerCore $customer */
-        $customer = new Customer($order->id_customer);
-        $ecommerce = new GrEcommerce($this->db);
-        $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings->getCampaignId(), true);
-
-        if (empty($grIdContact)) {
-            return;
-        }
-
-        $idOrder = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
-        $grOrder = $ecommerce->createOrderObject($params, $grIdContact, $settings->getShopId());
-        $ecommerce->sendOrderDataToGR($settings->getShopId(), $grOrder, $idOrder);
     }
 
     /**

@@ -15,6 +15,7 @@ use GrShareCode\Order\OrderService as GrOrderService;
 use GetResponseRepository;
 use GrShareCode\Product\ProductService as GrProductService;
 use Order;
+use Customer;
 use Db;
 use GrShareCode\GetresponseApiException;
 use PrestaShopException;
@@ -46,11 +47,11 @@ class NewOrder extends Hook
     }
 
     /**
-     * @param $order
+     * @param Order $order
      * @throws GetresponseApiException
      * @throws PrestaShopException
      */
-    public function sendOrder($order)
+    public function sendOrder(Order $order)
     {
         if (empty($order) || 0 === (int)$order->id_customer) {
             return;
@@ -58,8 +59,6 @@ class NewOrder extends Hook
 
         $accountService = GrAccountServiceFactory::create();
         $settings = $accountService->getSettings();
-
-
         $ecommerceService = new EcommerceService(
             new EcommerceRepository($this->db, $settings->getShopId()),
             new ShopService($this->api),
@@ -69,7 +68,6 @@ class NewOrder extends Hook
         if (empty($ecommerceService->getEcommerceSettings()->getGetResponseShopId())) {
             return;
         }
-
 
         $grOrder = new GrOrder(
             $order->id,
@@ -90,7 +88,7 @@ class NewOrder extends Hook
 
         $addOrderCommand = new GrAddOrderCommand(
             $grOrder,
-            '',
+            (new Customer($order->id_customer))->email,
             $settings->getCampaignId(),
             $ecommerceService->getEcommerceSettings()->getGetResponseShopId()
         );
