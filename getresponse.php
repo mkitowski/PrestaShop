@@ -49,6 +49,8 @@ use GrShareCode\Product\ProductService as GrProductService;
 use GrShareCode\Product\Variant\Images\Image as GrImage;
 use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
 use GrShareCode\Product\Variant\Variant as GrVariant;
+use GetResponse\Hook\FormDisplay as GrFormDisplay;
+use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
 
 class Getresponse extends Module
 {
@@ -322,6 +324,16 @@ class Getresponse extends Module
 
 
     /**
+     * @todo move method to external service (used in GrExport)
+     * @param string $text
+     * @return mixed
+     */
+    private function normalizeToString($text)
+    {
+        return is_array($text) ? reset($text) : $text;
+    }
+
+    /**
      * @todo move method to external servie (used in GrExport)
      * @param $product
      * @return GrProduct
@@ -363,10 +375,6 @@ class Getresponse extends Module
             $categoryCollection
         );
     }
-
-
-
-
 
     /**
      * @param array $params
@@ -512,9 +520,7 @@ class Getresponse extends Module
      */
     public function getGrAPI()
     {
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $settingsService = SettingsServiceFactory::create();
-
         return GrApiFactory::createFromSettings($settingsService->getSettings());
     }
 
@@ -677,23 +683,12 @@ class Getresponse extends Module
      */
     private function displayWebForm($position)
     {
-        if (!empty($position)) {
-            $webformSettings = $this->db->getWebformSettings();
+        $formDisplay = new GrFormDisplay(new GrWebFormRepository(Db::getInstance(), GrShop::getUserShopId()));
+        $assignData = $formDisplay->displayWebForm($position);
 
-            if (!empty($webformSettings) && $webformSettings['active_subscription'] == 'yes'
-                && $webformSettings['sidebar'] == $position
-            ) {
-                $setStyle = null;
-                if (!empty($webformSettings['style']) && $webformSettings['style'] == 'prestashop') {
-                    $setStyle = '&css=1';
-                }
-                $this->smarty->assign(array(
-                    'webform_url' => $webformSettings['url'],
-                    'style' => $setStyle,
-                    'position' => $position
-                ));
-                return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
-            }
+        if (!empty($assignData)) {
+            $this->smarty->assign($assignData);
+            return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
         }
 
         return '';

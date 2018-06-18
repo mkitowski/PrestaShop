@@ -2,6 +2,7 @@
 namespace GetResponse\WebForm;
 
 use Db;
+use PrestaShopDatabaseException;
 
 /**
  * Class WebFormRepository
@@ -83,6 +84,31 @@ class WebFormRepository
             `id_shop` = ' . (int) $this->idShop;
 
         $this->db->execute($query);
+    }
+
+    /**
+     * @return array
+     * @throws PrestaShopDatabaseException
+     */
+    public function getWebformSettings()
+    {
+        $sql = '
+        SELECT
+            `webform_id`, 
+            `active_subscription`, 
+            `sidebar`, 
+            `style`, 
+            `url`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_webform
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        if ($results = $this->db->ExecuteS($sql)) {
+            return $results[0];
+        }
+
+        return array();
     }
 
 
