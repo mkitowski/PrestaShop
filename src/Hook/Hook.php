@@ -6,6 +6,7 @@ use Category;
 use Product;
 use Link;
 use Order;
+use Cart;
 use OrderState;
 use Address;
 use Country;
@@ -32,11 +33,11 @@ class Hook
      * @return GrProductsCollection
      */
     /**
-     * @param Order $order
+     * @param Cart|Order $order
      * @return GrProductsCollection
      * @throws PrestaShopException
      */
-    protected function getOrderProductsCollection(Order $order)
+    protected function getOrderProductsCollection($order)
     {
         $productsCollection = new GrProductsCollection();
         $products = $order->getProducts();

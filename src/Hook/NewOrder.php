@@ -38,6 +38,7 @@ class NewOrder extends Hook
     /**
      * @param GetresponseApi $api
      * @param GetResponseRepository $repository
+     * @param Db $db
      */
     public function __construct(GetresponseApi $api, GetResponseRepository $repository, Db $db)
     {
@@ -100,7 +101,6 @@ class NewOrder extends Hook
         );
 
         $orderService->sendOrder($addOrderCommand);
-        //@TODO remove cart
     }
 
 }
