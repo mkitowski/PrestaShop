@@ -5,7 +5,7 @@ use GetResponse\WebForm\WebFormRepository;
 use PrestaShopDatabaseException;
 
 /**
- * Class Activity
+ * Class FormDisplay
  * @package GetResponse\Hook
  */
 class FormDisplay

@@ -51,6 +51,7 @@ use GetResponse\Hook\FormDisplay as GrFormDisplay;
 use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
 use GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
 use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
+use GetResponse\Hook\NewOrder as GrNewOrderHook;
 
 class Getresponse extends Module
 {
@@ -239,7 +240,7 @@ class Getresponse extends Module
     private function getApi()
     {
         if (empty($this->api)) {
-            $settings = $this->getSettings();
+            $settings = $this->repository->getSettings();
             $this->api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
         }
 
@@ -247,33 +248,13 @@ class Getresponse extends Module
     }
 
     /**
-     * @return array
-     * @throws GrConfigurationNotFoundException
-     */
-    private function getSettings()
-    {
-        if (empty($this->settings)) {
-            $this->settings = $this->repository->getSettings();
-        }
-
-        if (empty($this->settings['api_key'])) {
-            throw new GrConfigurationNotFoundException();
-        }
-
-        return $this->settings;
-    }
-
-    /**
      * @return bool
      */
     public function isPluginEnabled()
     {
-        try {
-            $this->getSettings();
-        } catch (GrConfigurationNotFoundException $e) {
-            return false;
-        }
-        return true;
+        $accountService = GrAccountServiceFactory::create();
+        $settings = $accountService->getSettings();
+        return $settings->isConnectedWithGetResponse();
     }
 
     /******************************************************************/
@@ -285,23 +266,21 @@ class Getresponse extends Module
      */
     public function hookCart($params)
     {
-        $grIdShop = $this->repository->getGrShopId();
-
-        if (empty($grIdShop)) {
-            return; // E-commerce is disabled
-        }
-
         /** @var CartCore $cart */
         $cart = $params['cart'];
         if (empty($cart) || 0 === (int)$cart->id_customer) {
             return;
         }
 
+        $accountService = GrAccountServiceFactory::create();
+        $settings = $accountService->getSettings();
+
+        if (empty($settings->getShopId())) {
+            return; // E-commerce is disabled
+        }
+
         try {
             $customer = new Customer($cart->id_customer);
-            $accountService = GrAccountServiceFactory::create();
-            $settings = $accountService->getSettings();
-
             $api = $this->getGrAPI();
             $productService = new GrProductService($api, $this->repository);
             $cartService = new GrCartService($api, $this->repository,
@@ -388,13 +367,15 @@ class Getresponse extends Module
     }
 
     /**
-     * @param array $params
+     * @param $params
      */
     public function hookNewOrder($params)
     {
-        if ($this->isPluginEnabled()) {
-            $this->addSubscriberForOrder($params);
-            $this->convertCartToOrder($params);
+        try {
+            $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
+            $orderHook->sendOrder($params['order']);
+        } catch (GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
     }
 
@@ -429,25 +410,30 @@ class Getresponse extends Module
     {
         /** @var OrderCore $order */
         $order = $params['order'];
-        $grIdShop = $this->repository->getGrShopId();
 
-        if (empty($grIdShop) || empty($order) || 0 === (int)$order->id_customer) {
+        if (empty($order) || 0 === (int)$order->id_customer) {
+            return;
+        }
+
+        $accountService = GrAccountServiceFactory::create();
+        $settings = $accountService->getSettings();
+
+        if (empty($settings->getShopId())) {
             return;
         }
 
         /** @var CustomerCore $customer */
         $customer = new Customer($order->id_customer);
-        $settings = $this->repository->getSettings();
         $ecommerce = new GrEcommerce($this->db);
-        $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
+        $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings->getCampaignId(), true);
 
         if (empty($grIdContact)) {
             return;
         }
 
         $idOrder = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
-        $grOrder = $ecommerce->createOrderObject($params, $grIdContact, $grIdShop);
-        $ecommerce->sendOrderDataToGR($grIdShop, $grOrder, $idOrder);
+        $grOrder = $ecommerce->createOrderObject($params, $grIdContact, $settings->getShopId());
+        $ecommerce->sendOrderDataToGR($settings->getShopId(), $grOrder, $idOrder);
     }
 
     /**
