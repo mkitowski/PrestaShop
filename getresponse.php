@@ -80,10 +80,6 @@ class Getresponse extends Module
         $this->context->controller->addCss($this->_path . 'views/css/tab.css');
     }
 
-    /******************************************************************/
-    /** Install Methods ***********************************************/
-    /******************************************************************/
-
     /**
      * @return bool
      */
@@ -149,10 +145,9 @@ class Getresponse extends Module
         return true;
     }
 
-    /******************************************************************/
-    /** Uninstall Methods *********************************************/
-    /******************************************************************/
-
+    /**
+     * @return bool
+     */
     public function uninstallTab()
     {
         $result = true;
@@ -188,7 +183,6 @@ class Getresponse extends Module
             }
         }
 
-        //Delete Version Entry
         if (!Configuration::deleteByName('GR_VERSION')) {
             return false;
         }
@@ -196,10 +190,6 @@ class Getresponse extends Module
         $this->repository->clearDatabase();
         return true;
     }
-
-    /******************************************************************/
-    /** Hook Methods **************************************************/
-    /******************************************************************/
 
     /**
      * @param array $params
