@@ -17,7 +17,6 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseExportSettings.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrAccount.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
