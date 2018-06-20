@@ -4,7 +4,9 @@ namespace GetResponse\Automation;
 use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
-use GrShareCode\Campaign\CampaignService;
+use GetResponse\ContactList\ContactListRepository;
+use GetResponse\ContactList\ContactListService;
+use GrShareCode\ContactList\ContactListService as GrContactListService;
 use GrShop;
 
 /**
@@ -24,7 +26,11 @@ class AutomationServiceFactory
 
         return new AutomationService(
             new AutomationRepository(Db::getInstance(), GrShop::getUserShopId()),
-            new CampaignService($api),
+            new ContactListService(
+                new ContactListRepository(Db::getInstance(), GrShop::getUserShopId()),
+                new GrContactListService($api),
+                $settings
+            ),
             $settings
         );
     }

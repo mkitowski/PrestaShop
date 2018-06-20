@@ -6,8 +6,8 @@ use GetResponse\Automation\AutomationListHelper;
 use GetResponse\Automation\AutomationService;
 use GetResponse\Automation\AutomationServiceFactory;
 use GetResponse\Automation\AutomationValidator;
-use GrShareCode\Campaign\Autoresponder;
-use GrShareCode\Campaign\Campaign;
+use GrShareCode\ContactList\Autoresponder;
+use GrShareCode\ContactList\ContactList;
 
 require_once 'AdminGetresponseController.php';
 
@@ -308,11 +308,11 @@ class AdminGetresponseContactListController extends AdminGetresponseController
     private function getContactListForSelectField()
     {
         $contactList = [];
-        /** @var Campaign $campaign */
-        foreach ($this->automationService->getCampaigns() as $campaign) {
+        /** @var ContactList $contactList */
+        foreach ($this->automationService->getContactLists() as $contact) {
             $contactList[] = [
-                'id' => $campaign->getId(),
-                'name' => $campaign->getName()
+                'id' => $contact->getId(),
+                'name' => $contact->getName()
             ];
         }
 

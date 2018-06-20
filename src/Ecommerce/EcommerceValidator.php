@@ -1,6 +1,8 @@
 <?php
 namespace GetResponse\Ecommerce;
 
+use Translate;
+
 /**
  * Class EcommerceValidator
  * @package GetResponse\Ecommerce
@@ -35,7 +37,7 @@ class EcommerceValidator
             return;
         }
 
-        if (!$this->ecommerceService->isSubscribeViaRegistrationActive()) {
+        if ($this->ecommerceDto->isEnabled() && !$this->ecommerceService->isSubscribeViaRegistrationActive()) {
             $this->errors[] = Translate::getAdminTranslation(
                 'You need to enable adding contacts during registrations to enable ecommerce'
             );

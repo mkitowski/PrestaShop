@@ -1,8 +1,8 @@
 <?php
 namespace GetResponse\Automation;
 
-use GrShareCode\Campaign\Autoresponder;
-use GrShareCode\Campaign\Campaign;
+use GrShareCode\ContactList\Autoresponder;
+use GrShareCode\ContactList\ContactList;
 use Translate;
 
 /**
@@ -80,10 +80,10 @@ class AutomationListHelper
      */
     private function getContactListNameById($campaignId)
     {
-        /** @var Campaign $campaign */
-        foreach ($this->automationService->getCampaigns() as $campaign) {
-            if ($campaign->getId() === $campaignId) {
-                return $campaign->getName();
+        /** @var ContactList $contactList */
+        foreach ($this->automationService->getContactLists() as $contactList) {
+            if ($contactList->getId() === $campaignId) {
+                return $contactList->getName();
             }
         }
 

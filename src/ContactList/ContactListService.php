@@ -1,7 +1,10 @@
 <?php
 namespace GetResponse\ContactList;
 
+use Exception;
 use GetResponse\Account\AccountSettings;
+use GrApiException;
+use GrShareCode\ContactList\AddContactListCommand;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactListCollection;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
@@ -121,5 +124,25 @@ class ContactListService
             $cycleDay,
             $newsletterSubscribers
         );
+    }
+
+    /**
+     * @param AddContactListCommand $addContactListCommand
+     * @return array
+     * @throws GetresponseApiException
+     * @throws GrApiException
+     */
+    public function createContactList(AddContactListCommand $addContactListCommand)
+    {
+        try {
+            $campaign = $this->grContactListService->createContactList($addContactListCommand);
+
+            if (isset($campaign->codeDescription)) {
+                throw new GrApiException($campaign->codeDescription, $campaign->code);
+            }
+        } catch (Exception $e) {
+            throw GrApiException::createForCampaignNotAddedException($e);
+        }
+
     }
 }

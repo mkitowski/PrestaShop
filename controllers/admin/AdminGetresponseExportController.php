@@ -9,7 +9,7 @@ use GrShareCode\ContactList\FromFields;
 use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
-use GrShareCode\Campaign\CampaignService as GrCampaignService;
+use GrShareCode\ContactList\ContactListService as GrCampaignService;
 use GrShareCode\GetresponseApi;
 
 class AdminGetresponseExportController extends AdminGetresponseController
@@ -265,7 +265,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
     private function getCampaigns($api)
     {
         $campaignService = new GrCampaignService($api);
-        $campaignsCollection = $campaignService->getAllCampaigns();
+        $campaignsCollection = $campaignService->getAllContactLists();
         $campaigns = array();
 
         /** @var \GrShareCode\Campaign\Campaign $campaignItem */
@@ -501,8 +501,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getGetResponseCustomFields()
     {
-        $settingsService = SettingsServiceFactory::create();
-        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
+        $account = \GetResponse\Account\AccountServiceFactory::create();
+        $api = GetResponse\Api\ApiFactory::createFromSettings($account->getSettings());
         $contactService = new GrContactService($api);
         $getresponseCustoms = $contactService->getAllCustomFields();
         $availableCustoms = array();

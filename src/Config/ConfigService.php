@@ -42,7 +42,13 @@ class ConfigService
         ],
         [
             'class_name' => 'AdminGetresponseAddNewContactList',
-            'name' => 'TEST',
+            'name' => 'Add new contact list',
+            'parent' => -1
+        ],
+        [
+            'class_name' => 'AdminGetresponseUpdateMapping',
+            'name' => 'Update mapping',
+            'parent' => -1
         ],
         [
             'class_name' => 'AdminGetresponseSubscribeForm',
@@ -66,6 +72,7 @@ class ConfigService
         'AdminGetresponseExport',
         'AdminGetresponseSubscribeRegistration',
         'AdminGetresponseAddNewContactList',
+        'AdminGetresponseUpdateMapping',
         'AdminGetresponseSubscribeForm',
         'AdminGetresponseContactList',
         'AdminGetresponseWebTracking',

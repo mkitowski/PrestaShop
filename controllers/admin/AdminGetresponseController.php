@@ -165,100 +165,7 @@ class AdminGetresponseController extends ModuleAdminController
         return $campaignDays;
     }
 
-    public function renderAddCampaignForm($fromFields, $replyTo, $confirmSubject, $confirmBody)
-    {
 
-        $fieldsForm = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Add new contact list'),
-                    'icon' => 'icon-gears'
-                ],
-                'input' => [
-                    'contact_list' => [
-                        'label' => $this->l('List name'),
-                        'name' => 'campaign_name',
-                        'hint' => $this->l('You need to enter a name that\'s at least 3 characters long'),
-                        'type' => 'text',
-                        'required' => true
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => $this->l('From field'),
-                        'name' => 'from_field',
-                        'required' => true,
-                        'options' => [
-                            'query' => $fromFields,
-                            'id' => 'id_option',
-                            'name' => 'name'
-                        ]
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => $this->l('Reply-to'),
-                        'name' => 'replyto',
-                        'required' => true,
-                        'options' => [
-                            'query' => $replyTo,
-                            'id' => 'id_option',
-                            'name' => 'name'
-                        ]
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => $this->l('Confirmation subject'),
-                        'name' => 'subject',
-                        'required' => true,
-                        'options' => [
-                            'query' => $confirmSubject,
-                            'id' => 'id_option',
-                            'name' => 'name'
-                        ]
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => $this->l('Confirmation body'),
-                        'name' => 'body',
-                        'required' => true,
-                        'desc' =>
-                            $this->l(
-                                'The confirmation message body and subject depend on System >> 
-                            Configuration >> General >> Locale Options.'
-                            ) .
-                            '<br>' .
-                            $this->l(
-                                'By default all lists you create in Prestashop have double opt-in enabled.
-                            You can change this later in your list settings.'
-                            ),
-                        'options' => [
-                            'query' => $confirmBody,
-                            'id' => 'id_option',
-                            'name' => 'name'
-                        ]
-                    ],
-                ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                    'name' => 'addCampaignForm',
-                    'icon' => 'process-icon-save'
-                ]
-            ]
-        ];
-
-        /** @var HelperFormCore $helper */
-        $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex;
-        $helper->token = $this->getToken();
-        $helper->fields_value = [
-            'campaign_name' => false,
-            'from_field' => false,
-            'replyto' => false,
-            'subject' => false,
-            'body' => false,
-        ];
-
-        return $helper->generateForm([['form' => $fieldsForm]]);
-    }
 
     /**
      * Get Admin Token
@@ -339,92 +246,6 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * Saves campaign
-     */
-    public function saveCampaign()
-    {
-        $name = Tools::getValue('campaign_name');
-        $from = Tools::getValue('from_field');
-        $to = Tools::getValue('replyto');
-        $confirmSubject = Tools::getValue('subject');
-        $confirmBody = Tools::getValue('body');
-
-        if (strlen($name) < 4) {
-            $this->errors[] = $this->l('The "list name" field is invalid');
-        }
-        if (strlen($from) < 4) {
-            $this->errors[] = $this->l('The "from" field is required');
-        }
-        if (strlen($to) < 4) {
-            $this->errors[] = $this->l('The "reply-to" field is required');
-        }
-        if (strlen($confirmSubject) < 4) {
-            $this->errors[] = $this->l('The "confirmation subject" field is required');
-        }
-        if (strlen($confirmBody) < 4) {
-            $this->errors[] = $this->l('The "confirmation body" field is required');
-        }
-
-        if (!empty($this->errors)) {
-            $_GET['action'] = 'addCampaign';
-
-            return;
-        }
-
-        try {
-            $this->addCampaignToGR($name, $from, $to, $confirmSubject, $confirmBody);
-            $this->confirmations[] = $this->l('List created');
-        } catch (GrApiException $e) {
-            $this->errors[] = $this->l('Contact list could not be added! (' . $e->getMessage() . ')');
-        }
-    }
-
-    /**
-     * @param string $campaignName
-     * @param string $fromField
-     * @param string $replyToField
-     * @param string $confirmationSubject
-     * @param string $confirmationBody
-     * @throws GrApiException
-     */
-    public function addCampaignToGR(
-        $campaignName,
-        $fromField,
-        $replyToField,
-        $confirmationSubject,
-        $confirmationBody
-    ) {
-        $settings = $this->repository->getSettings();
-        // required params
-        if (empty($settings['api_key'])) {
-            return;
-        }
-
-        $api = $this->getGrAPI();
-
-        try {
-            $params = [
-                'name' => $campaignName,
-                'confirmation' => [
-                    'fromField' => ['fromFieldId' => $fromField],
-                    'replyTo' => ['fromFieldId' => $replyToField],
-                    'subscriptionConfirmationBodyId' => $confirmationBody,
-                    'subscriptionConfirmationSubjectId' => $confirmationSubject
-                ],
-                'languageCode' => 'EN'
-            ];
-
-            $campaign = $api->createCampaign($params);
-
-            if (isset($campaign->codeDescription)) {
-                throw new GrApiException($campaign->codeDescription, $campaign->code);
-            }
-        } catch (Exception $e) {
-            throw GrApiException::createForCampaignNotAddedException($e);
-        }
-    }
-
-    /**
      * @return GetresponseApi
      */
     public function getGrAPI()
@@ -473,7 +294,7 @@ class AdminGetresponseController extends ModuleAdminController
         $helper->title = $this->l('Contacts info');
         $helper->table = $this->name;
         $helper->token = $this->getToken();
-        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name . '&referer=' . $this->controller_name;
 
         return $helper->generateList($this->getCustomList(), $fieldsList);
     }

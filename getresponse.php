@@ -23,6 +23,7 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralExcepti
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
 use GetResponse\Config\ConfigService as GrConfigService;
+use GetResponse\Helper\FlashMessages;
 use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Job\JobException as GrJobException;
@@ -64,7 +65,7 @@ class Getresponse extends Module
         parent::__construct();
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $this->settings = (GrAccountServiceFactory::create())->getSettings();
+        $this->settings = GrAccountServiceFactory::create()->getSettings();
 
         if (!function_exists('curl_init')) {
             $this->context->smarty->assign(array('flash_message' => array(
@@ -76,6 +77,12 @@ class Getresponse extends Module
 
     public function hookDisplayBackOfficeHeader()
     {
+        if ($this->context->controller->module->name === $this->name
+            && $confirmations = FlashMessages::getConfirmations()) {
+
+            $this->context->smarty->assign('conf', $confirmations[0]);
+        }
+
         $this->context->controller->addCss($this->_path . 'views/css/tab.css');
     }
 
@@ -109,7 +116,7 @@ class Getresponse extends Module
         foreach (GrConfigService::BACKOFFICE_TABS as $tab) {
             $newtab = new Tab();
             $newtab->class_name = $tab['class_name'];
-            $newtab->id_parent = $tabId;
+            $newtab->id_parent = isset($tab['parent']) ? $tab['parent'] : $tabId;
             $newtab->module = $this->name;
             $newtab->position = 0;
             foreach ($langs as $l) {
@@ -294,7 +301,7 @@ class Getresponse extends Module
     public function hookDisplayHeader()
     {
         if ('yes' == $this->settings->getActiveTracking()) {
-            $this->smarty->assign(array('gr_tracking_snippet' => $this->settings->getTrackingSnippet()));
+            $this->smarty->assign(['gr_tracking_snippet' => $this->settings->getTrackingSnippet()]);
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
         }
 

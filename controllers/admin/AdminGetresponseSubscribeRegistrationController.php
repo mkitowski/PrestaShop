@@ -6,11 +6,6 @@ use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\ContactList\SubscribeViaRegistrationValidator;
 use GrShareCode\ContactList\ContactList;
-use GrShareCode\ContactList\ContactListCollection;
-use GrShareCode\ContactList\FromFields;
-use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationBody;
-use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubject;
-use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubjectCollection;
 use GrShareCode\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
@@ -33,12 +28,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             __PS_BASE_URI__
         ));
 
+        $this->display = 'view';
         $this->contactListService = ContactListServiceFactory::create();
     }
 
     public function initContent()
     {
-        $this->display = 'view';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
         parent::initContent();
@@ -46,22 +41,13 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     public function initPageHeaderToolbar()
     {
-        $this->page_header_toolbar_btn['add_campaign'] = array(
-            'href' => self::$currentIndex . '&action=addCampaign&token=' . $this->getToken(),
+        $this->page_header_toolbar_btn['add_campaign'] = [
+            'href' => (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList') . '&referer=' . $this->controller_name,
             'desc' => $this->l('Add new contact list'),
             'icon' => 'process-icon-new'
-        );
+        ];
 
         parent::initPageHeaderToolbar();
-    }
-
-    /**
-     * Get Admin Token
-     * @return string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponseSubscribeRegistration');
     }
 
     public function postProcess()
@@ -70,42 +56,34 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             $this->display = 'edit';
         }
 
-        if (Tools::isSubmit('addCampaignForm')) {
-            $this->saveCampaign();
-        }
-
         if (Tools::isSubmit('saveMappingForm')) {
             $this->saveCustom();
         }
 
         if (Tools::isSubmit('saveSubscribeForm')) {
-            $this->performSubscribeViaRegistration();
+
+            $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
+                Tools::getValue('subscriptionSwitch'),
+                Tools::getValue('newsletter', 0),
+                Tools::getValue('campaign'),
+                Tools::getValue('addToCycle', 0),
+                Tools::getValue('cycledays'),
+                Tools::getValue('contactInfo', 0)
+            );
+
+            $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
+            if (!$validator->isValid()) {
+
+                $this->errors = $validator->getErrors();
+
+                return;
+            }
+
+            $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
+            $this->confirmations[] = $this->l('Settings saved');
         }
 
         parent::postProcess();
-    }
-
-    public function performSubscribeViaRegistration()
-    {
-        $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
-            Tools::getValue('subscriptionSwitch'),
-            Tools::getValue('newsletter', 0),
-            Tools::getValue('campaign'),
-            Tools::getValue('addToCycle', 0),
-            Tools::getValue('cycledays'),
-            Tools::getValue('contactInfo', 0)
-        );
-
-        $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
-        if (!$validator->isValid()) {
-
-            $this->errors = $validator->getErrors();
-
-            return;
-        }
-
-        $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
-        $this->confirmations[] = $this->l('Settings saved');
     }
 
     /**
@@ -123,142 +101,29 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'active_tracking' => $settings['active_tracking']
         ));
 
-        if (Tools::getValue('action', null) === 'addCampaign') {
+        $this->context->smarty->assign([
+            'selected_tab' => 'subscribe_via_registration',
+            'token' => $this->getToken(),
+            'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
+                $this->getCampaignsOptions(),
+                $this->contactListService->getSettings()->getCycleDay()
+            ),
+            'subscribe_via_registration_list' => $this->renderCustomList(),
+            'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
+            'cycle_day' => $this->contactListService->getSettings()->getCycleDay(),
+        ]);
 
-            $this->context->smarty->assign([
-                'selected_tab' => 'subscribe_via_registration',
-                'token' => $this->getToken(),
-                'subscribe_via_registration_form' => $this->renderAddCampaignForm(
-                    $this->getOptionForFromFields(),
-                    $this->getOptionForReplayTo(),
-                    $this->getOptionForSubject(),
-                    $this->getOptionForBody()
-                )
-            ]);
-
-        } else {
-
-            $this->context->smarty->assign([
-                'selected_tab' => 'subscribe_via_registration',
-                'token' => $this->getToken(),
-                'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
-                    $this->getCampaignsOptions(),
-                    $this->contactListService->getSettings()->getCycleDay()
-                ),
-                'subscribe_via_registration_list' =>$this->renderCustomList(),
-                'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
-                'cycle_day' => $this->contactListService->getSettings()->getCycleDay(),
-            ]);
-        }
 
         return parent::renderView();
     }
 
     /**
-     * @return array
-     * @throws GetresponseApiException
+     * Get Admin Token
+     * @return string
      */
-    private function getOptionForFromFields()
+    public function getToken()
     {
-        $options = [
-            'id_option' => '',
-            'name' => $this->l('Select from field')
-        ];
-
-        /** @var FromFields $fromField */
-        foreach ($this->contactListService->getFromFields() as $fromField) {
-            $options[] = [
-                'id_option' => $fromField->getId(),
-                'name' => $fromField->getName() . '(' . $fromField->getEmail() . ')'
-            ];
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    private function getOptionForReplayTo()
-    {
-        $options = [
-            'id_option' => '',
-            'name' => $this->l('Select reply-to address')
-        ];
-
-        /** @var FromFields $fromField */
-        foreach ($this->contactListService->getFromFields() as $fromField) {
-            $options[] = [
-                'id_option' => $fromField->getId(),
-                'name' => $fromField->getName() . '(' . $fromField->getEmail() . ')'
-            ];
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    private function getOptionForSubject()
-    {
-        $options = [
-            'id_option' => '',
-            'name' => $this->l('Select confirmation message subject')
-        ];
-
-        /** @var SubscriptionConfirmationSubject $subject */
-        foreach ($this->contactListService->getSubscriptionConfirmationSubject() as $subject) {
-            $options[] = [
-                'id_option' => $subject->getId(),
-                'name' => $subject->getSubject()
-            ];
-        }
-
-        return $options;
-    }
-
-    /**
-     * @param SubscriptionConfirmationSubjectCollection $subjectCollection
-     * @return array
-     */
-    public function normalizeSubject(SubscriptionConfirmationSubjectCollection $subjectCollection)
-    {
-        $options = [];
-
-        /** @var SubscriptionConfirmationSubject $subject */
-        foreach ($subjectCollection as $subject) {
-            $options[] = [
-                'id_option' => $subject->getId(),
-                'name' => $subject->getSubject()
-            ];
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    public function getOptionForBody()
-    {
-        $options = [
-            'id_option' => '',
-            'name' => $this->l('Select confirmation message body template')
-        ];
-
-        /** @var SubscriptionConfirmationBody $confirmationBody */
-        foreach ($this->contactListService->getSubscriptionConfirmationBody() as $confirmationBody) {
-            $options[] = [
-                'id_option' => $confirmationBody->getId(),
-                'name' => $confirmationBody->getName() . ' ' . $confirmationBody->getContentPlain()
-            ];
-        }
-
-        return $options;
+        return Tools::getAdminTokenLite('AdminGetresponseSubscribeRegistration');
     }
 
     /**
@@ -412,84 +277,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     public function renderList()
     {
         return $this->renderCustomList();
-    }
-
-    /**
-     * Renders form for mapping edition
-     *
-     * @return string
-     */
-    public function renderForm()
-    {
-        $fieldsForm = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Update Mapping'),
-                ],
-                'input' => [
-                    'id' => ['type' => 'hidden', 'name' => 'id'],
-                    'customer_detail' => [
-                        'label' => $this->l('Customer detail'),
-                        'name' => 'customer_detail',
-                        'type' => 'text',
-                        'disabled' => true
-                    ],
-                    'gr_custom' => [
-                        'label' => $this->l('Getresponse custom field name'),
-                        'required' => true,
-                        'desc' => $this->l('
-                        You can use lowercase English alphabet characters, numbers, 
-                        and underscore ("_"). Maximum 32 characters.
-                    '),
-                        'type' => 'text',
-                        'name' => 'gr_custom'
-                    ],
-                    'default' => [
-                        'required' => true,
-                        'type' => 'hidden',
-                        'name' => 'default'
-                    ],
-                    'mapping_on' => [
-                        'type' => 'switch',
-                        'label' => $this->l('Turn on this mapping'),
-                        'name' => 'mapping_on',
-                        'required' => true,
-                        'class' => 't',
-                        'is_bool' => true,
-                        'values' => [
-                            ['id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')],
-                            ['id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled')]
-                        ],
-                    ],
-                ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                    'name' => 'saveMappingForm',
-                    'icon' => 'process-icon-save'
-                ]
-            ]
-        ];
-
-        /** @var HelperFormCore $helper */
-        $helper = new HelperForm();
-        $helper->currentIndex = AdminController::$currentIndex;
-        $helper->token = $this->getToken();
-        $helper->fields_value = ['mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false];
-
-        $customs = $this->repository->getCustoms();
-        foreach ($customs as $custom) {
-            if (Tools::getValue('id') == $custom['id_custom']) {
-                $helper->fields_value = [
-                    'id' => $custom['id_custom'],
-                    'customer_detail' => $custom['custom_field'],
-                    'gr_custom' => $custom['custom_name'],
-                    'default' => 0,
-                    'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
-                ];
-            }
-        }
-
-        return $helper->generateForm(array(array('form' => $fieldsForm)));
     }
 
     /**

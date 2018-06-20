@@ -2,10 +2,8 @@
 namespace GetResponse\Automation;
 
 use GetResponse\Account\AccountSettings;
-use GetResponse\Settings\Settings;
-use GrShareCode\Campaign\AutorespondersCollection;
-use GrShareCode\Campaign\CampaignsCollection;
-use GrShareCode\Campaign\CampaignService;
+use GetResponse\ContactList\ContactListService;
+use GrShareCode\ContactList\ContactListCollection;
 
 /**
  * Class AutomationService
@@ -15,24 +13,24 @@ class AutomationService
     /** @var AutomationRepository */
     private $automationRepository;
 
-    /** @var CampaignService */
-    private $campaignService;
+    /** @var ContactListService */
+    private $contactListService;
 
     /** @var AccountSettings */
     private $settings;
 
     /**
      * @param AutomationRepository $automationRepository
-     * @param CampaignService $campaignService
+     * @param ContactListService $contactListService
      * @param AccountSettings $settings
      */
     public function __construct(
         AutomationRepository $automationRepository,
-        CampaignService $campaignService,
+        ContactListService $contactListService,
         AccountSettings $settings
     ) {
         $this->automationRepository = $automationRepository;
-        $this->campaignService = $campaignService;
+        $this->contactListService = $contactListService;
         $this->settings = $settings;
     }
 
@@ -63,19 +61,19 @@ class AutomationService
     }
 
     /**
-     * @return AutorespondersCollection
+     * @return \GrShareCode\ContactList\AutorespondersCollection
      */
     public function getAutoresponders()
     {
-        return $this->campaignService->getAutoresponders();
+        return $this->contactListService->getAutoresponders();
     }
 
     /**
-     * @return CampaignsCollection
+     * @return ContactListCollection
      */
-    public function getCampaigns()
+    public function getContactLists()
     {
-        return $this->campaignService->getAllCampaigns();
+        return $this->contactListService->getContactLists();
     }
 
     /**
