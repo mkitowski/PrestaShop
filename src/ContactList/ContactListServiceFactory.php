@@ -5,7 +5,7 @@ use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
-use GrShop;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
  * Class ContactListServiceFactory

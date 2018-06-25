@@ -7,7 +7,7 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\ContactList\ContactListRepository;
 use GetResponse\ContactList\ContactListService;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
-use GrShop;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
  * Class AutomationServiceFactory

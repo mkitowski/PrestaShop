@@ -24,6 +24,7 @@ use GetResponse\Api\ApiFactory;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\GetresponseApi;
+use GetResponse\Helper\Shop as GrShop;
 
 class AdminGetresponseController extends ModuleAdminController
 {

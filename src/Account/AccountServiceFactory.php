@@ -3,10 +3,9 @@ namespace GetResponse\Account;
 
 use Db;
 use GetResponse\Api\ApiFactory;
-use GrApiFactory;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\TrackingCode\TrackingCodeService;
-use GrShop;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
  * Class AccountServiceFactory

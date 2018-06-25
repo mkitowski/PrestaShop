@@ -5,7 +5,7 @@ use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
-use GrShop;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
  * Class WebFormServiceFactory

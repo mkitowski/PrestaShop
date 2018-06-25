@@ -7,7 +7,7 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\Settings\SettingsServiceFactory;
 use GrApiFactory;
 use GrShareCode\Shop\ShopService;
-use GrShop;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
  * Class EcommerceServiceFactory

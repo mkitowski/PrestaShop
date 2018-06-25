@@ -18,7 +18,6 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseExportSettings.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
@@ -37,6 +36,7 @@ use GetResponse\Hook\NewCart as GrNewCartHook;
 use GetResponse\Api\ApiFactory as GrApiFactory;
 use GetResponse\Account\AccountSettings as GrAccountSettings;
 use GetResponse\Hook\NewContact as GrNewContactHook;
+use GetResponse\Helper\Shop as GrShop;
 
 class Getresponse extends Module
 {

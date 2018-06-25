@@ -26,6 +26,7 @@ use GrShareCode\Product\Variant\Images\Image as GrImage;
 use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
 use GrShareCode\CountryCodeConverter as GrCountryCodeConverter;
 use GrShareCode\Job\JobFactory as GrJobFactory;
+use GetResponse\Helper\Shop as GrShop;
 
 class GrExport
 {

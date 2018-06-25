@@ -1,6 +1,10 @@
 <?php
+namespace GetResponse\Helper;
 
-class GrShop
+use Context;
+use Tools;
+
+class Shop
 {
     /**
      * @return int
