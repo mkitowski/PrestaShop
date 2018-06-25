@@ -33,7 +33,9 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     /**
      * Renders form for mapping edition
-     * @return mixed
+     * @return string
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
      */
     public function renderForm()
     {
@@ -163,12 +165,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
             $fromFields = $this->normalizeFormFields($contactListService->getFromFields());
             $confirmSubject = $this->normalizeComplexApiData(
-                $api->getSubscriptionConfirmationsSubject(),
+                $api->getSubscriptionConfirmationSubject(),
                 'id',
                 'name'
             );
             $confirmBody = $this->normalizeComplexApiData(
-                $api->getSubscriptionConfirmationsBody(),
+                $api->getSubscriptionConfirmationBody(),
                 'id',
                 'name',
                 'contentPlain'
