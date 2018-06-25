@@ -10,6 +10,7 @@ use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\ContactList\ContactListService as GrCampaignService;
 use GrShareCode\GetresponseApi;
 use GrShareCode\ContactList\ContactList;
+use GetResponse\ContactList\ContactListServiceFactory;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
@@ -148,14 +149,17 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
-     * render main view
+     * Render main view
      * @return string
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderView()
     {
         if (Tools::getValue('action', null) == 'addCampaign') {
-
             $contactListService = ContactListServiceFactory::create();
+            $api = $this->getGrAPI();
 
             $fromFields = $this->normalizeFormFields($contactListService->getFromFields());
             $confirmSubject = $this->normalizeComplexApiData(
