@@ -28,12 +28,6 @@ use GetResponse\Helper\Shop as GrShop;
 
 class AdminGetresponseController extends ModuleAdminController
 {
-    /**
-     * @var DbConnection
-     * @deprecated
-     * */
-    public $db;
-
     /** @var GetResponseRepository */
     public $repository;
 
@@ -44,8 +38,6 @@ class AdminGetresponseController extends ModuleAdminController
         if (!$this->module->active) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminHome'));
         }
-
-        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
 
         $this->bootstrap = true;
         $this->meta_title = $this->l('GetResponse Integration');
@@ -218,10 +210,10 @@ class AdminGetresponseController extends ModuleAdminController
         $error = $this->validateCustom($custom['name']);
 
         if (empty($error)) {
-            $this->db->updateCustom($custom);
+            $this->repository->updateCustom($custom);
             $this->confirmations[] = $this->l('Custom sucessfuly edited');
         } else {
-            $this->erors[] = $this->l($error);
+            $this->errors[] = $this->l($error);
         }
     }
 

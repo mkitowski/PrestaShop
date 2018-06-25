@@ -54,10 +54,10 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
             }
 
             if (empty($error)) {
-                $this->db->updateCustom($custom);
+                $this->repository->updateCustom($custom);
                 $this->confirmations[] = $this->l('Custom sucessfuly edited');
             } else {
-                $this->erors[] = $this->l($error);
+                $this->errors[] = $this->l($error);
             }
         }
     }

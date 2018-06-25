@@ -630,6 +630,23 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($query);
     }
 
+    /**
+     * @param array $custom
+     */
+    public function updateCustom($custom)
+    {
+        $sql = '
+                UPDATE
+                    ' . _DB_PREFIX_ . 'getresponse_customs
+                SET
+                    `custom_name` = "' . pSQL($custom['name']) . '",
+                    `active_custom` = "' . pSQL($custom['active']) . '"
+                WHERE
+                    `id_shop` = ' . (int) $this->idShop . '
+                    AND `id_custom` = "' . pSQL($custom['id']) . '"';
+        $this->db->Execute($sql);
+    }
+
     public function clearDatabase()
     {
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;');
