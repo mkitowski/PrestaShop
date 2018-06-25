@@ -13,7 +13,6 @@ if (!defined('_PS_VERSION_')) {
 }
 
 include_once(_PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseExportSettings.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php');
