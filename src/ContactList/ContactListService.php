@@ -128,8 +128,6 @@ class ContactListService
 
     /**
      * @param AddContactListCommand $addContactListCommand
-     * @return array
-     * @throws GetresponseApiException
      * @throws GrApiException
      */
     public function createContactList(AddContactListCommand $addContactListCommand)
