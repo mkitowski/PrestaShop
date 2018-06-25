@@ -1,11 +1,9 @@
 <?php
 
-use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
 use GrShareCode\Contact\CustomField as GrCustomField;
 use GrShareCode\GetresponseApiException;
-use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Product\ProductsCollection as GrProductsCollection;
 use GrShareCode\Product\Category\CategoryCollection as GrCategoryCollection;
@@ -27,6 +25,8 @@ use GrShareCode\Product\Variant\Images\ImagesCollection as GrImagesCollection;
 use GrShareCode\CountryCodeConverter as GrCountryCodeConverter;
 use GrShareCode\Job\JobFactory as GrJobFactory;
 use GetResponse\Helper\Shop as GrShop;
+use GetResponse\Api\ApiFactory as GrApiFactory;
+use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
 
 class GrExport
 {
@@ -53,15 +53,14 @@ class GrExport
 
     /**
      * @throws GetresponseApiException
-     * @throws GrApiTypeException
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
     public function export()
     {
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $settingsService = SettingsServiceFactory::create();
-        $api = GrApiFactory::createFromSettings($settingsService->getSettings());
+        $accountService = GrAccountServiceFactory::create();
+        $api = GrApiFactory::createFromSettings($accountService->getSettings());
         $contactService = new GrContactService($api);
         $productService = new GrProductService($api, $repository);
         $cartService = new GrCartService($api, $repository, $productService);
