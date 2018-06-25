@@ -2,7 +2,6 @@
 namespace GetResponse\Ecommerce;
 
 use GetResponse\Account\AccountSettings;
-use GetResponse\Settings\Settings;
 use GrShareCode\Shop\AddShopCommand;
 use GrShareCode\Shop\ShopsCollection;
 use GrShareCode\Shop\ShopService;

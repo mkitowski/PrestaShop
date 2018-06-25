@@ -6,6 +6,7 @@ use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
 use GetResponse\Helper\Shop as GrShop;
+use PrestaShopDatabaseException;
 
 /**
  * Class WebFormServiceFactory
@@ -14,6 +15,7 @@ class WebFormServiceFactory
 {
     /**
      * @return WebFormService
+     * @throws PrestaShopDatabaseException
      */
     public static function create()
     {

@@ -3,6 +3,9 @@ namespace GetResponse\WebForm;
 
 use GrShareCode\WebForm\WebFormCollection;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
+use GrShareCode\WebForm\FormNotFoundException;
+use PrestaShopDatabaseException;
+use GrShareCode\GetresponseApiException;
 
 /**
  * Class WebFormService
@@ -27,6 +30,8 @@ class WebFormService
 
     /**
      * @param WebFormDto $webForm
+     * @throws FormNotFoundException
+     * @throws GetresponseApiException
      */
     public function updateWebForm(WebFormDto $webForm)
     {
@@ -45,7 +50,8 @@ class WebFormService
     }
 
     /**
-     * @return null|WebForm
+     * @return WebForm|null
+     * @throws PrestaShopDatabaseException
      */
     public function getWebForm()
     {
@@ -62,6 +68,7 @@ class WebFormService
 
     /**
      * @return WebFormCollection
+     * @throws GetresponseApiException
      */
     public function getGetResponseFormCollection()
     {

@@ -1,7 +1,7 @@
 <?php
 namespace GetResponse\WebForm;
 
-use GetResponsePluginException;
+use GetResponse\Exception\GetResponsePluginException;
 
 /**
  * Class InvalidWebFormException

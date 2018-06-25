@@ -1,8 +1,9 @@
 <?php
 namespace GetResponse\WebTracking;
 
-use GetResponse\Settings\SettingsRepository;
 use GrShareCode\TrackingCode\TrackingCodeService;
+use GrShareCode\GetresponseApiException;
+use PrestaShopDatabaseException;
 
 /**
  * Class WebTrackingService
@@ -28,6 +29,7 @@ class WebTrackingService
 
     /**
      * @param WebTrackingDto $webTracking
+     * @throws GetresponseApiException
      */
     public function updateTracking(WebTrackingDto $webTracking)
     {
@@ -41,6 +43,7 @@ class WebTrackingService
 
     /**
      * @return WebTracking|null
+     * @throws PrestaShopDatabaseException
      */
     public function getWebTracking()
     {

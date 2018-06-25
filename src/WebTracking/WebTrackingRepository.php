@@ -2,6 +2,7 @@
 namespace GetResponse\WebTracking;
 
 use Db;
+use PrestaShopDatabaseException;
 
 /**
  * Class WebTrackingRepository
@@ -25,9 +26,9 @@ class WebTrackingRepository
         $this->idShop = $shopId;
     }
 
-
     /**
      * @return WebTracking|null
+     * @throws PrestaShopDatabaseException
      */
     public function getWebTracking()
     {

@@ -6,6 +6,7 @@ use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use GetResponse\Helper\Shop as GrShop;
+use PrestaShopDatabaseException;
 
 /**
  * Class WebTrackingServiceFactory
@@ -15,6 +16,7 @@ class WebTrackingServiceFactory
 {
     /**
      * @return WebTrackingService
+     * @throws PrestaShopDatabaseException
      */
     public static function create()
     {

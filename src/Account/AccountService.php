@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\Account;
 
-use GetResponse\Settings\Settings;
 use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\GetresponseApiException;
@@ -103,7 +102,6 @@ class AccountService
             ? AccountSettings::TRACKING_INACTIVE
             : AccountSettings::TRACKING_DISABLED;
 
-        //@todo: Add single method for both down here ↓
         $this->repository->updateTracking($trackingStatus, $trackingCode->getSnippet());
         $this->repository->updateApiSettings($apiKey, $accountType, $domain);
     }

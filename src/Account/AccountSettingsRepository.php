@@ -2,6 +2,7 @@
 namespace GetResponse\Account;
 
 use Db;
+use PrestaShopDatabaseException;
 
 /**
  * Class AccountSettingsRepository

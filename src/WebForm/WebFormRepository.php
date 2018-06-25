@@ -47,7 +47,8 @@ class WebFormRepository
     }
 
     /**
-     * @return null|WebForm
+     * @return WebForm|null
+     * @throws PrestaShopDatabaseException
      */
     public function getWebForm()
     {

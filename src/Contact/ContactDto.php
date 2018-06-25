@@ -7,6 +7,8 @@ namespace GetResponse\Contact;
  */
 class ContactDto
 {
+    const ORIGIN = 'prestashop';
+
     /** @var string */
     private $email;
 
@@ -63,5 +65,13 @@ class ContactDto
     public function getCustomFields()
     {
         return $this->customFields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrigin()
+    {
+        return static::ORIGIN;
     }
 }

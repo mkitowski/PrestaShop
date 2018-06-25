@@ -6,13 +6,12 @@ use GrShareCode\GetresponseApi;
 use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
 use GetResponseRepository;
 use Db;
-use Cart;
-use GrShareCode\GetresponseApiException;
 use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
 use GrShareCode\Contact\CustomField as GrCustomField;
 use PrestaShopDatabaseException;
+use GrShareCode\GetresponseApiException;
 
 
 /**
@@ -44,8 +43,8 @@ class NewContact extends Hook
 
     /**
      * @param ContactDto $contactDto
-     * @throws GetresponseApiException
      * @throws PrestaShopDatabaseException
+     * @throws GetresponseApiException
      */
     public function sendContact(ContactDto $contactDto)
     {
@@ -62,11 +61,13 @@ class NewContact extends Hook
                     $this->mapCustomFields(
                         $contactDto->getCustomFields(),
                         $settings->getUpdateAddress() == 'yes'
-                    )
+                    ),
+                    $contactDto->getOrigin()
                 );
 
                 $contactService = new GrContactService($this->api);
-                $contactService->addContact($addContact);
+                $contactService->upsertContact($addContact);
+
             }
         }
     }
