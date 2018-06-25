@@ -7,7 +7,6 @@ use GetResponse\Automation\AutomationService;
 use GetResponse\Automation\AutomationServiceFactory;
 use GetResponse\Automation\AutomationValidator;
 use GrShareCode\ContactList\Autoresponder;
-use GrShareCode\ContactList\ContactList;
 
 require_once 'AdminGetresponseController.php';
 
@@ -308,7 +307,6 @@ class AdminGetresponseContactListController extends AdminGetresponseController
     private function getContactListForSelectField()
     {
         $contactList = [];
-        /** @var ContactList $contactList */
         foreach ($this->automationService->getContactLists() as $contact) {
             $contactList[] = [
                 'id' => $contact->getId(),

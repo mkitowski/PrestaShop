@@ -124,6 +124,9 @@ class AdminGetresponseController extends ModuleAdminController
         return $errors;
     }
 
+    /**
+     * @throws PrestaShopDatabaseException
+     */
     public function redirectIfNotAuthorized()
     {
         $settings = $this->repository->getSettings();
@@ -240,6 +243,7 @@ class AdminGetresponseController extends ModuleAdminController
 
     /**
      * @return GetresponseApi
+     * @throws PrestaShopDatabaseException
      */
     public function getGrAPI()
     {
@@ -251,7 +255,8 @@ class AdminGetresponseController extends ModuleAdminController
 
     /**
      * Renders custom list
-     * @return mixed
+     * @return string
+     * @throws PrestaShopDatabaseException
      */
     public function renderCustomList()
     {
@@ -295,6 +300,7 @@ class AdminGetresponseController extends ModuleAdminController
     /**
      * Returns custom list
      * @return array
+     * @throws PrestaShopDatabaseException
      */
     public function getCustomList()
     {

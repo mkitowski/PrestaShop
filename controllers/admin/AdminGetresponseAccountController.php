@@ -3,6 +3,7 @@
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountValidator;
+use GrShareCode\GetresponseApiException;
 
 require_once 'AdminGetresponseController.php';
 
@@ -67,39 +68,33 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             return;
         }
 
-        try {
-            $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
+        $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
 
-            if ($accountService->isConnectionAvailable()) {
+        if ($accountService->isConnectionAvailable()) {
+            $accountService->updateApiSettings(
+                $accountDto->getApiKey(),
+                $accountDto->getAccountTypeForSettings(),
+                $accountDto->getDomain()
+            );
 
-                $accountService->updateApiSettings(
-                    $accountDto->getApiKey(),
-                    $accountDto->getAccountTypeForSettings(),
-                    $accountDto->getDomain()
-                );
+            $this->confirmations[] = $this->l('GetResponse account connected');
 
-                $this->confirmations[] = $this->l('GetResponse account connected');
+        } else {
 
-            } else {
+            $msg = !$accountDto->isEnterprisePackage()
+                ? 'The API key or domain seems incorrect.'
+                : 'The API key seems incorrect.';
 
-                $msg = !$accountDto->isEnterprisePackage()
-                    ? 'The API key or domain seems incorrect.'
-                    : 'The API key seems incorrect.';
+            $msg .= ' Please check if you typed or pasted it correctly.
+                If you recently generated a new key, please make sure you\'re using the right one';
 
-                $msg .= ' Please check if you typed or pasted it correctly.
-                    If you recently generated a new key, please make sure you\'re using the right one';
-
-                $this->errors[] = $this->l($msg);
-            }
-        } catch (\GrShareCode\GetresponseApiException $e) {
-            $this->errors[] = $e->getMessage();
-        } catch (\GrShareCode\Api\ApiTypeException $e) {
-            $this->errors[] = $e->getMessage();
+            $this->errors[] = $this->l($msg);
         }
     }
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     public function renderView()
     {

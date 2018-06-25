@@ -2,8 +2,6 @@
 
 require_once 'AdminGetresponseController.php';
 
-use GetResponse\Config\ContactListServiceFactory;
-use GetResponse\Settings\SettingsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\ContactList\FromFields;
 use GrShareCode\ContactList\FromFieldsCollection;
@@ -11,6 +9,7 @@ use GrShareCode\GetresponseApiException;
 use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\ContactList\ContactListService as GrCampaignService;
 use GrShareCode\GetresponseApi;
+use GrShareCode\ContactList\ContactList;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
@@ -198,8 +197,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
         /** @var FromFields $fromField */
         foreach ($fromFieldsCollection as $fromField) {
             $options[] = array(
-                'id_option' => $row['id'],
-                'name' => $row['name'] . '(' . $row['email'] . ')'
+                'id_option' => $fromField->getId(),
+                'name' => $fromField->getName() . '(' . $fromField->getEmail() . ')'
             );
         }
 
@@ -227,7 +226,9 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
-     * Subscription via registration page
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function exportCustomersView()
     {
@@ -261,6 +262,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     /**
      * @param GetresponseApi $api
+     * @return array
+     * @throws GetresponseApiException
      */
     private function getCampaigns($api)
     {
@@ -268,7 +271,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $campaignsCollection = $campaignService->getAllContactLists();
         $campaigns = array();
 
-        /** @var \GrShareCode\Campaign\Campaign $campaignItem */
+        /** @var \GrShareCode\ContactList\ContactList $campaignItem */
         foreach ($campaignsCollection as $campaignItem) {
             $campaigns[] = array('id' => $campaignItem->getId(), 'name' => $campaignItem->getName());
         }
@@ -276,6 +279,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
         return $campaigns;
     }
 
+    /**
+     * @return string
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     public function renderExportForm()
     {
         $api = $this->getGrAPI();
@@ -405,15 +414,14 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     /**
      * Assigns values to forms
-     * @param $obj
+     * @param ObjectModel $obj
      * @return array
+     * @throws PrestaShopDatabaseException
      */
     public function getFieldsValue($obj)
     {
         if (Tools::getValue('action', null) == 'addCampaign') {
-            return array(
-                'campaign_name' => null,
-            );
+            return ['campaign_name' => null];
         }
 
         if ($this->display == 'view') {
@@ -449,6 +457,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
         }
     }
 
+    /**
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     public function performExport()
     {
         $exportSettings = new GetResponseExportSettings(
@@ -473,10 +486,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
             $this->errors[] = $this->l($e->getMessage());
             $this->exportCustomersView();
             return;
-        } catch (GrApiTypeException $e) {
-            $this->errors[] = $this->l($e->getMessage());
-            $this->exportCustomersView();
-            return;
         } catch (PrestaShopDatabaseException $e) {
             $this->errors[] = $this->l($e->getMessage());
             $this->exportCustomersView();
@@ -498,6 +507,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     /**
      * @return array
+     * @throws GetresponseApiException
      */
     private function getGetResponseCustomFields()
     {
