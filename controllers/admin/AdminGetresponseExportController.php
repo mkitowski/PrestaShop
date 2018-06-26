@@ -145,11 +145,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     public function initPageHeaderToolbar()
     {
-        $this->page_header_toolbar_btn['add_campaign'] = array(
-            'href' => self::$currentIndex . '&action=addCampaign&token=' . $this->getToken(),
+        $this->page_header_toolbar_btn['add_campaign'] = [
+            'href' => (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList') . '&referer=' . $this->controller_name,
             'desc' => $this->l('Add new contact list'),
             'icon' => 'process-icon-new'
-        );
+        ];
 
         parent::initPageHeaderToolbar();
     }

@@ -14,7 +14,8 @@ use GetResponse\Helper\Shop as GrShop;
 class AccountServiceFactory
 {
     /**
-     * @return AccountService
+     * @return AccountService|null
+     * @throws \PrestaShopDatabaseException
      */
     public static function create()
     {

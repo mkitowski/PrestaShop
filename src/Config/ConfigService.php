@@ -78,6 +78,7 @@ class ConfigService
         'AdminGetresponseWebTracking',
         'AdminGetresponseEcommerce',
         'AdminGetresponseAccount',
+        'AdminGetresponseAddNewContactListController',
         'AdminGetresponse',
         'Getresponse'
     ];
