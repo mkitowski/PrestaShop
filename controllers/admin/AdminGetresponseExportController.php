@@ -6,10 +6,8 @@ use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\ContactList\FromFields;
 use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\GetresponseApiException;
-use GrShareCode\Api\ApiTypeException as GrApiTypeException;
 use GrShareCode\ContactList\ContactListService as GrCampaignService;
 use GrShareCode\GetresponseApi;
-use GrShareCode\ContactList\ContactList;
 use GetResponse\ContactList\ContactListServiceFactory;
 
 class AdminGetresponseExportController extends AdminGetresponseController
@@ -23,6 +21,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit($this->name)) {
