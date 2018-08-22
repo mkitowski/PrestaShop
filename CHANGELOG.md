@@ -1,5 +1,11 @@
 # Changelog
 
+## 16.2.11
+*(2018-08-22)*
+
+#### Bug fixes
+* fixed issue with embedding tracking code 
+
 ## 16.2.10
 *(2018-04-24)*
 
