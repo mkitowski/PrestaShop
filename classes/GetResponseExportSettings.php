@@ -4,19 +4,23 @@ class GetResponseExportSettings
 {
     /** @var string */
     private $listId;
+
     /** @var int|null */
     private $cycleDay;
+
     /** @var bool */
     private $updateAddress;
+
     /** @var bool */
     private $newsletter;
+
     /** @var bool */
     private $asyncExport;
+
     /** @var bool */
     private $exportEcommerce;
 
     /**
-     * GetResponseExportSettings constructor.
      * @param string $listId
      * @param int|null $cycleDay
      * @param bool $updateAddress
@@ -70,14 +74,6 @@ class GetResponseExportSettings
     public function isNewsletter()
     {
         return $this->newsletter;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAsyncExport()
-    {
-        return $this->asyncExport;
     }
 
     /**

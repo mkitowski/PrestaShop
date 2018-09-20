@@ -29,7 +29,7 @@ class AccountDto
     {
         $this->apiKey = $apiKey;
         $this->enterprisePackage = $enterprisePackage;
-        $this->accountType = $enterprisePackage === '1' ? $accountType : AccountSettings::ACCOUNT_TYPE_GR;
+        $this->accountType = $enterprisePackage === '1' ? $accountType : AccountSettings::ACCOUNT_TYPE_SMB;
         $this->domain = $enterprisePackage === '1' ? $domain : '';
     }
 
@@ -68,7 +68,7 @@ class AccountDto
      */
     public function getAccountTypeForSettings()
     {
-        return $this->isEnterprisePackage() ? $this->accountType : AccountSettings::ACCOUNT_TYPE_GR;
+        return $this->isEnterprisePackage() ? $this->accountType : AccountSettings::ACCOUNT_TYPE_SMB;
     }
 
     /**

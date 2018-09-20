@@ -55,7 +55,7 @@ class ConfigService
             'name' => 'Subscribe via Forms',
         ],
         [
-            'class_name' => 'AdminGetresponseContactList',
+            'class_name' => 'AdminGetresponseContactListRule',
             'name' => 'Contact List Rules',
         ],
         [
@@ -74,11 +74,11 @@ class ConfigService
         'AdminGetresponseAddNewContactList',
         'AdminGetresponseUpdateMapping',
         'AdminGetresponseSubscribeForm',
-        'AdminGetresponseContactList',
+        'AdminGetresponseContactListRule',
         'AdminGetresponseWebTracking',
         'AdminGetresponseEcommerce',
         'AdminGetresponseAccount',
-        'AdminGetresponseAddNewContactListController',
+        'AdminGetresponseAddNewContactList',
         'AdminGetresponse',
         'Getresponse'
     ];

@@ -2,6 +2,7 @@
 namespace GetResponse\Ecommerce;
 
 use GetResponse\Account\AccountSettings;
+use GrShareCode\GetresponseApiException;
 use GrShareCode\Shop\AddShopCommand;
 use GrShareCode\Shop\ShopsCollection;
 use GrShareCode\Shop\ShopService;
@@ -42,6 +43,7 @@ class EcommerceService
 
     /**
      * @return ShopsCollection
+     * @throws GetresponseApiException
      */
     public function getAllShops()
     {
@@ -51,6 +53,7 @@ class EcommerceService
     /**
      * @param AddShopCommand $addShopCommand
      * @return string
+     * @throws GetresponseApiException
      */
     public function createShop(AddShopCommand $addShopCommand)
     {
@@ -59,6 +62,7 @@ class EcommerceService
 
     /**
      * @param string $shopId
+     * @throws GetresponseApiException
      */
     public function deleteShop($shopId)
     {

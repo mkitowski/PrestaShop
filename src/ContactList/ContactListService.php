@@ -141,6 +141,6 @@ class ContactListService
         } catch (Exception $e) {
             throw GrApiException::createForCampaignNotAddedException($e);
         }
-
     }
+
 }

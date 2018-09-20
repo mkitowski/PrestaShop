@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
 use GrShareCode\Job\Job as GrJob;
@@ -190,8 +191,9 @@ class GetResponseRepository implements DbRepositoryInterface
      * @param string $grShopId
      * @param int $externalOrderId
      * @param string $grOrderId
+     * @param string $payloadMd5
      */
-    public function saveOrderMapping($grShopId, $externalOrderId, $grOrderId)
+    public function saveOrderMapping($grShopId, $externalOrderId, $grOrderId, $payloadMd5)
     {
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_orders
                 SET
@@ -631,19 +633,20 @@ class GetResponseRepository implements DbRepositoryInterface
     }
 
     /**
-     * @param array $custom
+     * @param CustomFieldMapping $custom
      */
-    public function updateCustom($custom)
+    public function updateCustom(CustomFieldMapping $custom)
     {
         $sql = '
                 UPDATE
                     ' . _DB_PREFIX_ . 'getresponse_customs
                 SET
-                    `custom_name` = "' . pSQL($custom['name']) . '",
-                    `active_custom` = "' . pSQL($custom['active']) . '"
+                    `custom_name` = "' . pSQL($custom->getName()) . '",
+                    `active_custom` = "' . pSQL($custom->getActive()) . '"
                 WHERE
                     `id_shop` = ' . (int) $this->idShop . '
-                    AND `id_custom` = "' . pSQL($custom['id']) . '"';
+                    AND `id_custom` = "' . pSQL($custom->getId()) . '"';
+
         $this->db->Execute($sql);
     }
 
@@ -676,7 +679,7 @@ class GetResponseRepository implements DbRepositoryInterface
 			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`campaign_id` char(5) NOT NULL,
 			`cycle_day` char(5) NOT NULL,
-			`account_type` enum(\'gr\',\'360en\',\'360pl\') NOT NULL DEFAULT \'gr\',
+			`account_type` enum(\'smb\',\'360en\',\'360pl\') NOT NULL DEFAULT \'smb\',
 			`crypto` char(32) NULL,
 			PRIMARY KEY (`id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
@@ -797,5 +800,134 @@ class GetResponseRepository implements DbRepositoryInterface
             } catch (Exception $e) {
             }
         }
+    }
+
+
+    /**
+     * @param int $storeId
+     *
+     * @return string
+     */
+    private function sqlMainSetting($storeId)
+    {
+        return '
+        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_settings` (
+            `id_shop` ,
+            `api_key` ,
+            `active_subscription` ,
+            `active_newsletter_subscription` ,
+            `active_tracking` ,
+            `tracking_snippet`,
+            `update_address` ,
+            `campaign_id` ,
+            `cycle_day` ,
+            `account_type` ,
+            `crypto`
+        )
+        VALUES (
+            ' . (int) $storeId . ', \'\', \'no\', \'no\', \'no\', \'\', \'no\', \'0\', \' \', \'gr\', \'\'
+        )
+        ON DUPLICATE KEY UPDATE `id` = `id`;';
+    }
+
+    /**
+     * @param int $storeId
+     * @return string
+     */
+    private function sqlWebformSetting($storeId)
+    {
+        return '
+        INSERT INTO  `' . _DB_PREFIX_ . 'getresponse_webform` (
+            `id_shop` ,
+            `webform_id` ,
+            `active_subscription` ,
+            `sidebar`,
+            `style`
+        )
+        VALUES (
+            ' . (int) $storeId . ',  \'\',  \'no\',  \'left\',  \'webform\'
+        )
+        ON DUPLICATE KEY UPDATE `id` = `id`;';
+    }
+
+    /**
+     * @param int $storeId
+     *
+     * @return string
+     */
+    private function sqlCustomsSetting($storeId)
+    {
+        return '
+        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_customs` (
+            `id_shop` ,
+            `custom_field`,
+            `custom_value`,
+            `custom_name`,
+            `default`,
+            `active_custom`
+        )
+        VALUES
+            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'phone\', \'phone\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'country\', \'country\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'birthday\', \'birthday\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'company\', \'company\', \'\', \'no\', \'no\'),
+            (' . (int) $storeId . ', \'category\', \'category\', \'\', \'no\', \'no\');';
+    }
+
+    /**
+     * @param string $grShopId
+     * @param int $externalCartId
+     * @param string $grCartId
+     */
+    public function removeCartMapping($grShopId, $externalCartId, $grCartId)
+    {
+        // TODO: Implement removeCartMapping() method.
+    }
+
+    /**
+     * @param string $grShopId
+     * @param int $externalOrderId
+     */
+    public function getPayloadMd5FromOrderMapping($grShopId, $externalOrderId)
+    {
+        // TODO: Implement getPayloadMd5FromOrderMapping() method.
+    }
+
+    /**
+     * @param int $accountId
+     */
+    public function markAccountAsInvalid($accountId)
+    {
+        // TODO: Implement markAccountAsInvalid() method.
+    }
+
+    /**
+     * @param $accountId
+     */
+    public function markAccountAsValid($accountId)
+    {
+        // TODO: Implement markAccountAsValid() method.
+    }
+
+    /**
+     * @param int $accountId
+     */
+    public function getInvalidAccountFirstOccurrenceDate($accountId)
+    {
+        // TODO: Implement getInvalidAccountFirstOccurrenceDate() method.
+    }
+
+    /**
+     * @param int $accountId
+     */
+    public function disconnectAccount($accountId)
+    {
+        // TODO: Implement disconnectAccount() method.
     }
 }

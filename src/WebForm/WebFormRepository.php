@@ -109,7 +109,7 @@ class WebFormRepository
             return $results[0];
         }
 
-        return array();
+        return [];
     }
 
 

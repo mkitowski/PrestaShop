@@ -5,6 +5,7 @@ use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\ContactList\SubscribeViaRegistrationValidator;
+use GetResponse\Helper\FlashMessages;
 use GrShareCode\ContactList\ContactList;
 use GrShareCode\GetresponseApiException;
 
@@ -52,14 +53,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     public function postProcess()
     {
-        if (Tools::isSubmit('update' . $this->name)) {
-            $this->display = 'edit';
-        }
-
-        if (Tools::isSubmit('saveMappingForm')) {
-            $this->saveCustom();
-        }
-
         if (Tools::isSubmit('saveSubscribeForm')) {
 
             $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
@@ -72,6 +65,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             );
 
             $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
+
             if (!$validator->isValid()) {
 
                 $this->errors = $validator->getErrors();
@@ -80,7 +74,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             }
 
             $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
-            $this->confirmations[] = $this->l('Settings saved');
+            FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
         }
 
         parent::postProcess();
@@ -286,38 +281,14 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function getFieldsValue($obj)
     {
-        if ($this->display == 'view') {
-            $settings = $this->repository->getSettings();
+        $settings = $this->contactListService->getSettings();
 
-            return [
-                'subscriptionSwitch' => $settings['active_subscription'] == 'yes' ? 1 : 0,
-                'campaign' => $settings['campaign_id'],
-                'cycledays' => $settings['cycle_day'],
-                'contactInfo' => $settings['update_address'] == 'yes' ? 1 : 0,
-                'newsletter' => $settings['active_newsletter_subscription'] == 'yes' ? 1 : 0
-            ];
-        } else {
-            $customs = $this->repository->getCustoms();
-            foreach ($customs as $custom) {
-                if (Tools::getValue('id') == $custom['id_custom']) {
-                    return [
-                        'id' => $custom['id_custom'],
-                        'customer_detail' => $custom['custom_field'],
-                        'gr_custom' => $custom['custom_name'],
-                        'default' => 0,
-                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0,
-                        'actions' => []
-                    ];
-                }
-            }
-
-            return [
-                'id' => 1,
-                'customer_detail' => '',
-                'gr_custom' => '',
-                'default' => 0,
-                'on' => 0
-            ];
-        }
+        return [
+            'subscriptionSwitch' => $settings->isSubscriptionActive() ? 1 : 0,
+            'campaign' => $settings->getContactListId(),
+            'cycledays' => $settings->getCycleDay(),
+            'contactInfo' => $settings->isUpdateContactEnabled() ? 1 : 0,
+            'newsletter' => $settings->isNewsletterSubscriptionOn() ? 1 : 0
+        ];
     }
 }

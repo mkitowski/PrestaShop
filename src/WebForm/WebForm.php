@@ -93,4 +93,29 @@ class WebForm
         return $this->url;
     }
 
+    /**
+     * @return bool
+     */
+    public function isStatusActive()
+    {
+        return self::STATUS_ACTIVE === $this->status;
+    }
+
+    /**
+     * @param string $sidebar
+     * @return bool
+     */
+    public function hasSamePosition($sidebar)
+    {
+        return $sidebar === $this->sidebar;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasPrestashopStyle()
+    {
+        return self::STYLE_PRESTASHOP === $this->style;
+    }
+
 }

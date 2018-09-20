@@ -54,7 +54,8 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
                 Tools::getValue('from_field'),
                 Tools::getValue('replyto'),
                 Tools::getValue('subject'),
-                Tools::getValue('body')
+                Tools::getValue('body'),
+                $this->context->language->iso_code
             );
 
             $validator = new AddContactListValidator($addContactListCommand);

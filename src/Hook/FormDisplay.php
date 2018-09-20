@@ -1,7 +1,7 @@
 <?php
 namespace GetResponse\Hook;
 
-use GetResponse\WebForm\WebFormRepository;
+use GetResponse\WebForm\WebFormService;
 use PrestaShopDatabaseException;
 
 /**
@@ -10,12 +10,15 @@ use PrestaShopDatabaseException;
  */
 class FormDisplay
 {
-    /** @var WebFormRepository */
-    private $repository;
+    /** @var WebFormService */
+    private $webFormService;
 
-    public function __construct(WebFormRepository $repository)
+    /**
+     * @param WebFormService $webFormService
+     */
+    public function __construct(WebFormService $webFormService)
     {
-        $this->repository = $repository;
+        $this->webFormService = $webFormService;
     }
 
     /**
@@ -25,28 +28,28 @@ class FormDisplay
     public function displayWebForm($position)
     {
         if (!empty($position)) {
-            try {
-                $webformSettings = $this->repository->getWebformSettings();
-
-                if (!empty($webformSettings) && $webformSettings['active_subscription'] == 'yes'
-                    && $webformSettings['sidebar'] == $position
-                ) {
-                    $setStyle = null;
-                    if (!empty($webformSettings['style']) && $webformSettings['style'] == 'prestashop') {
-                        $setStyle = '&css=1';
-                    }
-
-                    return array(
-                        'webform_url' => $webformSettings['url'],
-                        'style' => $setStyle,
-                        'position' => $position
-                    );
-                }
-            } catch (PrestaShopDatabaseException $e) {
-                return array();
-            }
+            return [];
         }
 
-        return array();
+        try {
+            $webForm = $this->webFormService->getWebForm();
+        } catch (PrestaShopDatabaseException $e) {
+            return [];
+        }
+
+        if (!$webForm
+            || !$webForm->isStatusActive()
+            || !$webForm->hasSamePosition($position)) {
+
+            return [];
+        }
+
+        $setStyle = $webForm->hasPrestashopStyle() ? '&css=1' : null;
+
+        return [
+            'webform_url' => $webForm->getUrl(),
+            'style' => $setStyle,
+            'position' => $position
+        ];
     }
 }

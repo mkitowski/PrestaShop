@@ -17,25 +17,28 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseExportSettings.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
+include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
 
+use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
+use GetResponse\Account\AccountSettings as GrAccountSettings;
+use GetResponse\Account\AccountStatusFactory;
+use GetResponse\Api\ApiFactory as GrApiFactory;
 use GetResponse\Config\ConfigService as GrConfigService;
+use GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
 use GetResponse\Helper\FlashMessages;
+use GetResponse\Helper\Shop as GrShop;
+use GetResponse\Hook\FormDisplay as GrFormDisplay;
+use GetResponse\Hook\NewCart as GrNewCartHook;
+use GetResponse\Hook\NewContact as GrNewContactHook;
+use GetResponse\Hook\NewOrder as GrNewOrderHook;
+use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
+use GetResponse\WebForm\WebFormServiceFactory;
 use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Job\JobException as GrJobException;
 use GrShareCode\Job\RunCommand as GrRunCommand;
-use GetResponse\Hook\FormDisplay as GrFormDisplay;
-use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
-use GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
-use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
-use GetResponse\Hook\NewOrder as GrNewOrderHook;
-use GetResponse\Hook\NewCart as GrNewCartHook;
-use GetResponse\Api\ApiFactory as GrApiFactory;
-use GetResponse\Account\AccountSettings as GrAccountSettings;
-use GetResponse\Hook\NewContact as GrNewContactHook;
-use GetResponse\Helper\Shop as GrShop;
 
 class Getresponse extends Module
 {
@@ -47,6 +50,9 @@ class Getresponse extends Module
 
     /** @var GrAccountSettings */
     private $settings;
+
+    /** @var bool */
+    private $isConnectedToGetResponse;
 
     public function __construct()
     {
@@ -64,7 +70,9 @@ class Getresponse extends Module
         parent::__construct();
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $this->settings = GrAccountServiceFactory::create()->getSettings();
+
+        $this->isConnectedToGetResponse = (AccountStatusFactory::create())->isConnectedToGetResponse();
+        $this->settings = $this->isConnectedToGetResponse ? GrAccountServiceFactory::create()->getSettings() : null;
 
         if (!function_exists('curl_init')) {
             $this->context->smarty->assign(array('flash_message' => array(
@@ -76,7 +84,8 @@ class Getresponse extends Module
 
     public function hookDisplayBackOfficeHeader()
     {
-        if ($this->context->controller->module->name === $this->name
+        if (isset($this->context->controller->module)
+            && $this->context->controller->module->name === $this->name
             && $confirmations = FlashMessages::getConfirmations()) {
 
             $this->context->smarty->assign('conf', $confirmations[0]);
@@ -201,6 +210,10 @@ class Getresponse extends Module
      */
     public function hookCart($params)
     {
+        if (!$this->isConnectedToGetResponse) {
+            return;
+        }
+
         try {
             $cartHook = new GrNewCartHook($this->getGrAPI(), $this->repository, Db::getInstance());
             $cartHook->sendCart($params['cart']);
@@ -238,6 +251,10 @@ class Getresponse extends Module
      */
     private function sendOrderToGr(Order $order)
     {
+        if (!$this->isConnectedToGetResponse) {
+            return;
+        }
+
         try {
             $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
             $orderHook->sendOrder($order);
@@ -259,6 +276,10 @@ class Getresponse extends Module
      */
     public function createSubscriber(array $params)
     {
+        if (!$this->isConnectedToGetResponse) {
+            return;
+        }
+
         try {
             $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
             $contactDto = GrContactDtoFactory::createFromForm($params[$prefix]);
@@ -299,7 +320,7 @@ class Getresponse extends Module
      */
     public function hookDisplayHeader()
     {
-        if ('yes' == $this->settings->getActiveTracking()) {
+        if ($this->settings && $this->settings->isTrackingActive()) {
             $this->smarty->assign(['gr_tracking_snippet' => $this->settings->getTrackingSnippet()]);
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
         }
@@ -325,7 +346,8 @@ class Getresponse extends Module
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
-            && 'yes' == $this->settings->getActiveNewsletterSubscription()
+            && $this->isConnectedToGetResponse
+            && $this->settings->isNewsletterSubscriptionOn()
         ) {
             $client = new stdClass();
             $client->newsletter = 1;
@@ -333,14 +355,16 @@ class Getresponse extends Module
             $client->lastname = '';
             $client->email = Tools::getValue('email');
 
-            $data = array();
+            $data = [];
             $data['newNewsletterContact'] = $client;
 
             $this->createSubscriber($data);
         }
 
-        if (isset($this->context->customer) && !empty($this->context->customer->email) &&
-            'yes' == $this->settings->getActiveTracking()
+        if (isset($this->context->customer)
+            && !empty($this->context->customer->email)
+            && $this->isConnectedToGetResponse
+            && $this->settings->isTrackingActive()
         ) {
             $email = $this->context->customer->email;
         }
@@ -362,7 +386,10 @@ class Getresponse extends Module
      */
     private function displayWebForm($position)
     {
-        $formDisplay = new GrFormDisplay(new GrWebFormRepository(Db::getInstance(), GrShop::getUserShopId()));
+        if (!$this->isConnectedToGetResponse) {
+            return '';
+        }
+        $formDisplay = new GrFormDisplay(WebFormServiceFactory::create());
         $assignData = $formDisplay->displayWebForm($position);
 
         if (!empty($assignData)) {
@@ -392,23 +419,21 @@ class Getresponse extends Module
      */
     public function getCronFrequency()
     {
-        return array('hour' => -1, 'day' => -1, 'month' => -1, 'day_of_week' => -1);
+        return ['hour' => -1, 'day' => -1, 'month' => -1, 'day_of_week' => -1];
     }
 
     /**
      * @param array $params
-     * @return bool
      * @throws GetresponseApiException
      * @throws GrJobException
      */
-    public function hookActionCronJob($params = array())
+    public function hookActionCronJob($params = [])
     {
-        if (false === $this->settings->isConnectedWithGetResponse()) {
-            return true;
+        if (!$this->isConnectedToGetResponse) {
+            return;
         }
 
         $command = new GrRunCommand($this->getGrAPI(), $this->repository);
         $command->execute();
-        return true;
     }
 }

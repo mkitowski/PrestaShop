@@ -1,16 +1,19 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
-use GetResponse\ContactList\ContactListService;
-use GetResponse\ContactList\ContactListServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingException;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingValidator;
+use GetResponse\Helper\FlashMessages;
 use GrShareCode\GetresponseApiException;
 
 class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 {
     public $name = 'GRUpdateMapping';
 
-    /** @var ContactListService */
-    private $contactListService;
+    /** @var CustomFieldsMappingService */
+    private $mappingService;
 
     public function __construct()
     {
@@ -18,19 +21,12 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
 
-        $this->context->smarty->assign([
-            'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
-            'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
-            'base_url',
-            __PS_BASE_URI__
-        ]);
-
-        $this->contactListService = ContactListServiceFactory::create();
+        $this->mappingService = CustomFieldMappingServiceFactory::create();
     }
 
     public function initContent()
     {
-        $this->display = 'view';
+        $this->display = 'edit';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Update mapping');
         parent::initContent();
@@ -38,27 +34,31 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 
     /**
      * @throws GetresponseApiException
+     * @throws CustomFieldMappingException
      */
     public function postProcess()
     {
         if (Tools::isSubmit('saveMappingForm')) {
+
             $custom = [
                 'id' => Tools::getValue('id'),
                 'value' => Tools::getValue('customer_detail'),
                 'name' => Tools::getValue('gr_custom'),
-                'active' => Tools::getValue('mapping_on') == 1 ? 'yes' : 'no'
+                'active' => Tools::getValue('mapping_on'),
+                'default' => Tools::getValue('default')
             ];
 
-            if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
-                $error = $this->l('Custom field contains invalid characters!');
+            $validator = new CustomFieldMappingValidator($custom);
+
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
+
+                return;
             }
 
-            if (empty($error)) {
-                $this->repository->updateCustom($custom);
-                $this->confirmations[] = $this->l('Custom sucessfuly edited');
-            } else {
-                $this->errors[] = $this->l($error);
-            }
+            $this->mappingService->updateCustomFieldMapping(CustomFieldMapping::createFromRequest($custom));
+            FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Custom sucessfuly edited'));
+            Tools::redirectAdmin($this->context->link->getAdminLink(Tools::getValue('referer')));
         }
     }
 
@@ -121,33 +121,22 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
         $helper->currentIndex = AdminController::$currentIndex . '&referer=' . Tools::getValue('referer');
-        $helper->token = $this->getToken();
+        $helper->token = Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
         $helper->fields_value = ['mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false];
 
-        $customs = $this->repository->getCustoms();
-        foreach ($customs as $custom) {
-            if (Tools::getValue('id') == $custom['id_custom']) {
-                $helper->fields_value = [
-                    'id' => $custom['id_custom'],
-                    'customer_detail' => $custom['custom_field'],
-                    'gr_custom' => $custom['custom_name'],
-                    'default' => 0,
-                    'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
-                ];
-            }
+        $customFieldMapping = $this->mappingService->getCustomFieldMappingById(Tools::getValue('id'));
+
+        if ($customFieldMapping) {
+            $helper->fields_value = [
+                'id' => $customFieldMapping->getId(),
+                'customer_detail' => $customFieldMapping->getField(),
+                'gr_custom' => $customFieldMapping->getName(),
+                'default' => $customFieldMapping->isDefault() ? 1 : 0,
+                'mapping_on' => $customFieldMapping->isActive() ? 1 : 0
+            ];
         }
 
         return $helper->generateForm([$fieldsForm]);
-    }
-
-
-    /**
-     * Get Admin Token
-     * @return string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
     }
 
 }

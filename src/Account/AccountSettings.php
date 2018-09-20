@@ -20,7 +20,7 @@ class AccountSettings
     const UPDATE_ADDRESS_YES = 'yes';
     const UPDATE_ADDRESS_NO = 'no';
 
-    const ACCOUNT_TYPE_GR = 'gr';
+    const ACCOUNT_TYPE_SMB = 'smb';
     const ACCOUNT_TYPE_360_US = '360en';
     const ACCOUNT_TYPE_360_PL = '360pl';
 
@@ -49,7 +49,7 @@ class AccountSettings
     private $update_address;
 
     /** @var string */
-    private $campaign_id;
+    private $contactListId;
 
     /** @var string */
     private $cycle_day;
@@ -69,7 +69,7 @@ class AccountSettings
      * @param string $active_tracking
      * @param string $tracking_snippet
      * @param string $update_address
-     * @param string $campaign_id
+     * @param string $contactListId
      * @param string $cycle_day
      * @param string $account_type
      * @param string $domain
@@ -83,7 +83,7 @@ class AccountSettings
         $active_tracking,
         $tracking_snippet,
         $update_address,
-        $campaign_id,
+        $contactListId,
         $cycle_day,
         $account_type,
         $domain
@@ -96,7 +96,7 @@ class AccountSettings
         $this->active_tracking = $active_tracking;
         $this->tracking_snippet = $tracking_snippet;
         $this->update_address = $update_address;
-        $this->campaign_id = $campaign_id;
+        $this->contactListId = $contactListId;
         $this->cycle_day = $cycle_day;
         $this->account_type = $account_type;
         $this->domain = $domain;
@@ -145,9 +145,9 @@ class AccountSettings
     /**
      * @return string
      */
-    public function getCampaignId()
+    public function getContactListId()
     {
-        return $this->campaign_id;
+        return $this->contactListId;
     }
 
     /**
@@ -241,4 +241,21 @@ class AccountSettings
 
         return $this->getApiKey();
     }
+
+    /**
+     * @return bool
+     */
+    public function isUpdateContactEnabled()
+    {
+        return self::UPDATE_ADDRESS_YES === $this->update_address;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNewsletterSubscriptionOn()
+    {
+        return self::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES === $this->active_newsletter_subscription;
+    }
+
 }

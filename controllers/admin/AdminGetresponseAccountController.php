@@ -2,7 +2,9 @@
 
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
+use GrShareCode\Api\ApiTypeException;
 use GrShareCode\GetresponseApiException;
 
 require_once 'AdminGetresponseController.php';
@@ -27,8 +29,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     public function initContent()
     {
-        $accountService = AccountServiceFactory::create();
-        $this->display = $accountService->isConnectedToGetResponse() ? 'view' : 'edit';
+        $accountStatus = AccountStatusFactory::create();
+        $this->display = $accountStatus->isConnectedToGetResponse() ? 'view' : 'edit';
         $this->show_form_cancel_button = false;
 
         parent::initContent();
@@ -68,33 +70,39 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             return;
         }
 
-        $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
+        try {
+            $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
 
-        if ($accountService->isConnectionAvailable()) {
-            $accountService->updateApiSettings(
-                $accountDto->getApiKey(),
-                $accountDto->getAccountTypeForSettings(),
-                $accountDto->getDomain()
-            );
+            if ($accountService->isConnectionAvailable()) {
 
-            $this->confirmations[] = $this->l('GetResponse account connected');
+                $accountService->updateApiSettings(
+                    $accountDto->getApiKey(),
+                    $accountDto->getAccountTypeForSettings(),
+                    $accountDto->getDomain()
+                );
 
-        } else {
+                $this->confirmations[] = $this->l('GetResponse account connected');
 
-            $msg = !$accountDto->isEnterprisePackage()
-                ? 'The API key or domain seems incorrect.'
-                : 'The API key seems incorrect.';
+            } else {
 
-            $msg .= ' Please check if you typed or pasted it correctly.
-                If you recently generated a new key, please make sure you\'re using the right one';
+                $msg = !$accountDto->isEnterprisePackage()
+                    ? 'The API key or domain seems incorrect.'
+                    : 'The API key seems incorrect.';
 
-            $this->errors[] = $this->l($msg);
+                $msg .= ' Please check if you typed or pasted it correctly.
+                    If you recently generated a new key, please make sure you\'re using the right one';
+
+                $this->errors[] = $this->l($msg);
+            }
+        } catch (GetresponseApiException $e) {
+            $this->errors[] = $e->getMessage();
+        } catch (ApiTypeException $e) {
+            $this->errors[] = $e->getMessage();
         }
     }
 
     /**
      * @return string
-     * @throws GetresponseApiException
      */
     public function renderView()
     {

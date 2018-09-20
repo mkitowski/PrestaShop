@@ -50,7 +50,7 @@ class NewCart extends Hook
      * @throws GetresponseApiException
      * @throws PrestaShopException
      */
-    public function sendCart(Cart $cart)
+    public function sendCart($cart)
     {
         if (0 == $cart->id_customer) {
             return;
@@ -85,7 +85,7 @@ class NewCart extends Hook
             new GrAddCartCommand(
                 $grCart,
                 $customer->email,
-                $settings->getCampaignId(),
+                $settings->getContactListId(),
                 $settings->getShopId()
             )
         );

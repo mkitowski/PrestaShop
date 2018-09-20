@@ -1,36 +1,33 @@
 <?php
-namespace GetResponse\WebForm;
+namespace GetResponse\CustomFields;
 
 use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
+use GrShareCode\CustomField\CustomFieldService as GrCustomFieldService;
 use GrShareCode\GetresponseApiClient;
-use GrShareCode\WebForm\WebFormService as GrWebFormService;
-use GetResponse\Helper\Shop as GrShop;
-use PrestaShopDatabaseException;
+use GrShop;
 
 /**
- * Class WebFormServiceFactory
+ * Class CustomFieldsServiceFactory
  */
-class WebFormServiceFactory
+class CustomFieldsServiceFactory
 {
     /**
-     * @return WebFormService
+     * @return CustomFieldService
      * @throws ApiTypeException
      */
     public static function create()
     {
         $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
-        $settings = $accountSettingsRepository->getSettings();
-        $api = ApiFactory::createFromSettings($settings);
+        $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
-        return new WebFormService(
-            new WebFormRepository(Db::getInstance(), GrShop::getUserShopId()),
-            new GrWebFormService($apiClient)
+        return new CustomFieldService(
+            new GrCustomFieldService($apiClient)
         );
     }
 }

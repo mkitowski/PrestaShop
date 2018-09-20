@@ -1,17 +1,23 @@
 [
     {
         "name": "getresponse/share-code-plugin",
-        "version": "dev-feature/bstepien/initial",
-        "version_normalized": "dev-feature/bstepien/initial",
+        "version": "4.0.1",
+        "version_normalized": "4.0.1.0",
         "source": {
             "type": "git",
-            "url": "git@git.int.getresponse.com:integrations/share-code-plugin.git",
-            "reference": "49169288fb64c0ecb3bda0b95fd5c7bfd0771b2e"
+            "url": "https://github.com/GetResponse/share-code-plugin.git",
+            "reference": "03f2ca98f2504da94a4959b927d0091ce218a6a5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/GetResponse/share-code-plugin/zipball/03f2ca98f2504da94a4959b927d0091ce218a6a5",
+            "reference": "03f2ca98f2504da94a4959b927d0091ce218a6a5",
+            "shasum": ""
         },
         "require-dev": {
             "phpunit/phpunit": "^5"
         },
-        "time": "2018-06-12T10:26:48+00:00",
+        "time": "2018-09-13T10:37:10+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -30,6 +36,10 @@
                 "email": "team@getresponse.com"
             }
         ],
-        "description": "Share code plugin"
+        "description": "Share code plugin",
+        "support": {
+            "source": "https://github.com/GetResponse/share-code-plugin/tree/4.0.1",
+            "issues": "https://github.com/GetResponse/share-code-plugin/issues"
+        }
     }
 ]

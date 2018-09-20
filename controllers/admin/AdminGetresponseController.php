@@ -18,13 +18,13 @@
  * @method null initContent()
  */
 
-use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Api\ApiFactory;
+use GetResponse\Helper\Shop as GrShop;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\GetresponseApi;
-use GetResponse\Helper\Shop as GrShop;
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -52,9 +52,9 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $account = AccountServiceFactory::create();
+        $accountStatus = AccountStatusFactory::create();
 
-        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$account->isConnectedToGetResponse()) {
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountStatus->isConnectedToGetResponse()) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
         }
     }
@@ -92,7 +92,6 @@ class AdminGetresponseController extends ModuleAdminController
         unset($this->page_header_toolbar_btn['back']);
     }
 
-
     /**
      * Process Refresh Data
      * @return mixed
@@ -100,40 +99,6 @@ class AdminGetresponseController extends ModuleAdminController
     public function processRefreshData()
     {
         return $this->module->refreshDatas();
-    }
-
-    /**
-     * Validate custom fields
-     *
-     * @param $customs
-     *
-     * @return array
-     */
-    public function validateCustoms($customs)
-    {
-        $errors = array();
-        if (!is_array($customs)) {
-            return array();
-        }
-        foreach ($customs as $custom) {
-            if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
-                $errors[] = 'Error - "' . $custom . '" ' . $this->l('contains invalid characters');
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * @throws PrestaShopDatabaseException
-     */
-    public function redirectIfNotAuthorized()
-    {
-        $settings = $this->repository->getSettings();
-
-        if (empty($settings['api_key'])) {
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponse'));
-        }
     }
 
     /**
@@ -161,42 +126,6 @@ class AdminGetresponseController extends ModuleAdminController
         return $campaignDays;
     }
 
-
-
-    /**
-     * Get Admin Token
-     * @return bool|string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponse');
-    }
-
-    /**
-     * Converts campaigns to display array
-     *
-     * @param $campaigns
-     *
-     * @return array
-     */
-    public function convertCampaignsToDisplayArray($campaigns)
-    {
-        $options = [
-            [
-                'id_option' => 0,
-                'name' => $this->l('Select a list')
-            ]
-        ];
-
-        foreach ($campaigns as $campaign) {
-            $options[] = [
-                'id_option' => $campaign['id'],
-                'name' => $campaign['name']
-            ];
-        }
-
-        return $options;
-    }
 
     /**
      * Saves customs
@@ -241,17 +170,17 @@ class AdminGetresponseController extends ModuleAdminController
         return array_merge([['id_option' => '', 'name' => $this->l($name)]], $list);
     }
 
-    /**
-     * @return GetresponseApi
-     * @throws PrestaShopDatabaseException
-     */
-    public function getGrAPI()
-    {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
-        $settings = $accountSettingsRepository->getSettings();
-
-        return ApiFactory::createFromSettings($settings);
-    }
+//    /**
+//     * @return GetresponseApi
+//     * @throws PrestaShopDatabaseException
+//     */
+//    public function getGrAPI()
+//    {
+//        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+//        $settings = $accountSettingsRepository->getSettings();
+//
+//        return ApiFactory::createFromSettings($settings);
+//    }
 
     /**
      * Renders custom list
@@ -291,10 +220,20 @@ class AdminGetresponseController extends ModuleAdminController
 
         $helper->title = $this->l('Contacts info');
         $helper->table = $this->name;
-        $helper->token = $this->getToken();
-        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name . '&referer=' . $this->controller_name;
+        $helper->token = Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminGetresponseUpdateMapping', false). '&configure=' . $this->name . '&referer=' . $this->controller_name;
 
         return $helper->generateList($this->getCustomList(), $fieldsList);
+    }
+
+    /**
+     * Get Admin Token
+     * @return bool|string
+     */
+    public function getToken()
+    {
+        $test= 'tst';
+//        return Tools::getAdminTokenLite('AdminGetresponse');
     }
 
     /**
@@ -305,7 +244,7 @@ class AdminGetresponseController extends ModuleAdminController
     public function getCustomList()
     {
         $customs = $this->repository->getCustoms();
-        $result = array();
+        $result = [];
         foreach ($customs as $custom) {
             $result[] = [
                 'id' => $custom['id_custom'],

@@ -90,7 +90,7 @@ class NewOrder extends Hook
         $addOrderCommand = new GrAddOrderCommand(
             $grOrder,
             (new Customer($order->id_customer))->email,
-            $settings->getCampaignId(),
+            $settings->getContactListId(),
             $ecommerceService->getEcommerceSettings()->getGetResponseShopId()
         );
 

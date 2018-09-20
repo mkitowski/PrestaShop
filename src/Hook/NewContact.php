@@ -8,8 +8,8 @@ use GetResponseRepository;
 use Db;
 use GrShareCode\Contact\AddContactCommand as GrAddContactCommand;
 use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\Contact\CustomFieldsCollection as GrCustomFieldsCollection;
-use GrShareCode\Contact\CustomField as GrCustomField;
+use GrShareCode\Contact\ContactCustomFieldsCollection as GrCustomFieldsCollection;
+use GrShareCode\Contact\ContactCustomField as GrCustomField;
 use PrestaShopDatabaseException;
 use GrShareCode\GetresponseApiException;
 
@@ -51,12 +51,14 @@ class NewContact extends Hook
         $accountService = GrAccountServiceFactory::create();
         $settings = $accountService->getSettings();
 
-        if ($settings->getActiveSubscription() == 'yes' && !empty($settings->getCampaignId())) {
-            if (true === $contactDto->getNewsletter()) {
+        if ($settings->isSubscriptionActive() && !empty($settings->getContactListId())) {
+
+            if ($settings->isNewsletterSubscriptionOn()) {
+
                 $addContact = new GrAddContactCommand(
                     $contactDto->getEmail(),
                     $contactDto->getName(),
-                    $settings->getCampaignId(),
+                    $settings->getContactListId(),
                     $settings->getCycleDay(),
                     $this->mapCustomFields(
                         $contactDto->getCustomFields(),
@@ -81,7 +83,7 @@ class NewContact extends Hook
      */
     private function mapCustomFields($contact, $useCustoms)
     {
-        $c = array();
+        $c = [];
 
         /** @var GrCustomField $grCustom */
         foreach ($this->grCustoms as $grCustom) {

@@ -3,9 +3,12 @@ namespace GetResponse\Ecommerce;
 
 use Db;
 use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
-use GrShareCode\Shop\ShopService;
+use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop as GrShop;
-use GetResponse\Api\ApiFactory as GrApiFactory;
+use GetResponseRepository;
+use GrShareCode\Api\ApiTypeException;
+use GrShareCode\GetresponseApiClient;
+use GrShareCode\Shop\ShopService;
 
 /**
  * Class EcommerceServiceFactory
@@ -15,16 +18,19 @@ class EcommerceServiceFactory
 {
     /**
      * @return EcommerceService
+     * @throws ApiTypeException
      */
     public static function create()
     {
         $accountService = GrAccountServiceFactory::create();
         $settings = $accountService->getSettings();
-        $api = GrApiFactory::createFromSettings($settings);
+        $api = ApiFactory::createFromSettings($settings);
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $apiClient = new GetresponseApiClient($api, $repository);
 
         return new EcommerceService(
             new EcommerceRepository(Db::getInstance(), GrShop::getUserShopId()),
-            new ShopService($api),
+            new ShopService($apiClient),
             $settings
         );
     }

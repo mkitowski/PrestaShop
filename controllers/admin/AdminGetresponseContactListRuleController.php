@@ -10,7 +10,7 @@ use GrShareCode\ContactList\Autoresponder;
 
 require_once 'AdminGetresponseController.php';
 
-class AdminGetresponseContactListController extends AdminGetresponseController
+class AdminGetresponseContactListRuleController extends AdminGetresponseController
 {
     private $name = 'GRContactList';
 
@@ -28,7 +28,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
 
         $this->context->smarty->assign([
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
-            'action_url' => $this->context->link->getAdminLink('AdminGetresponseContactList'),
+            'action_url' => $this->context->link->getAdminLink('AdminGetresponseContactListRule'),
             'base_url',
             __PS_BASE_URI__
         ]);
@@ -54,7 +54,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
      */
     public function getToken()
     {
-        return Tools::getAdminTokenLite('AdminGetresponseContactList');
+        return Tools::getAdminTokenLite('AdminGetresponseContactListRule');
     }
 
     public function initToolBarTitle()
@@ -87,7 +87,7 @@ class AdminGetresponseContactListController extends AdminGetresponseController
         if (Tools::isSubmit('submit' . $this->name)) {
 
             $automationDto = new AutomationDto(
-                Tools::getValue('id'),
+                Tools::getValue('automation_id'),
                 Tools::getValue('category'),
                 Tools::getValue('campaign'),
                 Tools::getValue('a_action'),

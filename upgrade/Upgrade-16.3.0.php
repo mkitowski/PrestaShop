@@ -49,8 +49,6 @@ function add_sql_1630($object)
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
-    $sql[] = 'UPDATE `' . _DB_PREFIX_ . 'getresponse_customs` SET default = "no"';
-
     //Install SQL
     foreach ($sql as $s) {
         try {

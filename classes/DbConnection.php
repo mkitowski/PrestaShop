@@ -870,7 +870,7 @@ class DbConnection
 			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`campaign_id` char(5) NOT NULL,
 			`cycle_day` char(5) NOT NULL,
-			`account_type` enum(\'gr\',\'360en\',\'360pl\') NOT NULL DEFAULT \'gr\',
+			`account_type` enum(\'smb\',\'360en\',\'360pl\') NOT NULL DEFAULT \'smb\',
 			`crypto` char(32) NULL,
 			PRIMARY KEY (`id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
@@ -1057,9 +1057,9 @@ class DbConnection
             `active_custom`
         )
         VALUES
-            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'yes\', \'yes\'),
+            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'yes\', \'yes\'),
+            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'yes\'),
             (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
             (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
             (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),

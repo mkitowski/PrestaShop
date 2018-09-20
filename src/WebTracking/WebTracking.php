@@ -51,7 +51,6 @@ class WebTracking
         return $this->snippet;
     }
 
-
     /**
      * @return bool
      */

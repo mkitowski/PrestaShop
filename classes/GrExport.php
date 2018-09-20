@@ -80,15 +80,18 @@ class GrExport
         );
 
         foreach ($contacts as $contact) {
+
             $orders = new GrHistoricalOrderCollection();
 
             if ($this->exportSettings->isExportEcommerce()) {
+
                 $customerOrders = $this->repository->getOrders($contact['id']);
 
                 foreach ($customerOrders as $customerOrder) {
+
                     $orderCore = new Order($customerOrder['id_order']);
-                    $date = DateTime::createFromFormat('Y-m-d H:i:s',
-                        $orderCore->date_add);
+                    $date = DateTime::createFromFormat('Y-m-d H:i:s', $orderCore->date_add);
+
                     $orders->add(new GrHistoricalOrder(
                         (string)$customerOrder['id_order'],
                         $this->getOrderProductsCollection($orderCore),
@@ -118,11 +121,7 @@ class GrExport
                     $orders
                 );
 
-                if ($settings->isJobSchedulerEnabled()) {
-                    $this->repository->addJob(GrJobFactory::createForContactExportCommand($exportCommand));
-                } else {
-                    $exportService->exportContact($exportCommand);
-                }
+                $exportService->exportContact($exportCommand);
             } catch (GetresponseApiException $e) {
                 if ($e->getMessage() !== 'Cannot add contact that is blacklisted') {
                     throw $e;

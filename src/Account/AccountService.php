@@ -79,7 +79,7 @@ class AccountService
 
     public function disconnectFromGetResponse()
     {
-        $this->repository->updateApiSettings(null, AccountSettings::ACCOUNT_TYPE_GR, null);
+        $this->repository->updateApiSettings(null, AccountSettings::ACCOUNT_TYPE_SMB, null);
     }
 
     /**
