@@ -66,12 +66,17 @@ class ProductService
         $variantCollection = new VariantsCollection();
         $variantCollection->add($grVariant);
 
-        return new GrProduct(
+        $grProduct = new GrProduct(
             (int)$product->id,
             $this->normalizeToString($product->name),
             $variantCollection,
             $categoryCollection
         );
+
+        $grProduct
+            ->setUrl((new Link())->getProductLink($product));
+
+        return $grProduct;
     }
 
     /**

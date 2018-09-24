@@ -2,9 +2,9 @@
 /**
  * This module integrate GetResponse and PrestaShop Allows subscribe via checkout page and export your contacts.
  *
- *  @author Getresponse <grintegrations@getresponse.com>
- *  @copyright GetResponse
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
@@ -16,7 +16,6 @@ include_once(_PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseExportSettings.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrExport.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
 include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
@@ -26,11 +25,8 @@ use GetResponse\Account\AccountSettings as GrAccountSettings;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Api\ApiFactory as GrApiFactory;
 use GetResponse\Config\ConfigService as GrConfigService;
-use GetResponse\Contact\AddContactCommandFactory;
+use GetResponse\Contact\AddContactSettings;
 use GetResponse\Contact\ContactServiceFactory;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\Helper\FlashMessages;
 use GetResponse\Helper\Shop as GrShop;
 use GetResponse\Hook\FormDisplay as GrFormDisplay;
@@ -38,7 +34,6 @@ use GetResponse\Hook\NewCart as GrNewCartHook;
 use GetResponse\Hook\NewOrder as GrNewOrderHook;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GrShareCode\Api\ApiTypeException;
-use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
 
@@ -77,10 +72,12 @@ class Getresponse extends Module
         $this->settings = $this->isConnectedToGetResponse ? GrAccountServiceFactory::create()->getSettings() : null;
 
         if (!function_exists('curl_init')) {
-            $this->context->smarty->assign(array('flash_message' => array(
-                'message' => $this->l('Curl library not found'),
-                'status' => 'danger'
-            )));
+            $this->context->smarty->assign(array(
+                'flash_message' => array(
+                    'message' => $this->l('Curl library not found'),
+                    'status' => 'danger'
+                )
+            ));
         }
     }
 
@@ -99,13 +96,38 @@ class Getresponse extends Module
     /**
      * @return bool
      */
+    public function install()
+    {
+        if (!parent::install() || !$this->installTab()) {
+            return false;
+        }
+
+        foreach (GrConfigService::USED_HOOKS as $hook) {
+            if (!$this->registerHook($hook)) {
+                return false;
+            }
+        }
+
+        //Update Version Number
+        if (!Configuration::updateValue('GR_VERSION', $this->version)) {
+            return false;
+        }
+
+        $this->repository->prepareDatabase();
+
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
     public function installTab()
     {
         $tab = new Tab();
         $tab->active = 1;
         $tab->class_name = 'Getresponse';
         $tab->name = array();
-        $tab->id_parent = substr(_PS_VERSION_, 0, 3) === '1.6' ? 0 : (int) Tab::getIdFromClassName('AdminAdmin');
+        $tab->id_parent = substr(_PS_VERSION_, 0, 3) === '1.6' ? 0 : (int)Tab::getIdFromClassName('AdminAdmin');
         $tab->module = $this->name;
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'GetResponse';
@@ -134,49 +156,8 @@ class Getresponse extends Module
             }
             $newtab->add();
         }
+
         return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function install()
-    {
-        if (!parent::install() ||!$this->installTab()) {
-            return false;
-        }
-
-        foreach (GrConfigService::USED_HOOKS as $hook) {
-            if (!$this->registerHook($hook)) {
-                return false;
-            }
-        }
-
-        //Update Version Number
-        if (!Configuration::updateValue('GR_VERSION', $this->version)) {
-            return false;
-        }
-
-        $this->repository->prepareDatabase();
-        return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function uninstallTab()
-    {
-        $result = true;
-        foreach (GrConfigService::INSTALLED_CLASSES as $class) {
-            $idTab = (int) Tab::getIdFromClassName($class);
-            if (false === $idTab) {
-                return false;
-            }
-            $tab = new Tab($idTab);
-            $result = $tab->delete() && $result;
-        }
-
-        return $result;
     }
 
     public function getContent()
@@ -189,7 +170,7 @@ class Getresponse extends Module
      */
     public function uninstall()
     {
-        if (!parent::uninstall() ||!$this->uninstallTab()) {
+        if (!parent::uninstall() || !$this->uninstallTab()) {
             return false;
         }
 
@@ -204,7 +185,26 @@ class Getresponse extends Module
         }
 
         $this->repository->clearDatabase();
+
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function uninstallTab()
+    {
+        $result = true;
+        foreach (GrConfigService::INSTALLED_CLASSES as $class) {
+            $idTab = (int)Tab::getIdFromClassName($class);
+            if (false === $idTab) {
+                return false;
+            }
+            $tab = new Tab($idTab);
+            $result = $tab->delete() && $result;
+        }
+
+        return $result;
     }
 
     /**
@@ -236,22 +236,6 @@ class Getresponse extends Module
     }
 
     /**
-     * @param array $params
-     */
-    public function hookHookOrderConfirmation($params)
-    {
-        $this->sendOrderToGr($params['order']);
-    }
-
-    /**
-     * @param array $params
-     */
-    public function hookPostUpdateOrderStatus($params)
-    {
-        $this->sendOrderToGr($params['order']);
-    }
-
-    /**
      * @param Order $order
      * @throws ApiTypeException
      */
@@ -266,6 +250,25 @@ class Getresponse extends Module
             $orderHook->sendOrder($order);
         } catch (GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
+        }
+    }
+
+    /**
+     * @param array $params
+     */
+    public function hookHookOrderConfirmation($params)
+    {
+        $this->sendOrderToGr($params['order']);
+    }
+
+    /**
+     * @param array $params
+     * @throws ApiTypeException
+     */
+    public function hookPostUpdateOrderStatus($params)
+    {
+        if (isset($params['order'])) {
+            $this->sendOrderToGr($params['order']);
         }
     }
 
@@ -293,40 +296,15 @@ class Getresponse extends Module
 
         try {
             $contact = isset($params['newNewsletterContact']) ? $params['newNewsletterContact'] : $params['newCustomer'];
-
-            if ($this->settings->isUpdateContactEnabled() && !isset($params['newNewsletterContact'])) {
-
-                $customFieldMappingService = CustomFieldMappingServiceFactory::create();
-                $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
-
-                $customFieldsService = CustomFieldsServiceFactory::create();
-                $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
-
-                $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
-
-            } else {
-                $customFieldMappingCollection = new CustomFieldMappingCollection();
-                $grCustomFieldCollection = new CustomFieldCollection();
-            }
-
-            $addContactCommandFactory = new AddContactCommandFactory(
-                $customFieldMappingCollection,
-                $grCustomFieldCollection
-            );
-
-            $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
-                $contact,
-                $this->settings->getContactListId(),
-                $this->settings->getCycleDay(),
-                $this->settings->isUpdateContactEnabled()
-            );
+            $addContactSettings = AddContactSettings::createFromAccountSettings($this->settings);
 
             $contactService = ContactServiceFactory::create();
-            $contactService->addContact($addContactCommand);
+            $contactService->addContact($contact, $addContactSettings, isset($params['newNewsletterContact']));
 
         } catch (GetresponseApiException $e) {
-        } catch (PrestaShopDatabaseException $e) {
+        } catch (PrestaShopException $e) {
         }
+
     }
 
     /**
@@ -335,6 +313,7 @@ class Getresponse extends Module
     public function getGrAPI()
     {
         $accountService = GrAccountServiceFactory::create();
+
         return GrApiFactory::createFromSettings($accountService->getSettings());
     }
 
@@ -344,6 +323,27 @@ class Getresponse extends Module
     public function hookDisplayRightColumn()
     {
         return $this->displayWebForm('right');
+    }
+
+    /**
+     * @param string $position
+     * @return mixed
+     */
+    private function displayWebForm($position)
+    {
+        if (!$this->isConnectedToGetResponse) {
+            return '';
+        }
+        $formDisplay = new GrFormDisplay(WebFormServiceFactory::create());
+        $assignData = $formDisplay->displayWebForm($position);
+
+        if (!empty($assignData)) {
+            $this->smarty->assign($assignData);
+
+            return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
+        }
+
+        return '';
     }
 
     /**
@@ -361,6 +361,7 @@ class Getresponse extends Module
     {
         if ($this->settings && $this->settings->isTrackingActive()) {
             $this->smarty->assign(['gr_tracking_snippet' => $this->settings->getTrackingSnippet()]);
+
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
         }
 
@@ -414,34 +415,6 @@ class Getresponse extends Module
     }
 
     /**
-     * @return string
-     */
-    public function hookDisplayHome()
-    {
-        return $this->displayWebForm('home');
-    }
-
-    /**
-     * @param string $position
-     * @return mixed
-     */
-    private function displayWebForm($position)
-    {
-        if (!$this->isConnectedToGetResponse) {
-            return '';
-        }
-        $formDisplay = new GrFormDisplay(WebFormServiceFactory::create());
-        $assignData = $formDisplay->displayWebForm($position);
-
-        if (!empty($assignData)) {
-            $this->smarty->assign($assignData);
-            return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
-        }
-
-        return '';
-    }
-
-    /**
      * @param string $email
      * @return mixed
      */
@@ -449,10 +422,19 @@ class Getresponse extends Module
     {
         if (!empty($email)) {
             $this->smarty->assign(array('tracking_email' => $email));
+
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_mail.tpl');
         }
 
         return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function hookDisplayHome()
+    {
+        return $this->displayWebForm('home');
     }
 
 }

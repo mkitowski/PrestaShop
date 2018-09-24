@@ -52,6 +52,18 @@
 })(jQuery);
 
 $(function () {
+
+    var ecommerceCheckbox = $('#exportEcommerce_1');
+    var storeBox = $('#shop').closest('.form-group');
+
+    if (!ecommerceCheckbox.is(':checked')) {
+        storeBox.toggleClass('hidden');
+    }
+
+    ecommerceCheckbox.change(function() {
+        storeBox.toggleClass('hidden');
+    });
+
     $('input[name="contactInfo"]').on('change', function () {
         if ($('input[name="contactInfo"]:checked').val() == 1) {
             $('#form-AdminGetresponseExport').show();

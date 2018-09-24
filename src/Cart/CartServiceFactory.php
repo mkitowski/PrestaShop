@@ -2,7 +2,6 @@
 namespace GetResponse\Cart;
 
 use Db;
-use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;

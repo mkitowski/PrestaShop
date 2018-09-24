@@ -196,4 +196,28 @@ class ExportRepository
         return [];
     }
 
+    /**
+     * @param $customerId
+     * @return array|false|mysqli_result|null|PDOStatement|resource
+     * @throws PrestaShopDatabaseException
+     */
+    public function getOrders($customerId)
+    {
+        $sql = '
+        SELECT
+            `id_order`,
+            `id_cart`
+        FROM
+            ' . _DB_PREFIX_ . 'orders
+        WHERE
+            `id_shop` = ' . (int) $this->idShop . ' AND
+            `id_customer` = ' . (int) $customerId;
+
+        if ($results = $this->db->executeS($sql)) {
+            return $results;
+        }
+
+        return array();
+    }
+
 }

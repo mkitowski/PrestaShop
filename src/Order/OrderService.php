@@ -1,22 +1,6 @@
 <?php
 namespace GetResponse\Order;
 
-use GetResponse\Account\AccountService;
-use GetResponse\Product\ProductService;
-use GrShareCode\Address\Address as GrAddress;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
-use GrShareCode\Order\Order as GrOrder;
-use GrShareCode\Order\OrderService as GrOrderService;
-use GrShareCode\Product\ProductsCollection;
-use GrShareCode\CountryCodeConverter as GrCountryCodeConverter;
-use GrShareCode\Order\AddOrderCommand as GrAddOrderCommand;
-use Link;
-use Order;
-use OrderState;
-use PrestaShopException;
-use Product;
-use Tools;
 use Address;
 use Cart;
 use Category;
@@ -24,6 +8,20 @@ use Country;
 use Currency;
 use Customer;
 use DateTime;
+use GetResponse\Product\ProductService;
+use GrShareCode\Address\Address as GrAddress;
+use GrShareCode\CountryCodeConverter as GrCountryCodeConverter;
+use GrShareCode\GetresponseApiException;
+use GrShareCode\Order\AddOrderCommand as GrAddOrderCommand;
+use GrShareCode\Order\Order as GrOrder;
+use GrShareCode\Order\OrderService as GrOrderService;
+use GrShareCode\Product\ProductsCollection;
+use Link;
+use Order;
+use OrderState;
+use PrestaShopException;
+use Product;
+use Tools;
 
 
 /**
@@ -35,24 +33,18 @@ class OrderService
     /** @var GrOrderService */
     private $grOrderService;
 
-    /** @var AccountService */
-    private $accountService;
-
     /**
      * @param GrOrderService $grOrderService
-     * @param AccountService $accountService
      */
-    public function __construct(GrOrderService $grOrderService, AccountService $accountService)
+    public function __construct(GrOrderService $grOrderService)
     {
         $this->grOrderService = $grOrderService;
-        $this->accountService = $accountService;
     }
 
     /**
      * @param Order $order
      * @param string $contactListId
      * @param string $grShopId
-     * @throws ApiTypeException
      * @throws GetresponseApiException
      */
     public function sendOrder(Order $order, $contactListId, $grShopId)
@@ -77,7 +69,7 @@ class OrderService
             '',
             (float)$order->total_shipping_tax_incl,
             $this->getOrderStatus($order),
-            DateTime::createFromFormat('Y-m-d H:i:s', $order->date_add),
+            DateTime::createFromFormat('Y-m-d H:i:s', $order->date_add)->format(DateTime::ISO8601),
             $this->getOrderShippingAddress($order),
             $this->getOrderBillingAddress($order)
         );
@@ -88,7 +80,6 @@ class OrderService
 
         $this->grOrderService->sendOrder($addOrderCommand);
     }
-
 
     /**
      * @param $products
@@ -104,8 +95,10 @@ class OrderService
             $prestashopProduct = new Product($product['id_product']);
 
             $productService = new ProductService();
-            $getresponseProduct = $productService->createProductFromPrestaShopProduct($prestashopProduct,
-                $product['quantity']);
+            $getresponseProduct = $productService->createProductFromPrestaShopProduct(
+                $prestashopProduct,
+                (int)$product['product_quantity']
+            );
 
             $productsCollection->add($getresponseProduct);
         }
@@ -140,6 +133,15 @@ class OrderService
     }
 
     /**
+     * @param string $text
+     * @return mixed
+     */
+    private function normalizeToString($text)
+    {
+        return is_array($text) ? reset($text) : $text;
+    }
+
+    /**
      * @param Order $order
      * @return GrAddress
      */
@@ -152,15 +154,6 @@ class OrderService
             GrCountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code),
             $this->normalizeToString($country->name)
         );
-    }
-
-    /**
-     * @param string $text
-     * @return mixed
-     */
-    private function normalizeToString($text)
-    {
-        return is_array($text) ? reset($text) : $text;
     }
 
 }

@@ -2,13 +2,12 @@
 namespace GetResponse\Order;
 
 use Db;
-use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
-use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\GetresponseApiClient;
+use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductService;
 use GrShop;
 
@@ -18,7 +17,6 @@ use GrShop;
  */
 class OrderServiceFactory
 {
-
     /**
      * @return OrderService
      * @throws ApiTypeException
@@ -29,10 +27,9 @@ class OrderServiceFactory
         $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
-        $accountService = AccountServiceFactory::create();
         $productService = new ProductService($apiClient, $repository);
         $orderService = new GrOrderService($apiClient, $repository, $productService);
 
-        return new OrderService($orderService, $accountService);
+        return new OrderService($orderService);
     }
 }

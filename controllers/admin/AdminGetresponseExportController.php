@@ -4,12 +4,15 @@ require_once 'AdminGetresponseController.php';
 
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
+use GetResponse\Ecommerce\EcommerceService;
+use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Export\ExportServiceFactory;
 use GetResponse\Export\ExportSettings;
 use GetResponse\Helper\FlashMessages;
 use GrShareCode\Api\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
 use GrShareCode\GetresponseApiException;
+use GrShareCode\Shop\Shop;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
@@ -18,19 +21,22 @@ class AdminGetresponseExportController extends AdminGetresponseController
     /** @var ContactListService */
     public $contactListService;
 
+    /** @var EcommerceService */
+    private $ecommerceService;
+
     public function __construct()
     {
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
         $this->contactListService = ContactListServiceFactory::create();
-
-        $this->display = 'view';
+        $this->ecommerceService = EcommerceServiceFactory::create();
     }
 
 
     public function initContent()
     {
+        $this->display = 'view';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Export Customer Data on Demand');
         parent::initContent();
@@ -64,7 +70,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
                 Tools::getValue('contactInfo', 0) == 1,
                 Tools::getValue('newsletter', 0) == 1,
-                Tools::getValue('exportEcommerce_1', 0) == 1
+                Tools::getValue('exportEcommerce_1', 0) == 1,
+                Tools::getValue('shop')
             );
 
             if (empty($exportSettings->getContactListId())) {
@@ -115,6 +122,16 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderExportForm()
     {
+        $shops[] = ['shopId' => '', 'name' => $this->l('Select a shop')];
+
+        /** @var Shop $shop */
+        foreach ($this->ecommerceService->getAllShops() as $shop) {
+            $shops[] = [
+                'shopId' => $shop->getId(),
+                'name' => $shop->getName(),
+            ];
+        }
+
         $fieldsForm = [
             'form' => [
                 'legend' => [
@@ -184,6 +201,18 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         ],
                     ],
                     [
+                        'type' => 'select',
+                        'label' => $this->l('Store'),
+                        'class' => 'gr-select',
+                        'name' => 'shop',
+                        'required' => false,
+                        'options' => [
+                            'query' => $shops,
+                            'id' => 'shopId',
+                            'name' => 'name'
+                        ]
+                    ],
+                    [
                         'label' => $this->l('Update contacts info'),
                         'name' => 'contactInfo',
                         'type' => 'switch',
@@ -219,7 +248,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'contactInfo' => Tools::getValue('mapping', 0),
             'newsletter' => 0,
             'autoresponders' => json_encode([]),
-            'cycle_day_selected' => 0
+            'cycle_day_selected' => 0,
+            'shop' => Tools::getValue('shop')
         ];
 
         return $helper->generateForm([$fieldsForm]) . $this->renderList();

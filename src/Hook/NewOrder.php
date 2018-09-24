@@ -3,13 +3,10 @@ namespace GetResponse\Hook;
 
 use Currency;
 use Customer;
-use Db;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Order\OrderServiceFactory;
-use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
 use Order;
 use PrestaShopException;

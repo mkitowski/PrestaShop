@@ -857,7 +857,7 @@ class DbConnection
 
     public function prepareDatabase()
     {
-        $sql = array();
+        $sql = [];
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_settings` (
 			`id` int(6) NOT NULL AUTO_INCREMENT,

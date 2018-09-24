@@ -5,14 +5,13 @@ namespace GetResponse\Cart;
 use Cart;
 use Currency;
 use Customer;
-use GetResponse\Account\AccountService;
 use GetResponse\Product\ProductService;
+use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\Product\ProductsCollection;
 use Product;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
 
 /**
  * Class CartService
@@ -76,7 +75,8 @@ class CartService
             $prestashopProduct = new Product($product['id_product']);
 
             $productService = new ProductService();
-            $getresponseProduct = $productService->createProductFromPrestaShopProduct($prestashopProduct, $product['quantity']);
+            $getresponseProduct = $productService->createProductFromPrestaShopProduct($prestashopProduct,
+                $product['quantity']);
 
             $productsCollection->add($getresponseProduct);
         }
