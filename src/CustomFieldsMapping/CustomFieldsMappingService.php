@@ -22,7 +22,7 @@ class CustomFieldsMappingService
     }
 
     /**
-     * @param CustomFieldMapping $customFieldMapping
+     * @param CustomFieldMapping $customFieldMappingFromRequest
      * @throws CustomFieldMappingException
      */
     public function updateCustomFieldMapping(CustomFieldMapping $customFieldMappingFromRequest)
@@ -43,19 +43,24 @@ class CustomFieldsMappingService
     /**
      * @return CustomFieldMappingCollection
      */
-    public function getAllCustomFieldMapping()
+    public function getActiveCustomFieldMapping()
     {
         $customFieldMappingCollection = new CustomFieldMappingCollection();
 
         foreach ($this->repository->getCustoms() as $customFields) {
-            $customFieldMappingCollection->add(
-                new CustomFieldMapping(
-                    $customFields['id'],
-                    $customFields['value'],
-                    $customFields['name'],
-                    $customFields['active']
-                )
+
+            $customFieldMapping = new CustomFieldMapping(
+                $customFields['id_custom'],
+                $customFields['custom_value'],
+                $customFields['custom_name'],
+                $customFields['active_custom'],
+                $customFields['custom_field'],
+                $customFields['default']
             );
+
+            if (!$customFieldMapping->isDefault() && $customFieldMapping->isActive()){
+                $customFieldMappingCollection->add($customFieldMapping);
+            }
         }
 
         return $customFieldMappingCollection;

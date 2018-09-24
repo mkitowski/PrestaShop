@@ -25,6 +25,7 @@ class EcommerceService
     /**
      * @param EcommerceRepository $repository
      * @param ShopService $shopService
+     * @param AccountSettings $settings
      */
     public function __construct(EcommerceRepository $repository, ShopService $shopService, AccountSettings $settings)
     {

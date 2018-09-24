@@ -105,6 +105,33 @@ class ExportRepository
 
 
     /**
+     * @param string $moduleName
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     */
+    public function checkModuleStatus($moduleName)
+    {
+        if (empty($moduleName)) {
+            return false;
+        }
+
+        $sql = '
+        SELECT
+            `active`
+        FROM
+            ' . _DB_PREFIX_ . 'module
+        WHERE
+            `name` = "' . pSQL($moduleName) . '"';
+
+        if ($results = $this->db->executeS($sql)) {
+            if (isset($results[0]['active']) && 1 === (int) $results[0]['active']) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param string $email
      * @return string
      * @throws PrestaShopDatabaseException

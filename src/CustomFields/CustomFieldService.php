@@ -24,11 +24,22 @@ class CustomFieldService
     }
 
     /**
+     * @param CustomFieldMappingCollection $customFieldMappingCollection
      * @return CustomFieldCollection
      * @throws GetresponseApiException
      */
-    public function getAllCustomFields()
+    public function getCustomFieldsFromGetResponse(CustomFieldMappingCollection $customFieldMappingCollection)
     {
+        $customFields = [];
+
+        /** @var CustomFieldMapping $customFieldMapping */
+        foreach ($customFieldMappingCollection as $customFieldMapping){
+            $customFields[] = $customFieldMapping->getName();
+        }
+
+        $customFieldList = implode(',', $customFields);
+//        $this->grCustomFieldService->getAllCustomFieldsWithNames($customFieldList);
+
         return $this->grCustomFieldService->getAllCustomFields();
     }
 
@@ -43,7 +54,7 @@ class CustomFieldService
 
             if (!$this->grCustomFieldService->getCustomFieldByName($customFieldMapping->getName())) {
 
-                $this->grCustomFieldService->createCustomField($customFieldMapping->getName(), null);
+                $this->grCustomFieldService->createCustomField($customFieldMapping->getName(), $customFieldMapping->getName());
             }
         }
     }

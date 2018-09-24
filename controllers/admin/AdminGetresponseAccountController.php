@@ -186,12 +186,12 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                             [
                                 'id' => 'account_pl',
                                 'value' => '360pl',
-                                'label' => $this->l('GetResponse 360 PL')
+                                'label' => $this->l('GetResponse Enterprise PL')
                             ],
                             [
                                 'id' => 'account_en',
                                 'value' => '360en',
-                                'label' => $this->l('GetResponse 360 COM')
+                                'label' => $this->l('GetResponse Enterprise COM')
                             ]
                         ],
                     ],

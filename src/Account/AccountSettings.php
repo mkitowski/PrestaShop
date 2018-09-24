@@ -258,4 +258,11 @@ class AccountSettings
         return self::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES === $this->active_newsletter_subscription;
     }
 
+    /**
+     * @return bool
+     */
+    public function canSubscriberBeSend()
+    {
+        return $this->isSubscriptionActive() && !empty($this->getContactListId()) && $this->isNewsletterSubscriptionOn();
+    }
 }

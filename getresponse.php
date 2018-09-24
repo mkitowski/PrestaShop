@@ -26,19 +26,21 @@ use GetResponse\Account\AccountSettings as GrAccountSettings;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Api\ApiFactory as GrApiFactory;
 use GetResponse\Config\ConfigService as GrConfigService;
-use GetResponse\Contact\ContactDtoFactory as GrContactDtoFactory;
+use GetResponse\Contact\AddContactCommandFactory;
+use GetResponse\Contact\ContactServiceFactory;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\Helper\FlashMessages;
 use GetResponse\Helper\Shop as GrShop;
 use GetResponse\Hook\FormDisplay as GrFormDisplay;
 use GetResponse\Hook\NewCart as GrNewCartHook;
-use GetResponse\Hook\NewContact as GrNewContactHook;
 use GetResponse\Hook\NewOrder as GrNewOrderHook;
-use GetResponse\WebForm\WebFormRepository as GrWebFormRepository;
 use GetResponse\WebForm\WebFormServiceFactory;
+use GrShareCode\Api\ApiTypeException;
+use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\GetresponseApi;
 use GrShareCode\GetresponseApiException;
-use GrShareCode\Job\JobException as GrJobException;
-use GrShareCode\Job\RunCommand as GrRunCommand;
 
 class Getresponse extends Module
 {
@@ -206,7 +208,8 @@ class Getresponse extends Module
     }
 
     /**
-     * @param array $params
+     * @param $params
+     * @throws ApiTypeException
      */
     public function hookCart($params)
     {
@@ -214,9 +217,11 @@ class Getresponse extends Module
             return;
         }
 
+        $cart = $params['cart'];
+
         try {
-            $cartHook = new GrNewCartHook($this->getGrAPI(), $this->repository, Db::getInstance());
-            $cartHook->sendCart($params['cart']);
+            $cartHook = new GrNewCartHook();
+            $cartHook->sendCart($cart);
         } catch (GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
         }
@@ -248,6 +253,7 @@ class Getresponse extends Module
 
     /**
      * @param Order $order
+     * @throws ApiTypeException
      */
     private function sendOrderToGr(Order $order)
     {
@@ -256,7 +262,7 @@ class Getresponse extends Module
         }
 
         try {
-            $orderHook = new GrNewOrderHook($this->getGrAPI(), $this->repository, Db::getInstance());
+            $orderHook = new GrNewOrderHook();
             $orderHook->sendOrder($order);
         } catch (GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
@@ -273,6 +279,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
+     * @throws ApiTypeException
      */
     public function createSubscriber(array $params)
     {
@@ -280,11 +287,43 @@ class Getresponse extends Module
             return;
         }
 
+        if (!$this->settings->canSubscriberBeSend()) {
+            return;
+        }
+
         try {
-            $prefix = isset($params['newNewsletterContact']) ? 'newNewsletterContact' : 'newCustomer';
-            $contactDto = GrContactDtoFactory::createFromForm($params[$prefix]);
-            $contactHook = new GrNewContactHook($this->getGrAPI(), $this->repository, Db::getInstance());
-            $contactHook->sendContact($contactDto);
+            $contact = isset($params['newNewsletterContact']) ? $params['newNewsletterContact'] : $params['newCustomer'];
+
+            if ($this->settings->isUpdateContactEnabled() && !isset($params['newNewsletterContact'])) {
+
+                $customFieldMappingService = CustomFieldMappingServiceFactory::create();
+                $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
+
+                $customFieldsService = CustomFieldsServiceFactory::create();
+                $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
+
+                $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
+
+            } else {
+                $customFieldMappingCollection = new CustomFieldMappingCollection();
+                $grCustomFieldCollection = new CustomFieldCollection();
+            }
+
+            $addContactCommandFactory = new AddContactCommandFactory(
+                $customFieldMappingCollection,
+                $grCustomFieldCollection
+            );
+
+            $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
+                $contact,
+                $this->settings->getContactListId(),
+                $this->settings->getCycleDay(),
+                $this->settings->isUpdateContactEnabled()
+            );
+
+            $contactService = ContactServiceFactory::create();
+            $contactService->addContact($addContactCommand);
+
         } catch (GetresponseApiException $e) {
         } catch (PrestaShopDatabaseException $e) {
         }
@@ -341,12 +380,15 @@ class Getresponse extends Module
      */
     public function hookDisplayFooter()
     {
+        if (!$this->isConnectedToGetResponse) {
+            return '';
+        }
+
         $email = false;
 
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
-            && $this->isConnectedToGetResponse
             && $this->settings->isNewsletterSubscriptionOn()
         ) {
             $client = new stdClass();
@@ -363,7 +405,6 @@ class Getresponse extends Module
 
         if (isset($this->context->customer)
             && !empty($this->context->customer->email)
-            && $this->isConnectedToGetResponse
             && $this->settings->isTrackingActive()
         ) {
             $email = $this->context->customer->email;
@@ -414,26 +455,4 @@ class Getresponse extends Module
         return '';
     }
 
-    /**
-     * @return array
-     */
-    public function getCronFrequency()
-    {
-        return ['hour' => -1, 'day' => -1, 'month' => -1, 'day_of_week' => -1];
-    }
-
-    /**
-     * @param array $params
-     * @throws GetresponseApiException
-     * @throws GrJobException
-     */
-    public function hookActionCronJob($params = [])
-    {
-        if (!$this->isConnectedToGetResponse) {
-            return;
-        }
-
-        $command = new GrRunCommand($this->getGrAPI(), $this->repository);
-        $command->execute();
-    }
 }

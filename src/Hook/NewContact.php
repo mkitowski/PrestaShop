@@ -18,7 +18,7 @@ use GrShareCode\GetresponseApiException;
  * Class NewContact
  * @package GetResponse\Hook
  */
-class NewContact extends Hook
+class NewContact
 {
     /** @var GetresponseApi */
     private $api;
@@ -46,32 +46,37 @@ class NewContact extends Hook
      * @throws PrestaShopDatabaseException
      * @throws GetresponseApiException
      */
-    public function sendContact(ContactDto $contactDto)
+    public function sendContact($contact, $isNewsletterContact = false)
     {
-        $accountService = GrAccountServiceFactory::create();
-        $settings = $accountService->getSettings();
+        if ($this->settings->isUpdateContactEnabled() && !isset($params['newNewsletterContact'])) {
 
-        if ($settings->isSubscriptionActive() && !empty($settings->getContactListId())) {
+            $customFieldMappingService = CustomFieldMappingServiceFactory::create();
+            $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
 
-            if ($settings->isNewsletterSubscriptionOn()) {
+            $customFieldsService = CustomFieldsServiceFactory::create();
+            $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
 
-                $addContact = new GrAddContactCommand(
-                    $contactDto->getEmail(),
-                    $contactDto->getName(),
-                    $settings->getContactListId(),
-                    $settings->getCycleDay(),
-                    $this->mapCustomFields(
-                        $contactDto->getCustomFields(),
-                        $settings->getUpdateAddress() == 'yes'
-                    ),
-                    $contactDto->getOrigin()
-                );
+            $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
 
-                $contactService = new GrContactService($this->api);
-                $contactService->upsertContact($addContact);
-
-            }
+        } else {
+            $customFieldMappingCollection = new CustomFieldMappingCollection();
+            $grCustomFieldCollection = new CustomFieldCollection();
         }
+
+        $addContactCommandFactory = new AddContactCommandFactory(
+            $customFieldMappingCollection,
+            $grCustomFieldCollection
+        );
+
+        $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
+            $contact,
+            $this->settings->getContactListId(),
+            $this->settings->getCycleDay(),
+            $this->settings->isUpdateContactEnabled()
+        );
+
+        $contactService = ContactServiceFactory::create();
+        $contactService->addContact($addContactCommand);
     }
 
 

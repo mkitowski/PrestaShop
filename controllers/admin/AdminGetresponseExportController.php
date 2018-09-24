@@ -4,13 +4,11 @@ require_once 'AdminGetresponseController.php';
 
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
+use GetResponse\Export\ExportServiceFactory;
 use GetResponse\Export\ExportSettings;
+use GetResponse\Helper\FlashMessages;
 use GrShareCode\Api\ApiTypeException;
-use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\ContactList\ContactList;
-use GrShareCode\ContactList\FromFields;
-use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\GetresponseApiException;
 
 class AdminGetresponseExportController extends AdminGetresponseController
@@ -26,72 +24,18 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
         $this->contactListService = ContactListServiceFactory::create();
+
+        $this->display = 'view';
     }
 
-    /**
-     * @return bool|ObjectModel|void
-     * @throws GetresponseApiException
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     */
-    public function postProcess()
-    {
-        if (Tools::isSubmit($this->name)) {
-
-            $exportDto = new ExportSettings(
-                Tools::getValue('campaign'),
-                Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
-                Tools::getValue('contactInfo', 0) ==  1 ? true : false,
-                Tools::getValue('newsletter', 0) ==  1 ? true : false,
-                Tools::getValue('exportEcommerce_1', 0) ==  1 ? true : false,
-
-            );
-
-            if (empty($exportDto->getContactListId())) {
-
-                $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
-                FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
-                Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
-
-                $this->errors[] = $this->l('You need to select list');
-                $this->exportCustomersView();
-                return;
-            }
-
-            try {
-                $export = new GrExport($exportSettings, $this->repository);
-                $export->export();
-            } catch (GetresponseApiException $e) {
-                $this->errors[] = $this->l($e->getMessage());
-                $this->exportCustomersView();
-                return;
-            } catch (PrestaShopDatabaseException $e) {
-                $this->errors[] = $this->l($e->getMessage());
-                $this->exportCustomersView();
-                return;
-            } catch (PrestaShopException $e) {
-                $this->errors[] = $this->l($e->getMessage());
-                $this->exportCustomersView();
-                return;
-            }
-
-            $this->confirmations[] = $this->l('Customer data exported');
-
-            $this->exportCustomersView();
-        }
-        parent::postProcess();
-    }
 
     public function initContent()
     {
-        $this->display = 'view';
-
-        if (Tools::isSubmit('update' . $this->name)) {
-            $this->display = 'edit';
-        }
-
+        $this->toolbar_title[] = $this->l('GetResponse');
+        $this->toolbar_title[] = $this->l('Export Customer Data on Demand');
         parent::initContent();
     }
+
 
     public function initPageHeaderToolbar()
     {
@@ -105,6 +49,42 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
+    public function postProcess()
+    {
+        if (Tools::isSubmit($this->name)) {
+
+            $exportSettings = new ExportSettings(
+                Tools::getValue('campaign'),
+                Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
+                Tools::getValue('contactInfo', 0) == 1,
+                Tools::getValue('newsletter', 0) == 1,
+                Tools::getValue('exportEcommerce_1', 0) == 1
+            );
+
+            if (empty($exportSettings->getContactListId())) {
+                $this->errors[] = $this->l('You need to select list');
+
+                return;
+            }
+
+            $exportService = ExportServiceFactory::create();
+            $exportService->export($exportSettings);
+
+            FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Customer data exported'));
+            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseExport'));
+
+        }
+        parent::postProcess();
+    }
+
+
+    /**
      * Render main view
      * @return string
      * @throws GetresponseApiException
@@ -112,17 +92,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
      * @throws PrestaShopException
      */
     public function renderView()
-    {
-        $this->exportCustomersView();
-
-        return parent::renderView();
-    }
-
-    /**
-     * @throws GetresponseApiException
-     * @throws ApiTypeException
-     */
-    public function exportCustomersView()
     {
         $settings = $this->repository->getSettings();
 
@@ -134,40 +103,8 @@ class AdminGetresponseExportController extends AdminGetresponseController
             'cycle_day' => $settings['cycle_day'],
             'token' => $this->getToken(),
         ]);
-    }
 
-    /**
-     * Get Admin Token
-     * @return string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponseExport');
-    }
-
-    public function initToolBarTitle()
-    {
-        $this->toolbar_title[] = $this->l('GetResponse');
-        $this->toolbar_title[] = $this->l('Export Customer Data on Demand');
-    }
-
-    /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    private function getCampaigns()
-    {
-        $campaigns = [];
-
-        /** @var ContactList $contactList */
-        foreach ($this->contactListService->getContactLists() as $contactList) {
-            $campaigns[] = [
-                'id' => $contactList->getId(),
-                'name' => $contactList->getName()
-            ];
-        }
-
-        return $campaigns;
+        return parent::renderView();
     }
 
     /**
@@ -194,7 +131,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'label' => $this->l('Contact list'),
                         'options' => [
                             'query' => [
-                                ['id' => '', 'name' => $this->l('Select a list')]
+                                    ['id' => '', 'name' => $this->l('Select a list')]
                                 ] + $this->getCampaigns(),
                             'id' => 'id',
                             'name' => 'name'
@@ -216,7 +153,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'name' => 'addToCycle',
                         'values' => [
                             'query' => [
-                                ['id' => 1, 'val' =>1, 'name' => $this->l(' Add to autoresponder cycle')]
+                                ['id' => 1, 'val' => 1, 'name' => $this->l(' Add to autoresponder cycle')]
                             ],
                             'id' => 'id',
                             'name' => 'name',
@@ -225,7 +162,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                     [
                         'type' => 'select',
                         'label' => $this->l('Autoresponder day'),
-                        'class'    => 'gr-select',
+                        'class' => 'gr-select',
                         'name' => 'autoresponder_day',
                         'data-default' => $this->l('no autoresponders'),
                         'options' => [
@@ -240,7 +177,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'name' => 'exportEcommerce',
                         'values' => [
                             'query' => [
-                                ['id' => 1, 'val' =>1, 'name' => $this->l(' Include ecommerce data in this export')]
+                                ['id' => 1, 'val' => 1, 'name' => $this->l(' Include ecommerce data in this export')]
                             ],
                             'id' => 'id',
                             'name' => 'name',
@@ -289,49 +226,31 @@ class AdminGetresponseExportController extends AdminGetresponseController
     }
 
     /**
-     * Assigns values to forms
-     * @param ObjectModel $obj
      * @return array
-     * @throws PrestaShopDatabaseException
+     * @throws GetresponseApiException
      */
-    public function getFieldsValue($obj)
+    private function getCampaigns()
     {
-        if (Tools::getValue('action', null) == 'addCampaign') {
-            return ['campaign_name' => null];
+        $campaigns = [];
+
+        /** @var ContactList $contactList */
+        foreach ($this->contactListService->getContactLists() as $contactList) {
+            $campaigns[] = [
+                'id' => $contactList->getId(),
+                'name' => $contactList->getName()
+            ];
         }
 
-        if ($this->display == 'view') {
-
-            return array(
-                'campaign' => Tools::getValue('campaign', null),
-                'autoresponder_day' => Tools::getValue('autoresponder_day', null),
-                'contactInfo' => Tools::getValue('contactInfo', null),
-                'newsletter' => Tools::getValue('newsletter', null)
-            );
-        } else {
-            $customs = $this->repository->getCustoms();
-
-            foreach ($customs as $custom) {
-                if (Tools::getValue('id') == $custom['id_custom']) {
-                    return array(
-                        'id' => $custom['id_custom'],
-                        'customer_detail' => $custom['custom_field'],
-                        'gr_custom' => $custom['custom_name'],
-                        'default' => 0,
-                        'mapping_on' => $custom['active_custom'] == 'yes' ? 1 : 0
-                    );
-                }
-            }
-
-            return array(
-                'id' => 1,
-                'customer_detail' => '',
-                'gr_custom' => '',
-                'default' => 0,
-                'on' => 0
-            );
-        }
+        return $campaigns;
     }
 
+    /**
+     * Get Admin Token
+     * @return string
+     */
+    public function getToken()
+    {
+        return Tools::getAdminTokenLite('AdminGetresponseExport');
+    }
 
 }

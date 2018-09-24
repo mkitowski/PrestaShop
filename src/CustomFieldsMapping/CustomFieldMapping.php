@@ -10,8 +10,8 @@ class CustomFieldMapping
     const ACTIVE = 'yes';
     const INACTIVE = 'no';
 
-    const DEFAULT_YES = 1;
-    const DEFAULT_NO = 0;
+    const DEFAULT_YES = 'yes';
+    const DEFAULT_NO = 'no';
 
     /** @var int */
     private $id;

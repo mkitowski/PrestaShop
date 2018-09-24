@@ -934,14 +934,14 @@ class DbConnection
             UNIQUE KEY `id_user` (`id_user`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_jobs` (
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_jobs` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `name` varchar(32) DEFAULT NULL,
               `content` text,
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;';
 
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_carts` (
+        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_carts` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `shop_id` int(11) DEFAULT NULL,
               `gr_shop_id` varchar(16) DEFAULT NULL,
@@ -950,7 +950,7 @@ class DbConnection
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
-        $sql[] = 'CREATE TABLE `ps_getresponse_orders` (
+        $sql[] = 'CREATE TABLE `getresponse_orders` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
               `shop_id` int(11) DEFAULT NULL,
               `gr_shop_id` varchar(16) DEFAULT NULL,
