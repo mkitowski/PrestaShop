@@ -46,8 +46,12 @@ function add_sql_1630($object)
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `gr_variant_id` varchar(16) DEFAULT NULL,
               `variant_id` int(11) DEFAULT NULL,
+              `payload_md5` VARCHAR(32) DEFAULT NULL,
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+
+    $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'getresponse_settings` ADD `invalid_request_date` DATETIME NULL AFTER `crypto`;
+';
 
     //Install SQL
     foreach ($sql as $s) {

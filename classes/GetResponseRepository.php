@@ -893,10 +893,24 @@ class GetResponseRepository implements DbRepositoryInterface
     /**
      * @param string $grShopId
      * @param int $externalOrderId
+     * @return string
      */
     public function getPayloadMd5FromOrderMapping($grShopId, $externalOrderId)
     {
-        // TODO: Implement getPayloadMd5FromOrderMapping() method.
+        $query = '
+        SELECT
+            `payload_md5`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_orders
+        WHERE
+            `shop_id` = ' . (int) $this->idShop . '
+            AND `order_id` = ' . (int) $this->idShop;
+
+        if ($results = $this->db->ExecuteS($query)) {
+            return $results[0];
+        }
+
+        return '';
     }
 
     /**
@@ -904,7 +918,15 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsInvalid($accountId)
     {
-        // TODO: Implement markAccountAsInvalid() method.
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `invalid_request_date` = NOW()
+   
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+        $this->db->execute($query);
     }
 
     /**
@@ -912,15 +934,36 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsValid($accountId)
     {
-        // TODO: Implement markAccountAsValid() method.
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `invalid_request_date` = NULL
+   
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+        $this->db->execute($query);
     }
 
     /**
      * @param int $accountId
+     * @return string
      */
     public function getInvalidAccountFirstOccurrenceDate($accountId)
     {
-        // TODO: Implement getInvalidAccountFirstOccurrenceDate() method.
+        $query = '
+        SELECT
+            `invalid_request_date`
+        FROM
+            ' . _DB_PREFIX_ . 'getresponse_settings
+        WHERE
+            `shop_id` = ' . (int) $this->idShop;
+
+        if ($results = $this->db->ExecuteS($query)) {
+            return $results[0];
+        }
+
+        return '';
     }
 
     /**
@@ -928,6 +971,16 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function disconnectAccount($accountId)
     {
-        // TODO: Implement disconnectAccount() method.
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `api_key` = "",
+            `account_type` = "",
+            `crypto` = ""
+         WHERE
+            `id_shop` = ' . (int) $this->idShop;
+
+        $this->db->execute($query);
     }
 }
