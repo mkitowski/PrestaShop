@@ -34,28 +34,28 @@ class AccountSettings
     private $apiKey;
 
     /** @var string */
-    private $active_subscription;
+    private $activeSubscription;
 
     /** @var string */
-    private $active_newsletter_subscription;
+    private $activeNewsletterSubscription;
 
     /** @var string */
-    private $active_tracking;
+    private $activeTracking;
 
     /** @var string */
-    private $tracking_snippet;
+    private $trackingSnippet;
 
     /** @var string */
-    private $update_address;
+    private $updateAddress;
 
     /** @var string */
     private $contactListId;
 
     /** @var string */
-    private $cycle_day;
+    private $cycleDay;
 
     /** @var string */
-    private $account_type;
+    private $accountType;
 
     /** @var string */
     private $domain;
@@ -64,41 +64,41 @@ class AccountSettings
      * @param int $id
      * @param int $shopId
      * @param string $apiKey
-     * @param string $active_subscription
-     * @param string $active_newsletter_subscription
-     * @param string $active_tracking
-     * @param string $tracking_snippet
-     * @param string $update_address
+     * @param string $activeSubscription
+     * @param string $activeNewsletterSubscription
+     * @param string $activeTracking
+     * @param string $trackingSnippet
+     * @param string $updateAddress
      * @param string $contactListId
-     * @param string $cycle_day
-     * @param string $account_type
+     * @param string $cycleDay
+     * @param string $accountType
      * @param string $domain
      */
     public function __construct(
         $id,
         $shopId,
         $apiKey,
-        $active_subscription,
-        $active_newsletter_subscription,
-        $active_tracking,
-        $tracking_snippet,
-        $update_address,
+        $activeSubscription,
+        $activeNewsletterSubscription,
+        $activeTracking,
+        $trackingSnippet,
+        $updateAddress,
         $contactListId,
-        $cycle_day,
-        $account_type,
+        $cycleDay,
+        $accountType,
         $domain
     ) {
         $this->id = $id;
         $this->shopId = $shopId;
         $this->apiKey = $apiKey;
-        $this->active_subscription = $active_subscription;
-        $this->active_newsletter_subscription = $active_newsletter_subscription;
-        $this->active_tracking = $active_tracking;
-        $this->tracking_snippet = $tracking_snippet;
-        $this->update_address = $update_address;
+        $this->activeSubscription = $activeSubscription;
+        $this->activeNewsletterSubscription = $activeNewsletterSubscription;
+        $this->activeTracking = $activeTracking;
+        $this->trackingSnippet = $trackingSnippet;
+        $this->updateAddress = $updateAddress;
         $this->contactListId = $contactListId;
-        $this->cycle_day = $cycle_day;
-        $this->account_type = $account_type;
+        $this->cycleDay = $cycleDay;
+        $this->accountType = $accountType;
         $this->domain = $domain;
     }
 
@@ -123,7 +123,7 @@ class AccountSettings
      */
     public function getActiveNewsletterSubscription()
     {
-        return $this->active_newsletter_subscription;
+        return $this->activeNewsletterSubscription;
     }
 
     /**
@@ -131,7 +131,7 @@ class AccountSettings
      */
     public function getTrackingSnippet()
     {
-        return $this->tracking_snippet;
+        return $this->trackingSnippet;
     }
 
     /**
@@ -139,7 +139,7 @@ class AccountSettings
      */
     public function getUpdateAddress()
     {
-        return $this->update_address;
+        return $this->updateAddress;
     }
 
     /**
@@ -155,7 +155,7 @@ class AccountSettings
      */
     public function getCycleDay()
     {
-        return $this->cycle_day;
+        return $this->cycleDay;
     }
 
     /**
@@ -163,7 +163,7 @@ class AccountSettings
      */
     public function getAccountType()
     {
-        return $this->account_type;
+        return $this->accountType;
     }
 
     /**
@@ -179,7 +179,7 @@ class AccountSettings
      */
     public function isTrackingDisabled()
     {
-        return $this->getActiveTracking() === self::TRACKING_DISABLED;
+        return self::TRACKING_DISABLED === $this->getActiveTracking();
     }
 
     /**
@@ -187,7 +187,7 @@ class AccountSettings
      */
     public function getActiveTracking()
     {
-        return $this->active_tracking;
+        return $this->activeTracking;
     }
 
     /**
@@ -195,7 +195,7 @@ class AccountSettings
      */
     public function isTrackingActive()
     {
-        return $this->getActiveTracking() === self::TRACKING_ACTIVE;
+        return self::TRACKING_ACTIVE === $this->getActiveTracking();
     }
 
     /**
@@ -203,7 +203,7 @@ class AccountSettings
      */
     public function isSubscriptionActive()
     {
-        return $this->getActiveSubscription() === self::SUBSCRIPTION_ACTIVE_YES;
+        return self::SUBSCRIPTION_ACTIVE_YES === $this->getActiveSubscription();
     }
 
     /**
@@ -211,7 +211,7 @@ class AccountSettings
      */
     public function getActiveSubscription()
     {
-        return $this->active_subscription;
+        return $this->activeSubscription;
     }
 
     /**
@@ -231,7 +231,7 @@ class AccountSettings
     }
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getHiddenApiKey()
     {
@@ -239,7 +239,7 @@ class AccountSettings
             return str_repeat('*', strlen($this->getApiKey()) - 6) . substr($this->getApiKey(), -6);
         }
 
-        return $this->getApiKey();
+        return null;
     }
 
     /**
@@ -247,7 +247,7 @@ class AccountSettings
      */
     public function isUpdateContactEnabled()
     {
-        return self::UPDATE_ADDRESS_YES === $this->update_address;
+        return self::UPDATE_ADDRESS_YES === $this->updateAddress;
     }
 
     /**
@@ -255,7 +255,7 @@ class AccountSettings
      */
     public function isNewsletterSubscriptionOn()
     {
-        return self::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES === $this->active_newsletter_subscription;
+        return self::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES === $this->activeNewsletterSubscription;
     }
 
     /**

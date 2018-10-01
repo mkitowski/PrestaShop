@@ -8,7 +8,6 @@ use GrShareCode\Job\JobCollection as GrJobCollection;
 
 class GetResponseRepository implements DbRepositoryInterface
 {
-
     /** @var Db */
     private $db;
 
@@ -23,80 +22,6 @@ class GetResponseRepository implements DbRepositoryInterface
     {
         $this->db = $db;
         $this->idShop = $shopId;
-    }
-
-    /**
-     * @param string $activeSubscription
-     * @param string $campaignId
-     * @param string $updateAddress
-     * @param string $cycleDay
-     * @param string $newsletter
-     */
-    public function updateSettings($activeSubscription, $campaignId, $updateAddress, $cycleDay, $newsletter)
-    {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `active_subscription` = "' . pSQL($activeSubscription) . '",
-            `active_newsletter_subscription` = "' . pSQL($newsletter) . '",
-            `campaign_id` = "' . pSQL($campaignId) . '",
-            `update_address` = "' . pSQL($updateAddress) . '",
-            `cycle_day` = "' . pSQL($cycleDay) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
-
-    /**
-     * @param bool $isActive
-     * @return array
-     */
-    public function getAutomationSettings($isActive = false)
-    {
-        $sql = '
-        SELECT
-            `id`, `id_shop`, `category_id`, `campaign_id`, `action`, `cycle_day`, `active`
-        FROM
-            ' .  _DB_PREFIX_ . 'getresponse_automation
-        WHERE
-            id_shop = ' . (int) $this->idShop;
-
-        if ($isActive) {
-            $sql .= ' AND `active` = "yes"';
-        }
-
-        if ($results = $this->db->ExecuteS($sql)) {
-            return $results;
-        }
-
-        return array();
-    }
-
-    public function getGrShopId()
-    {
-        $sql = 'SELECT 
-                    `gr_id_shop` 
-                FROM 
-                    `' . _DB_PREFIX_ . 'getresponse_ecommerce`
-                WHERE
-                    `id_shop` = ' . $this->idShop . ' 
-                LIMIT 1';
-
-        return $this->db->getValue($sql);
-    }
-
-    public function getApiKey()
-    {
-        $sql = 'SELECT 
-                    `api_key` 
-                FROM 
-                    `' . _DB_PREFIX_ . 'getresponse_settings`
-                WHERE
-                    `id_shop` = ' . $this->idShop;
-
-        return $this->db->getValue($sql);
     }
 
     /**
@@ -125,7 +50,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `variant_id` = ' . $externalVariantId . '
                ';
 
-        $mapping = $this->db->ExecuteS($sql);
+        $mapping = $this->db->executeS($sql);
 
         if (empty($mapping)) {
             return new ProductMapping(null, null, null, null, null);
@@ -254,82 +179,6 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($sql);
     }
 
-    /**
-     * @param bool $newsletterGuests
-     * @return array
-     * @throws PrestaShopDatabaseException
-     */
-    public function getContacts($newsletterGuests = false)
-    {
-        if (version_compare(_PS_VERSION_, '1.7') === -1) {
-            $newsletterTableName = _DB_PREFIX_ . 'newsletter';
-            $newsletterModule = 'blocknewsletter';
-        } else {
-            $newsletterTableName = _DB_PREFIX_ . 'emailsubscription';
-            $newsletterModule = _DB_PREFIX_ . 'emailsubscription';
-        }
-        $ngWhere = '';
-
-        if ($newsletterGuests && $this->checkModuleStatus($newsletterModule)) {
-            $ngWhere = 'UNION SELECT
-                    0 as id,
-                    "Friend" as firstname,
-                    "" as lastname,
-                    n.email as email,
-                    "" as company,
-                    "" as birthday,
-                    "" as address1,
-                    "" as address2,
-                    "" as postcode,
-                    "" as city,
-                    "" as phone,
-                    "" as country
-                FROM
-                    ' . $newsletterTableName . ' n
-                WHERE
-                    n.active = 1
-                AND
-                    id_shop = ' . (int) $this->idShop . '
-            ';
-        }
-
-        $sql = 'SELECT
-                    cu.id_customer as id,
-                    cu.firstname as firstname,
-                    cu.lastname as lastname,
-                    cu.email as email,
-                    cu.company as company,
-                    cu.birthday as birthday,
-                    ad.address1 as address1,
-                    ad.address2 as address2,
-                    ad.postcode as postcode,
-                    ad.city as city,
-                    ad.phone as phone,
-                    co.iso_code as country
-                FROM
-                    ' . _DB_PREFIX_ . 'customer as cu
-                LEFT JOIN
-                    ' . _DB_PREFIX_ . 'address ad ON cu.id_customer = ad.id_customer
-                LEFT JOIN
-                    ' . _DB_PREFIX_ . 'country co ON ad.id_country = co.id_country
-                WHERE
-                    cu.newsletter = 1
-                AND
-                    cu.id_shop = ' . (int) $this->idShop . '
-                    GROUP BY cu.email
-                ' . $ngWhere;
-
-        $contacts = $this->db->ExecuteS($sql);
-
-        if (empty($contacts)) {
-            return array();
-        }
-
-        foreach ($contacts as $id => $contact) {
-            $contacts[$id]['category'] = $this->getContactCategory($contact['email']);
-        }
-        return $contacts;
-    }
 
     /**
      * @return array
@@ -356,7 +205,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             `id_shop` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->ExecuteS($sql)) {
+        if ($results = $this->db->executeS($sql)) {
             return $results[0];
         }
 
@@ -383,99 +232,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             id_shop = ' . (int) $this->idShop;
 
-        if ($results = $this->db->ExecuteS($sql)) {
-            return $results;
-        }
-
-        return array();
-    }
-
-    /**
-     * @param string $moduleName
-     * @return bool
-     * @throws PrestaShopDatabaseException
-     */
-    public function checkModuleStatus($moduleName)
-    {
-        if (empty($moduleName)) {
-            return false;
-        }
-
-        $sql = '
-        SELECT
-            `active`
-        FROM
-            ' . _DB_PREFIX_ . 'module
-        WHERE
-            `name` = "' . pSQL($moduleName) . '"';
-
-        if ($results = $this->db->ExecuteS($sql)) {
-            if (isset($results[0]['active']) && 1 === (int) $results[0]['active']) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param string $email
-     * @return string
-     * @throws PrestaShopDatabaseException
-     */
-    private function getContactCategory($email)
-    {
-        $sql = '
-        SELECT
-            group_concat(DISTINCT cp.`id_category` separator ", ") as category
-        FROM
-            ' . _DB_PREFIX_ . 'customer as cu
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'address ad ON cu.`id_customer` = ad.`id_customer`
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'country co ON ad.`id_country` = co.`id_country`
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'orders o ON o.`id_customer` = cu.`id_customer`
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'order_detail od ON (od.`id_order` = o.`id_order` 
-            AND o.`id_shop` = ' . (int) $this->idShop . ')
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'category_product cp ON (cp.`id_product` = od.`product_id` 
-            AND od.`id_shop` = ' . (int) $this->idShop . ')
-        LEFT JOIN
-            ' . _DB_PREFIX_ . 'category_lang cl ON (cl.`id_category` = cp.`id_category` 
-            AND cl.`id_shop` = ' .
-            (int) $this->idShop . ' AND cl.`id_lang` = cu.`id_lang`)
-        WHERE
-            cu.`newsletter` = 1
-            AND cu.`email` = "' . pSQL($email) . '"
-            AND cu.`id_shop` = ' . (int) $this->idShop;
-
-        $categories = $this->db->ExecuteS($sql);
-
-        if (empty($categories)) {
-            return '';
-        }
-        return $categories[0]['category'];
-    }
-
-    /**
-     * @param $customerId
-     * @return array|false|mysqli_result|null|PDOStatement|resource
-     * @throws PrestaShopDatabaseException
-     */
-    public function getOrders($customerId)
-    {
-        $sql = '
-        SELECT
-            `id_order`,
-            `id_cart`
-        FROM
-            ' . _DB_PREFIX_ . 'orders
-        WHERE
-            `id_shop` = ' . (int) $this->idShop . ' AND
-            `id_customer` = ' . (int) $customerId;
-
-        if ($results = $this->db->ExecuteS($sql)) {
+        if ($results = $this->db->executeS($sql)) {
             return $results;
         }
 
@@ -509,7 +266,7 @@ class GetResponseRepository implements DbRepositoryInterface
             ' . _DB_PREFIX_ . 'getresponse_jobs'
         ;
 
-        if ($results = $this->db->ExecuteS($sql)) {
+        if ($results = $this->db->executeS($sql)) {
             foreach ($results as $result) {
                 $collection->add(new GrJob($result['name'], $result['content']));
             }
@@ -530,107 +287,6 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($sql);
     }
 
-    /**
-     * @param string $apiKey
-     * @param string $accountType
-     * @param string $crypto
-     */
-    public function updateApiSettings($apiKey, $accountType, $crypto)
-    {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = "' . pSQL($apiKey) . '",
-            `account_type` = "' . pSQL($accountType) . '",
-            `crypto` = "' . pSQL($crypto) . '"
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
-
-    /**
-     * @param $activeTracking
-     * @param $snippet
-     */
-    public function updateTracking($activeTracking, $snippet)
-    {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        SET
-            `active_tracking` = "' . pSQL($activeTracking) . '",
-            `tracking_snippet` = "' . pSQL($snippet, true) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
-
-    /**
-     * @return array
-     */
-    public function getWebformSettings()
-    {
-        $query = '
-        SELECT
-            `webform_id`, 
-            `active_subscription`, 
-            `sidebar`, 
-            `style`, 
-            `url`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_webform
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        if ($results = $this->db->ExecuteS($query)) {
-            return $results[0];
-        }
-
-        return array();
-    }
-
-    /**
-     * @param string $activeSubscription
-     */
-    public function updateWebformSubscription($activeSubscription)
-    {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_webform 
-        SET
-            `active_subscription` = "' . pSQL($activeSubscription) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
-
-    /**
-     * @param int $webformId
-     * @param string $activeSubscription
-     * @param string $sidebar
-     * @param string $style
-     * @param string $url
-     */
-    public function updateWebformSettings($webformId, $activeSubscription, $sidebar, $style, $url)
-    {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_webform
-        SET
-            `webform_id` = "' . pSQL($webformId) . '",
-            `active_subscription` = "' . pSQL($activeSubscription) . '",
-            `sidebar` = "' . pSQL($sidebar) . '",
-            `style` = "' . pSQL($style) . '",
-            `url` = "' . pSQL($url) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
 
     /**
      * @param CustomFieldMapping $custom
@@ -647,7 +303,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `id_shop` = ' . (int) $this->idShop . '
                     AND `id_custom` = "' . pSQL($custom->getId()) . '"';
 
-        $this->db->Execute($sql);
+        $this->db->execute($sql);
     }
 
     public function clearDatabase()
@@ -706,18 +362,6 @@ class GetResponseRepository implements DbRepositoryInterface
 			PRIMARY KEY (`id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_automation` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`category_id` char(32) NOT NULL,
-			`campaign_id` char(32) NOT NULL,
-			`action` char(32) NOT NULL DEFAULT \'move\',
-			`cycle_day` char(5) NOT NULL,
-			`active` enum(\'yes\',\'no\') NOT NULL DEFAULT \'yes\',
-			PRIMARY KEY (`id`),
-			UNIQUE KEY `id_shop` (`id_shop`,`category_id`,`campaign_id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce` (
             `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
             `id_shop` int(11) DEFAULT NULL,
@@ -751,8 +395,7 @@ class GetResponseRepository implements DbRepositoryInterface
             ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'ps_getresponse_carts` (
-              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-              `shop_id` int(11) DEFAULT NULL,
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `cart_id` int(11) DEFAULT NULL,
               `gr_cart_id` varchar(16) DEFAULT NULL,
@@ -761,7 +404,6 @@ class GetResponseRepository implements DbRepositoryInterface
 
         $sql[] = 'CREATE TABLE `ps_getresponse_orders` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-              `shop_id` int(11) DEFAULT NULL,
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `order_id` int(11) DEFAULT NULL,
               `gr_order_id` varchar(16) DEFAULT NULL,
@@ -796,7 +438,7 @@ class GetResponseRepository implements DbRepositoryInterface
         //Install SQL
         foreach ($sql as $s) {
             try {
-                Db::getInstance()->Execute($s);
+                Db::getInstance()->execute($s);
             } catch (Exception $e) {
             }
         }
@@ -887,7 +529,12 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function removeCartMapping($grShopId, $externalCartId, $grCartId)
     {
-        // TODO: Implement removeCartMapping() method.
+        $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'getresponse_carts
+                WHERE
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
+                    `gr_cart_id` = "' . $this->db->escape($grCartId) . '" AND 
+                    `cart_id` = ' . (int) $externalCartId;
+        $this->db->execute($sql);
     }
 
     /**
@@ -903,10 +550,11 @@ class GetResponseRepository implements DbRepositoryInterface
         FROM
             ' . _DB_PREFIX_ . 'getresponse_orders
         WHERE
-            `shop_id` = ' . (int) $this->idShop . '
-            AND `order_id` = ' . (int) $this->idShop;
+            `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
+            `order_id` = ' . (int) $externalOrderId . ' AND 
+            `shop_id` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->ExecuteS($query)) {
+        if ($results = $this->db->executeS($query)) {
             return $results[0];
         }
 
@@ -959,7 +607,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             `shop_id` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->ExecuteS($query)) {
+        if ($results = $this->db->executeS($query)) {
             return $results[0];
         }
 

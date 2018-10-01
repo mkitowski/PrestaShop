@@ -4,7 +4,7 @@ namespace GetResponse\Hook;
 use Cart;
 use Currency;
 use Customer;
-use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Account\AccountSettings;
 use GetResponse\Cart\CartServiceFactory;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GrShareCode\Api\ApiTypeException;
@@ -19,26 +19,25 @@ class NewCart
 {
     /**
      * @param Cart $cart
-     * @throws GetresponseApiException
+     * @param AccountSettings $accountSettings
      * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
-    public function sendCart($cart)
+    public function sendCart($cart, AccountSettings $accountSettings)
     {
-        if (empty($cart) || 0 == $cart->id_customer) {
+        if (null === $cart || 0 == $cart->id_customer) {
             return;
         }
 
-        $ecommerceService = EcommerceServiceFactory::create();
+        $ecommerceService = EcommerceServiceFactory::createFromSettings($accountSettings);
         if (!$ecommerceService->isEcommerceEnabled()) {
             return;
         }
 
         $grShopId = $ecommerceService->getEcommerceSettings()->getGetResponseShopId();
+        $contactListId = $accountSettings->getContactListId();
 
-        $accountService = AccountServiceFactory::create();
-        $contactListId = $accountService->getSettings()->getContactListId();
-
-        $cartService = CartServiceFactory::create();
+        $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
         $cartService->sendCart($cart, $contactListId, $grShopId);
     }
 

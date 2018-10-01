@@ -21,7 +21,6 @@ function add_sql_1630($object)
 
     $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_carts` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-              `shop_id` int(11) DEFAULT NULL,
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `cart_id` int(11) DEFAULT NULL,
               `gr_cart_id` varchar(16) DEFAULT NULL,
@@ -30,7 +29,6 @@ function add_sql_1630($object)
 
     $sql[] = 'CREATE TABLE `' . _DB_PREFIX_ . 'getresponse_orders` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-              `shop_id` int(11) DEFAULT NULL,
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `order_id` int(11) DEFAULT NULL,
               `gr_order_id` varchar(16) DEFAULT NULL,

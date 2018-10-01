@@ -29,6 +29,6 @@ class AccountStatus
             return false;
         }
 
-        return !empty($settings->getApiKey());
+        return $settings->isConnectedWithGetResponse();
     }
 }

@@ -23,7 +23,6 @@ use PrestaShopException;
 use Product;
 use Tools;
 
-
 /**
  * Class OrderService
  * @package GetResponse\Order
@@ -45,9 +44,10 @@ class OrderService
      * @param Order $order
      * @param string $contactListId
      * @param string $grShopId
+     * @param bool $skipAutomation
      * @throws GetresponseApiException
      */
-    public function sendOrder(Order $order, $contactListId, $grShopId)
+    public function sendOrder(Order $order, $contactListId, $grShopId, $skipAutomation = false)
     {
         $products = $order->getProducts();
 
@@ -77,6 +77,10 @@ class OrderService
         $email = (new Customer($order->id_customer))->email;
 
         $addOrderCommand = new GrAddOrderCommand($grOrder, $email, $contactListId, $grShopId);
+
+        if ($skipAutomation) {
+            $addOrderCommand->setToSkipAutomation();
+        }
 
         $this->grOrderService->sendOrder($addOrderCommand);
     }

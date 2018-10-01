@@ -62,11 +62,11 @@ class CartService
     }
 
     /**
-     * @param $products
+     * @param array $products
      * @return ProductsCollection
      * @throws PrestaShopException
      */
-    protected function getOrderProductsCollection($products)
+    private function getOrderProductsCollection(array $products)
     {
         $productsCollection = new ProductsCollection();
 
@@ -75,8 +75,11 @@ class CartService
             $prestashopProduct = new Product($product['id_product']);
 
             $productService = new ProductService();
-            $getresponseProduct = $productService->createProductFromPrestaShopProduct($prestashopProduct,
-                $product['quantity']);
+
+            $getresponseProduct = $productService->createProductFromPrestaShopProduct(
+                $prestashopProduct,
+                $product['quantity']
+            );
 
             $productsCollection->add($getresponseProduct);
         }

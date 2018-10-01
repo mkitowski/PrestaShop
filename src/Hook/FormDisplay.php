@@ -27,7 +27,7 @@ class FormDisplay
      */
     public function displayWebForm($position)
     {
-        if (!empty($position)) {
+        if (empty($position)) {
             return [];
         }
 

@@ -126,62 +126,6 @@ class AdminGetresponseController extends ModuleAdminController
         return $campaignDays;
     }
 
-
-    /**
-     * Saves customs
-     */
-    public function saveCustom()
-    {
-        $custom = [
-            'id' => Tools::getValue('id'),
-            'value' => Tools::getValue('customer_detail'),
-            'name' => Tools::getValue('gr_custom'),
-            'active' => Tools::getValue('mapping_on') == 1 ? 'yes' : 'no'
-        ];
-
-        $error = $this->validateCustom($custom['name']);
-
-        if (empty($error)) {
-            $this->repository->updateCustom($custom);
-            $this->confirmations[] = $this->l('Custom sucessfuly edited');
-        } else {
-            $this->errors[] = $this->l($error);
-        }
-    }
-
-    /**
-     * @param string $custom
-     * @return string
-     */
-    public function validateCustom($custom)
-    {
-        if (!empty($custom) && preg_match('/^[\w\-]+$/', $custom) == false) {
-            return $this->l('Custom field contains invalid characters!');
-        }
-    }
-
-    /**
-     * @param string $name
-     * @param array $list
-     * @return array
-     */
-    public function prependOptionList($name, $list)
-    {
-        return array_merge([['id_option' => '', 'name' => $this->l($name)]], $list);
-    }
-
-//    /**
-//     * @return GetresponseApi
-//     * @throws PrestaShopDatabaseException
-//     */
-//    public function getGrAPI()
-//    {
-//        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
-//        $settings = $accountSettingsRepository->getSettings();
-//
-//        return ApiFactory::createFromSettings($settings);
-//    }
-
     /**
      * Renders custom list
      * @return string
@@ -225,17 +169,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         return $helper->generateList($this->getCustomList(), $fieldsList);
     }
-
-    /**
-     * Get Admin Token
-     * @return bool|string
-     */
-    public function getToken()
-    {
-        $test= 'tst';
-//        return Tools::getAdminTokenLite('AdminGetresponse');
-    }
-
+ 
     /**
      * Returns custom list
      * @return array

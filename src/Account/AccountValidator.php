@@ -34,13 +34,13 @@ class AccountValidator
         }
 
         if ($this->accountDto->isEnterprisePackage() && empty($this->accountDto->getAccountType())) {
-            $this->errors[] = Translate::getAdminTranslation('Invalid account type');
+            $this->errors[] = Translate::getAdminTranslation('Invalid account type.');
 
             return;
         }
 
         if ($this->accountDto->isEnterprisePackage() && empty($this->accountDto->getDomain())) {
-            $this->errors[] = Translate::getAdminTranslation('Domain field can not be empty');
+            $this->errors[] = Translate::getAdminTranslation('Domain field can not be empty.');
 
             return;
         }

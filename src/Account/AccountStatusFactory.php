@@ -2,6 +2,7 @@
 namespace GetResponse\Account;
 
 use Db;
+use GetResponse\Helper\Shop;
 use GrShop;
 
 /**
@@ -16,7 +17,7 @@ class AccountStatusFactory
     public static function create()
     {
         return new AccountStatus(
-            new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId())
+            new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId())
         );
     }
 }

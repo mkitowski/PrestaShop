@@ -23,8 +23,7 @@ class ConfigService
         'cart',
         'postUpdateOrderStatus',
         'hookOrderConfirmation',
-        'displayBackOfficeHeader',
-        'actionCronJob'
+        'displayBackOfficeHeader'
     ];
 
     const BACKOFFICE_TABS = [
@@ -55,10 +54,6 @@ class ConfigService
             'name' => 'Subscribe via Forms',
         ],
         [
-            'class_name' => 'AdminGetresponseContactListRule',
-            'name' => 'Contact List Rules',
-        ],
-        [
             'class_name' => 'AdminGetresponseWebTracking',
             'name' => 'Web Event Tracking',
         ],
@@ -86,15 +81,8 @@ class ConfigService
     const CONFIRM_UNINSTALL = 'Warning: all the module data will be deleted. Are you sure you want uninstall this module?';
 
     const MODULE_DESCRIPTION = '
-            Add your Prestashop contacts to GetResponse or manage them via automation rules.
+            Add your Prestashop contacts to GetResponse.
             Automatically follow-up new subscriptions with engaging email marketing campaigns
             ';
 
-    /** @var GetResponseRepository */
-    private $repository;
-
-    public function __construct(GetResponseRepository $repository)
-    {
-        $this->repository = $repository;
-    }
 }

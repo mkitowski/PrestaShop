@@ -2,8 +2,8 @@
 namespace GetResponse\CustomFieldsMapping;
 
 use Db;
+use GetResponse\Helper\Shop;
 use GetResponseRepository;
-use GrShop;
 
 /**
  * Class CustomFieldMappingServiceFactory
@@ -16,7 +16,7 @@ class CustomFieldMappingServiceFactory
      */
     public static function create()
     {
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
 
         return new CustomFieldsMappingService($repository);
 

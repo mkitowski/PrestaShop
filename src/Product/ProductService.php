@@ -2,24 +2,16 @@
 
 namespace GetResponse\Product;
 
-use GrShareCode\Product\Category\Category as GrCategory;
-use GrShareCode\Product\Category\CategoryCollection;
 use GrShareCode\Product\Product as GrProduct;
-use GrShareCode\Product\Variant\Images\Image;
-use GrShareCode\Product\Variant\Images\ImagesCollection;
-use GrShareCode\Product\Variant\Variant;
 use GrShareCode\Product\Variant\VariantsCollection;
-use Product;
-use Tools;
 use Link;
-use Category;
+use Product;
 
 /**
  * Class ProductService
  */
 class ProductService
 {
-
     /**
      * @param Product $product
      * @param int $quantity
@@ -27,44 +19,15 @@ class ProductService
      */
     public function createProductFromPrestaShopProduct(Product $product, $quantity)
     {
-        $imagesCollection = new ImagesCollection();
-        $categoryCollection = new CategoryCollection();
-        $categories = $product->getCategories();
-
-        foreach ($product->getImages(null) as $image) {
-            $imagePath = (new Link())->getImageLink($this->normalizeToString($product->link_rewrite), $image['id_image'], 'home_default');
-            $imagesCollection->add(new Image(Tools::getProtocol(Tools::usingSecureMode()) . $imagePath, (int)$image['position']));
-        }
-
-        foreach ($categories as $category) {
-
-            $prestashopCategory = new Category($category);
-
-            $grCategory = new GrCategory($prestashopCategory->getName());
-            $grCategory
-                ->setUrl((new Link())->getCategoryLink($prestashopCategory->id))
-                ->setExternalId((string)$prestashopCategory->id)
-                ->setParentId((string)$prestashopCategory->id_parent);
-
-            $categoryCollection->add($grCategory);
-        }
-
-        $grVariant = new Variant(
-            $product->id,
-            $this->normalizeToString($product->name),
-            $product->getPrice(false),
-            $product->getPrice(),
-            $product->reference
+        $categoryCollection = (new ProductCategoryCollectionFactory)->createFromCategories($product->getCategories());
+        $imagesCollection = (new ProductImagesFactory)->createFromImages(
+            $product->getImages(null),
+            $this->normalizeToString($product->link_rewrite)
         );
 
-        $grVariant
-            ->setQuantity($quantity)
-            ->setImages($imagesCollection)
-            ->setUrl((new Link())->getProductLink($product))
-            ->setDescription($this->normalizeToString($product->description_short));
-
+        $variant = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $quantity);
         $variantCollection = new VariantsCollection();
-        $variantCollection->add($grVariant);
+        $variantCollection->add($variant);
 
         $grProduct = new GrProduct(
             (int)$product->id,

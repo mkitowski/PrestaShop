@@ -17,6 +17,24 @@ use GetResponse\Helper\Shop as GrShop;
 class AccountServiceFactory
 {
     /**
+     * @param AccountSettings $accountSettings
+     * @return AccountService
+     * @throws ApiTypeException
+     */
+    public static function createFromAccountSettings(AccountSettings $accountSettings)
+    {
+        $api = ApiFactory::createFromSettings($accountSettings);
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $apiClient = new GetresponseApiClient($api, $repository);
+
+        return new AccountService(
+            new GrAccountService($apiClient),
+            new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new TrackingCodeService($apiClient)
+        );
+    }
+
+    /**
      * @return AccountService
      * @throws ApiTypeException
      */
@@ -37,6 +55,7 @@ class AccountServiceFactory
     /**
      * @param AccountDto $accountDto
      * @return AccountService
+     * @throws ApiTypeException
      */
     public static function createFromAccountDto(AccountDto $accountDto)
     {

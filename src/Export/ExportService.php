@@ -100,7 +100,8 @@ class ExportService
                 $orderService->sendOrder(
                     $prestashopOrder,
                     $exportSettings->getContactListId(),
-                    $exportSettings->getShopId()
+                    $exportSettings->getShopId(),
+                    true
                 );
             }
         }

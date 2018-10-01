@@ -2,7 +2,7 @@
 namespace GetResponse\Export;
 
 use Db;
-use GrShop;
+use GetResponse\Helper\Shop;
 
 /**
  * Class ExportServiceFactory
@@ -16,7 +16,7 @@ class ExportServiceFactory
      */
     public static function create()
     {
-        $exportRepository = new ExportRepository(Db::getInstance(), GrShop::getUserShopId());
+        $exportRepository = new ExportRepository(Db::getInstance(), Shop::getUserShopId());
 
         return new ExportService($exportRepository);
     }

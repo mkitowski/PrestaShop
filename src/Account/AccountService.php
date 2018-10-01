@@ -61,22 +61,6 @@ class AccountService
         return !empty($this->repository->getSettings()->getApiKey());
     }
 
-    /**
-     * @return string
-     */
-    public function getApiKey()
-    {
-        return $this->repository->getSettings()->getApiKey();
-    }
-
-    /**
-     * @return string
-     */
-    public function getActiveTracking()
-    {
-        return $this->repository->getSettings()->getActiveTracking();
-    }
-
     public function disconnectFromGetResponse()
     {
         $this->repository->updateApiSettings(null, AccountSettings::ACCOUNT_TYPE_SMB, null);
@@ -94,6 +78,7 @@ class AccountService
      * @param string $apiKey
      * @param string $accountType
      * @param string $domain
+     * @throws GetresponseApiException
      */
     public function updateApiSettings($apiKey, $accountType, $domain)
     {

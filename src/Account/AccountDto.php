@@ -7,6 +7,9 @@ namespace GetResponse\Account;
  */
 class AccountDto
 {
+    const ENTERPRISE_PACKAGE_YES = '1';
+    const ENTERPRISE_PACKAGE_NO = '0';
+
     /** @var string */
     private $apiKey;
 
@@ -25,12 +28,13 @@ class AccountDto
      * @param string $accountType
      * @param string $domain
      */
+
     public function __construct($apiKey, $enterprisePackage, $accountType, $domain)
     {
         $this->apiKey = $apiKey;
         $this->enterprisePackage = $enterprisePackage;
-        $this->accountType = $enterprisePackage === '1' ? $accountType : AccountSettings::ACCOUNT_TYPE_SMB;
-        $this->domain = $enterprisePackage === '1' ? $domain : '';
+        $this->accountType = $accountType;
+        $this->domain = $domain;
     }
 
     /**
@@ -42,8 +46,8 @@ class AccountDto
         return new self(
             $request['apiKey'],
             $request['enterprisePackage'],
-            $request['accountType'],
-            $request['domain']
+            $request['enterprisePackage'] === self::ENTERPRISE_PACKAGE_YES ? $request['accountType'] : AccountSettings::ACCOUNT_TYPE_SMB,
+            $request['enterprisePackage'] === self::ENTERPRISE_PACKAGE_YES ? $request['domain'] : ''
         );
     }
 
@@ -76,7 +80,7 @@ class AccountDto
      */
     public function isEnterprisePackage()
     {
-        return $this->getEnterprisePackage() === '1';
+        return $this->getEnterprisePackage() === self::ENTERPRISE_PACKAGE_YES;
     }
 
     /**

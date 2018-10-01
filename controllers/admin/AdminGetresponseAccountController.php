@@ -96,13 +96,13 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             }
         } catch (GetresponseApiException $e) {
             $this->errors[] = $e->getMessage();
-        } catch (ApiTypeException $e) {
-            $this->errors[] = $e->getMessage();
         }
     }
 
     /**
-     * @return string
+     * @return mixed
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
     public function renderView()
     {

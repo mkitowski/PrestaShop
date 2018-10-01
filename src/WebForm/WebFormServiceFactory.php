@@ -2,6 +2,7 @@
 namespace GetResponse\WebForm;
 
 use Db;
+use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
@@ -16,6 +17,23 @@ use PrestaShopDatabaseException;
  */
 class WebFormServiceFactory
 {
+    /**
+     * @param AccountSettings $accountSettings
+     * @return WebFormService
+     * @throws ApiTypeException
+     */
+    public static function createFromSettings(AccountSettings $accountSettings)
+    {
+        $api = ApiFactory::createFromSettings($accountSettings);
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $apiClient = new GetresponseApiClient($api, $repository);
+
+        return new WebFormService(
+            new WebFormRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new GrWebFormService($apiClient)
+        );
+    }
+
     /**
      * @return WebFormService
      * @throws ApiTypeException
