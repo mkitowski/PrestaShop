@@ -2,6 +2,7 @@
 namespace GetResponse\CustomFieldsMapping;
 
 use GetResponseRepository;
+use PrestaShopDatabaseException;
 
 /**
  * Class CustomFieldsMappingService
@@ -24,6 +25,7 @@ class CustomFieldsMappingService
     /**
      * @param CustomFieldMapping $customFieldMappingFromRequest
      * @throws CustomFieldMappingException
+     * @throws PrestaShopDatabaseException
      */
     public function updateCustomFieldMapping(CustomFieldMapping $customFieldMappingFromRequest)
     {
@@ -42,6 +44,7 @@ class CustomFieldsMappingService
 
     /**
      * @return CustomFieldMappingCollection
+     * @throws PrestaShopDatabaseException
      */
     public function getActiveCustomFieldMapping()
     {
@@ -69,6 +72,7 @@ class CustomFieldsMappingService
     /**
      * @param int $customFieldMappingId
      * @return CustomFieldMapping|null
+     * @throws PrestaShopDatabaseException
      */
     public function getCustomFieldMappingById($customFieldMappingId)
     {

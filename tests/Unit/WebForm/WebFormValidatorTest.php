@@ -5,6 +5,10 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormValidator;
 
+/**
+ * Class WebFormValidatorTest
+ * @package GetResponse\Tests\Unit\WebForm
+ */
 class WebFormValidatorTest extends BaseTestCase
 {
     /**

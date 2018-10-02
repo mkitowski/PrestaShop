@@ -10,6 +10,10 @@ use GrShareCode\TrackingCode\TrackingCode;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use PHPUnit_Framework_MockObject_MockObject;
 
+/**
+ * Class AccountServiceTest
+ * @package GetResponse\Tests\Unit\Account
+ */
 class AccountServiceTest extends BaseTestCase
 {
 

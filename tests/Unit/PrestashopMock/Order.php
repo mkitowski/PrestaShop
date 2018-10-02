@@ -27,22 +27,25 @@ class Order
 
     /** @var string */
     public $id_customer;
+
     /** @var string */
     public $id_lang;
+
+    /** @var int */
+    public $id_address_delivery;
+
+    /** @var int */
+    public $id_address_invoice;
 
     /** @var array */
     private $products;
 
-    /** @var int */
-    private $id_address_delivery;
-
-    /** @var int */
-    private $id_address_invoice;
-
     /** @var string */
     private $current_state;
 
-
+    /**
+     * @param array $params
+     */
     public function __construct($params)
     {
         $this->products = $params['products'];
@@ -68,6 +71,9 @@ class Order
         return $this->products;
     }
 
+    /**
+     * @return null|string
+     */
     public function getCurrentState()
     {
         return $this->current_state;

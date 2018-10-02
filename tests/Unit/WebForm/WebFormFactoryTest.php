@@ -5,9 +5,12 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;
 use GetResponse\WebForm\WebFormFactory;
 
+/**
+ * Class WebFormFactoryTest
+ * @package GetResponse\Tests\UnitWebForm
+ */
 class WebFormFactoryTest extends BaseTestCase
 {
-
     /**
      * @test
      */

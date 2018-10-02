@@ -2,8 +2,6 @@
 namespace GetResponse\Order;
 
 use Address;
-use Cart;
-use Category;
 use Country;
 use Currency;
 use Customer;
@@ -16,7 +14,6 @@ use GrShareCode\Order\AddOrderCommand as GrAddOrderCommand;
 use GrShareCode\Order\Order as GrOrder;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductsCollection;
-use Link;
 use Order;
 use OrderState;
 use PrestaShopException;
@@ -61,7 +58,7 @@ class OrderService
             (string)$order->id,
             $productCollection,
             (float)$order->total_paid_tax_excl,
-            (float)$order->total_paid_tax_incl,
+            (float)($order->total_paid_tax_incl - $order->total_paid_tax_excl),
             Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $order->id,
             (new Currency((int)$order->id_currency))->iso_code,
             $this->getOrderStatus($order),
@@ -98,6 +95,9 @@ class OrderService
 
             $prestashopProduct = new Product($product['id_product']);
 
+            if (empty($prestashopProduct->reference)) {
+                continue;
+            }
             $productService = new ProductService();
             $getresponseProduct = $productService->createProductFromPrestaShopProduct(
                 $prestashopProduct,
@@ -130,19 +130,22 @@ class OrderService
         $address = new Address($order->id_address_delivery);
         $country = new Country($address->id_country);
 
-        return new GrAddress(
+        $grAddress = new GrAddress(
             GrCountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code),
-            $this->normalizeToString($country->name)
+            $address->firstname . ' ' . $address->lastname
         );
-    }
+        $grAddress->setCountryName($address->country);
+        $grAddress
+            ->setFirstName($address->firstname)
+            ->setLastName($address->lastname)
+            ->setAddress1($address->address1)
+            ->setAddress2($address->address2)
+            ->setCity($address->city)
+            ->setZip($address->postcode)
+            ->setPhone($address->phone)
+            ->setCompany($address->company);
 
-    /**
-     * @param string $text
-     * @return mixed
-     */
-    private function normalizeToString($text)
-    {
-        return is_array($text) ? reset($text) : $text;
+        return $grAddress;
     }
 
     /**
@@ -154,10 +157,22 @@ class OrderService
         $address = new Address($order->id_address_invoice);
         $country = new Country($address->id_country);
 
-        return new GrAddress(
+        $grAddress = new GrAddress(
             GrCountryCodeConverter::getCountryCodeInISO3166Alpha3($country->iso_code),
-            $this->normalizeToString($country->name)
+            $address->firstname . ' ' . $address->lastname
         );
+        $grAddress->setCountryName($address->country);
+        $grAddress
+            ->setFirstName($address->firstname)
+            ->setLastName($address->lastname)
+            ->setAddress1($address->address1)
+            ->setAddress2($address->address2)
+            ->setCity($address->city)
+            ->setZip($address->postcode)
+            ->setPhone($address->phone)
+            ->setCompany($address->company);
+
+        return $grAddress;
     }
 
 }

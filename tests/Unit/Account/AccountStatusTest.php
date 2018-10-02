@@ -7,6 +7,10 @@ use GetResponse\Account\AccountStatus;
 use GetResponse\Tests\Unit\BaseTestCase;
 use PHPUnit_Framework_MockObject_MockObject;
 
+/**
+ * Class AccountStatusTest
+ * @package GetResponse\Tests\Unit\Account
+ */
 class AccountStatusTest extends BaseTestCase
 {
 

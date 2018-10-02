@@ -124,6 +124,7 @@ class GetResponseRepository implements DbRepositoryInterface
                 SET
                     `gr_shop_id` = "' . $this->db->escape($grShopId) . '",
                     `gr_order_id` = "' . $this->db->escape($grOrderId) .'",
+                    `payload_md5` = "' . $this->db->escape($payloadMd5) .'",
                     `order_id` = ' . (int) $externalOrderId;
         $this->db->execute($sql);
     }
@@ -407,6 +408,7 @@ class GetResponseRepository implements DbRepositoryInterface
               `gr_shop_id` varchar(16) DEFAULT NULL,
               `order_id` int(11) DEFAULT NULL,
               `gr_order_id` varchar(16) DEFAULT NULL,
+              `payload_md5` text,
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 

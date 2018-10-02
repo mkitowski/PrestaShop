@@ -8,6 +8,10 @@ use GrShareCode\Product\Variant\Images\ImagesCollection;
 use GrShareCode\Product\Variant\Variant;
 use Product;
 
+/**
+ * Class ProductVariantFactoryTest
+ * @package GetResponse\Tests\Unit\Product
+ */
 class ProductVariantFactoryTest extends BaseTestCase
 {
 

@@ -41,5 +41,4 @@ class NewCart
         $cartService->sendCart($cart, $contactListId, $grShopId);
     }
 
-
 }

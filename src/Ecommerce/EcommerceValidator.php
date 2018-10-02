@@ -20,6 +20,7 @@ class EcommerceValidator
 
     /**
      * @param EcommerceDto $ecommerceDto
+     * @param EcommerceService $ecommerceService
      */
     public function __construct(EcommerceDto $ecommerceDto, EcommerceService $ecommerceService)
     {

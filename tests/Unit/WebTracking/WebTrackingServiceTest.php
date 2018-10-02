@@ -9,6 +9,10 @@ use GetResponse\WebTracking\WebTrackingService;
 use GrShareCode\TrackingCode\TrackingCodeService as GrTrackingCodeService;
 use PHPUnit_Framework_MockObject_MockObject;
 
+/**
+ * Class WebTrackingServiceTest
+ * @package GetResponse\Tests\Unit\WebTracking
+ */
 class WebTrackingServiceTest extends BaseTestCase
 {
 

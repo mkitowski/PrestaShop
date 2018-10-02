@@ -12,6 +12,7 @@ use GrShareCode\GetresponseApiClient;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductService;
 use GrShop;
+use PrestaShopDatabaseException;
 
 /**
  * Class OrderServiceFactory
@@ -38,6 +39,7 @@ class OrderServiceFactory
     /**
      * @return OrderService
      * @throws ApiTypeException
+     * @throws PrestaShopDatabaseException
      */
     public static function create()
     {

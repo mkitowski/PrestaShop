@@ -7,6 +7,10 @@ use GetResponse\Product\ProductVariantFactory;
 use GetResponse\Tests\Unit\BaseTestCase;
 use Product;
 
+/**
+ * Class ProductServiceTest
+ * @package GetResponse\Tests\Unit\Product
+ */
 class ProductServiceTest extends BaseTestCase
 {
 

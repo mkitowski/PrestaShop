@@ -13,6 +13,9 @@ require_once __DIR__ . '/Unit/PrestashopMock/MockParams/CustomerParams.php';
 require_once __DIR__ . '/Unit/PrestashopMock/Currency.php';
 require_once __DIR__ . '/Unit/PrestashopMock/Order.php';
 require_once __DIR__ . '/Unit/PrestashopMock/OrderState.php';
+require_once __DIR__ . '/Unit/PrestashopMock/Address.php';
+require_once __DIR__ . '/Unit/PrestashopMock/Country.php';
+require_once __DIR__ . '/Unit/PrestashopMock/PrestaShopDatabaseException.php';
 
 
-define(__PS_BASE_URI__, '/var/www/my-prestashop/');
+define('__PS_BASE_URI__', 'http://my-prestashop.com/');

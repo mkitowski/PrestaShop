@@ -5,6 +5,10 @@ use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountValidator;
 use GetResponse\Tests\Unit\BaseTestCase;
 
+/**
+ * Class AccountValidatorTest
+ * @package GetResponse\Tests\Unit\Account
+ */
 class AccountValidatorTest extends BaseTestCase
 {
     /**

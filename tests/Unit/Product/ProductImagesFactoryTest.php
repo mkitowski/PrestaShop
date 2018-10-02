@@ -6,6 +6,10 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Product\Variant\Images\Image;
 use GrShareCode\Product\Variant\Images\ImagesCollection;
 
+/**
+ * Class ProductImagesFactoryTest
+ * @package GetResponse\Tests\Unit\Product
+ */
 class ProductImagesFactoryTest extends BaseTestCase
 {
 

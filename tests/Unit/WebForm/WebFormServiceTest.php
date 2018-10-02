@@ -11,6 +11,10 @@ use GrShareCode\WebForm\WebFormCollection;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
 use PHPUnit_Framework_MockObject_MockObject;
 
+/**
+ * Class WebFormServiceTest
+ * @package GetResponse\Tests\Unit\WebForm
+ */
 class WebFormServiceTest extends BaseTestCase
 {
     /** @var WebFormRepository | PHPUnit_Framework_MockObject_MockObject */

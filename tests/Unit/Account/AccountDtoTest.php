@@ -4,6 +4,10 @@ namespace GetResponse\Tests\Unit\Account;
 use GetResponse\Account\AccountDto;
 use GetResponse\Tests\Unit\BaseTestCase;
 
+/**
+ * Class AccountDtoTest
+ * @package GetResponse\Tests\Unit\Account
+ */
 class AccountDtoTest extends BaseTestCase
 {
 

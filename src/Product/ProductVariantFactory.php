@@ -12,6 +12,8 @@ use Product;
  */
 class ProductVariantFactory
 {
+    const VARIANT_DESC_MAX_LENGTH = 1000;
+
     /**
      * @param Product $product
      * @param ImagesCollection $imagesCollection
@@ -32,7 +34,7 @@ class ProductVariantFactory
             ->setQuantity($quantity)
             ->setImages($imagesCollection)
             ->setUrl((new Link())->getProductLink($product))
-            ->setDescription($this->normalizeToString($product->description_short));
+            ->setDescription(substr($this->normalizeToString($product->description_short), 0, self::VARIANT_DESC_MAX_LENGTH));
 
         return $variant;
     }

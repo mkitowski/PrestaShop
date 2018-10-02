@@ -6,6 +6,10 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Product\Category\Category;
 use GrShareCode\Product\Category\CategoryCollection;
 
+/**
+ * Class ProductCategoryCollectionFactoryTest
+ * @package GetResponse\Tests\Unit\Product
+ */
 class ProductCategoryCollectionFactoryTest extends BaseTestCase
 {
 

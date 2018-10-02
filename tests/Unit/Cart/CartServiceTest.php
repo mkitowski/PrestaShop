@@ -7,6 +7,10 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Cart\CartService as GrCartService;
 use PHPUnit_Framework_MockObject_MockObject;
 
+/**
+ * Class CartServiceTest
+ * @package GetResponse\Tests\Unit\Cart
+ */
 class CartServiceTest extends BaseTestCase
 {
     /** @var GrCartService | PHPUnit_Framework_MockObject_MockObject */
@@ -32,6 +36,33 @@ class CartServiceTest extends BaseTestCase
             ->expects(self::never())
             ->method('sendCart');
     }
+
+
+    /**
+     * @test
+     */
+    public function shouldNotSendCartIfProductSkuIsEmpty()
+    {
+        $params = [
+            'products' => [
+                [
+                    'id_product' => 6,
+                    'quantity' => 7,
+                ]
+            ]
+        ];
+
+        $contactListId = 'contactListId';
+        $grShopId = 'grShopId';
+
+        $cart = new Cart($params);
+        $this->sut->sendCart($cart, $contactListId, $grShopId);
+
+        $this->grCartService
+            ->expects(self::never())
+            ->method('sendCart');
+    }
+
 
     /**
      * @test
