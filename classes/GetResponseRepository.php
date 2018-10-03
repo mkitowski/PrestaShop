@@ -338,6 +338,7 @@ class GetResponseRepository implements DbRepositoryInterface
 			`cycle_day` char(5) NOT NULL,
 			`account_type` enum(\'smb\',\'360en\',\'360pl\') NOT NULL DEFAULT \'smb\',
 			`crypto` char(32) NULL,
+			`invalid_request_date` DATETIME NULL,
 			PRIMARY KEY (`id`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 

@@ -17,22 +17,6 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedException.php';
 
-use GetResponse\Account\AccountServiceFactory as GrAccountServiceFactory;
-use GetResponse\Account\AccountSettings as GrAccountSettings;
-use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Account\AccountStatusFactory;
-use GetResponse\Config\ConfigService as GrConfigService;
-use GetResponse\Contact\AddContactSettings;
-use GetResponse\Contact\ContactServiceFactory;
-use GetResponse\Helper\FlashMessages;
-use GetResponse\Helper\Shop as GrShop;
-use GetResponse\Hook\FormDisplay as GrFormDisplay;
-use GetResponse\Hook\NewCart as GrNewCartHook;
-use GetResponse\Hook\NewOrder as GrNewOrderHook;
-use GetResponse\WebForm\WebFormServiceFactory;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
-
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
@@ -41,7 +25,7 @@ class Getresponse extends Module
     /** @var GetResponseRepository */
     private $repository;
 
-    /** @var GrAccountSettings */
+    /** @var GetResponse\Account\AccountSettings */
     private $settings;
 
     /** @var bool */
@@ -57,12 +41,12 @@ class Getresponse extends Module
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
-        $this->description = $this->l(GrConfigService::MODULE_DESCRIPTION);
-        $this->confirmUninstall = $this->l(GrConfigService::CONFIRM_UNINSTALL);
+        $this->description = $this->l(GetResponse\Config\ConfigService::MODULE_DESCRIPTION);
+        $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
 
-        $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
+        $this->repository = new GetResponseRepository(Db::getInstance(), GetResponse\Helper\Shop::getUserShopId());
 
 
         if (!function_exists('curl_init')) {
@@ -79,7 +63,7 @@ class Getresponse extends Module
     {
         if (isset($this->context->controller->module)
             && $this->context->controller->module->name === $this->name
-            && $confirmations = FlashMessages::getConfirmations()) {
+            && $confirmations = GetResponse\Helper\FlashMessages::getConfirmations()) {
 
             $this->context->smarty->assign('conf', $confirmations[0]);
         }
@@ -96,7 +80,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach (GrConfigService::USED_HOOKS as $hook) {
+        foreach (GetResponse\Config\ConfigService::USED_HOOKS as $hook) {
             if (!$this->registerHook($hook)) {
                 return false;
             }
@@ -138,19 +122,17 @@ class Getresponse extends Module
      */
     public function createSubTabs($tabId)
     {
-        $languages = Language::getLanguages();
-
-        foreach (GrConfigService::BACKOFFICE_TABS as $tab) {
-
-            $tab = new Tab();
-            $tab->class_name = $tab['class_name'];
-            $tab->id_parent = isset($tab['parent']) ? $tab['parent'] : $tabId;
-            $tab->module = $this->name;
-            $tab->position = 0;
-            foreach ($languages as $l) {
-                $tab->name[$l['id_lang']] = $this->l($tab['name']);
+        $langs = Language::getLanguages();
+        foreach (GetResponse\Config\ConfigService::BACKOFFICE_TABS as $tab) {
+            $newtab = new Tab();
+            $newtab->class_name = $tab['class_name'];
+            $newtab->id_parent = isset($tab['parent']) ? $tab['parent'] : $tabId;
+            $newtab->module = $this->name;
+            $newtab->position = 0;
+            foreach ($langs as $l) {
+                $newtab->name[$l['id_lang']] = $this->l($tab['name']);
             }
-            $tab->add();
+            $newtab->add();
         }
 
         return true;
@@ -170,7 +152,7 @@ class Getresponse extends Module
             return false;
         }
 
-        foreach (GrConfigService::USED_HOOKS as $hook) {
+        foreach (GetResponse\Config\ConfigService::USED_HOOKS as $hook) {
             if (!$this->unregisterHook($hook)) {
                 return false;
             }
@@ -191,7 +173,7 @@ class Getresponse extends Module
     public function uninstallTab()
     {
         $result = true;
-        foreach (GrConfigService::INSTALLED_CLASSES as $class) {
+        foreach (GetResponse\Config\ConfigService::INSTALLED_CLASSES as $class) {
             $idTab = (int)Tab::getIdFromClassName($class);
             if (false === $idTab) {
                 return false;
@@ -205,24 +187,26 @@ class Getresponse extends Module
 
     /**
      * @param $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
+     * @throws PrestaShopDatabaseException
      */
     public function hookCart($params)
     {
         try {
             $accountSettings = $this->getSettings();
-            $cartHook = new GrNewCartHook();
+            $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart($params['cart'], $accountSettings);
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GetresponseApiException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
         }
     }
 
     /**
-     * @return GrAccountSettings|null
-     * @throws ApiTypeException
+     * @return GetResponse\Account\AccountSettings|null
+     * @throws GrShareCode\Api\ApiTypeException
      * @throws GetResponseNotConnectedException
+     * @throws PrestaShopDatabaseException
      */
     private function getSettings()
     {
@@ -232,14 +216,14 @@ class Getresponse extends Module
 
         if (!$this->settings) {
 
-            $settings = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+            $settings = new GetResponse\Account\AccountSettingsRepository(Db::getInstance(), GetResponse\Helper\Shop::getUserShopId());
             $settings->getSettings();
-            if (!AccountStatusFactory::create()->isConnectedToGetResponse()) {
+            if (!GetResponse\Account\AccountStatusFactory::create()->isConnectedToGetResponse()) {
                 $this->isConnectedToGetResponse = false;
                 throw new GetResponseNotConnectedException('GetResponse account is not connected.');
             }
 
-            $this->settings = GrAccountServiceFactory::create()->getSettings();
+            $this->settings = GetResponse\Account\AccountServiceFactory::create()->getSettings();
         }
 
         return $this->settings;
@@ -247,7 +231,7 @@ class Getresponse extends Module
 
     /**
      * @param $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookNewOrder($params)
     {
@@ -256,23 +240,23 @@ class Getresponse extends Module
 
     /**
      * @param Order $order
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     private function sendOrderToGr(Order $order)
     {
         try {
             $accountSettings = $this->getSettings();
-            $orderHook = new GrNewOrderHook();
+            $orderHook = new GetResponse\Hook\NewOrder();
             $orderHook->sendOrder($order, $accountSettings);
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GetresponseApiException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
         }
     }
 
     /**
      * @param array $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookHookOrderConfirmation($params)
     {
@@ -281,7 +265,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookPostUpdateOrderStatus($params)
     {
@@ -292,7 +276,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookCreateAccount($params)
     {
@@ -301,7 +285,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function createSubscriber(array $params)
     {
@@ -314,13 +298,13 @@ class Getresponse extends Module
             }
 
             $contact = isset($params['newNewsletterContact']) ? $params['newNewsletterContact'] : $params['newCustomer'];
-            $addContactSettings = AddContactSettings::createFromAccountSettings($accountSettings);
+            $addContactSettings = GetResponse\Contact\AddContactSettings::createFromAccountSettings($accountSettings);
 
-            $contactService = ContactServiceFactory::createFromSettings($accountSettings);
+            $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings($accountSettings);
             $contactService->addContact($contact, $addContactSettings, isset($params['newNewsletterContact']));
 
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GetresponseApiException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
         } catch (PrestaShopException $e) {
         }
 
@@ -328,7 +312,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayRightColumn()
     {
@@ -338,13 +322,13 @@ class Getresponse extends Module
     /**
      * @param string $position
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     private function displayWebForm($position)
     {
         try {
-            $formDisplay = new GrFormDisplay(
-                WebFormServiceFactory::createFromSettings($this->getSettings())
+            $formDisplay = new GetResponse\Hook\FormDisplay(
+                GetResponse\WebForm\WebFormServiceFactory::createFromSettings($this->getSettings())
             );
 
             $assignData = $formDisplay->displayWebForm($position);
@@ -364,7 +348,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayLeftColumn()
     {
@@ -373,7 +357,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayHeader()
     {
@@ -395,7 +379,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayTop()
     {
@@ -404,7 +388,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      * @throws GetResponseNotConnectedException
      */
     public function hookDisplayFooter()
@@ -430,7 +414,7 @@ class Getresponse extends Module
     }
 
     /**
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      * @throws GetResponseNotConnectedException
      */
     private function createNewsletterSubscriber()
@@ -470,7 +454,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws ApiTypeException
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayHome()
     {
