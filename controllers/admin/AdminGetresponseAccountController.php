@@ -191,7 +191,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                             ],
                             [
                                 'id' => 'account_en',
-                                'value' => AccountSettings::ACCOUNT_TYPE_360_EN,
+                                'value' => AccountSettings::ACCOUNT_TYPE_360_US,
                                 'label' => $this->l('GetResponse Enterprise COM')
                             ]
                         ],
