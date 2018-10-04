@@ -394,7 +394,7 @@ class GetResponseRepository implements DbRepositoryInterface
               `name` varchar(32) DEFAULT NULL,
               `content` text,
               PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8;';
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_carts` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
@@ -554,8 +554,7 @@ class GetResponseRepository implements DbRepositoryInterface
             ' . _DB_PREFIX_ . 'getresponse_orders
         WHERE
             `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
-            `order_id` = ' . (int) $externalOrderId . ' AND 
-            `shop_id` = ' . (int) $this->idShop;
+            `order_id` = ' . (int) $externalOrderId;
 
         if ($results = $this->db->executeS($query)) {
             return $results[0];

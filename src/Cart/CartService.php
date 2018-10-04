@@ -41,16 +41,12 @@ class CartService
 
         $productCollection = $this->getOrderProductsCollection($products);
 
-        if (!$productCollection->getIterator()->count()) {
-            return;
-        }
-
         $grCart = new GrCart(
             (string)$cart->id,
             $productCollection,
             (new Currency((int)$cart->id_currency))->iso_code,
-            (float)$cart->getOrderTotal(false),
-            (float)$cart->getOrderTotal(true)
+            $cart->getOrderTotal(false),
+            $cart->getOrderTotal(true)
         );
 
         $customer = new Customer($cart->id_customer);

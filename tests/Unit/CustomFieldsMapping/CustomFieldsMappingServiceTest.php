@@ -21,8 +21,16 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
         $this->sut = new CustomFieldsMappingService($this->repository);
     }
 
+    /**
+     * @test
+     */
     public function shouldThrowExceptionWhenCustomFieldMappingNotFound()
     {
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
+
+        /*
         $customFieldMapping = new CustomFieldMapping(
             'id',
             'value',
@@ -34,5 +42,6 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
 
         $this->repository->
         $this->sut->updateCustomFieldMapping($customFieldMapping);
+        */
     }
 }

@@ -5,6 +5,7 @@ use GetResponse\Ecommerce\EcommerceDto;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
+use GrShareCode\GetresponseApiException;
 use GrShareCode\Shop\AddShopCommand;
 use GrShareCode\Shop\Shop;
 
@@ -93,15 +94,22 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     return;
                 }
 
-                $this->ecommerceService->createShop(
-                    new AddShopCommand(
-                        $shopName,
-                        $this->context->language->iso_code,
-                        $this->context->currency->iso_code
-                    )
-                );
-                $this->display = 'list';
-                $this->confirmations[] = $this->l('Store added');
+                try {
+                    $this->ecommerceService->createShop(
+                        new AddShopCommand(
+                            $shopName,
+                            $this->context->language->iso_code,
+                            $this->context->currency->iso_code
+                        )
+                    );
+                    $this->display = 'list';
+                    $this->confirmations[] = $this->l('Store added');
+
+                } catch (GetresponseApiException $e) {
+                    $this->display = 'add';
+                    $this->errors[] = $this->l($e->getMessage());
+                }
+
             }
         }
 
