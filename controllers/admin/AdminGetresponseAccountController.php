@@ -2,6 +2,7 @@
 
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
 use GrShareCode\Api\ApiTypeException;
@@ -185,12 +186,12 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                         'values' => [
                             [
                                 'id' => 'account_pl',
-                                'value' => '360pl',
+                                'value' => AccountSettings::ACCOUNT_TYPE_360_PL,
                                 'label' => $this->l('GetResponse Enterprise PL')
                             ],
                             [
                                 'id' => 'account_en',
-                                'value' => '360en',
+                                'value' => AccountSettings::ACCOUNT_TYPE_360_US,
                                 'label' => $this->l('GetResponse Enterprise COM')
                             ]
                         ],

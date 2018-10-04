@@ -5,6 +5,7 @@ use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\GetresponseApiException;
 use GrShareCode\TrackingCode\TrackingCodeService;
+use PrestaShopDatabaseException;
 
 /**
  * Class AccountService
@@ -47,6 +48,7 @@ class AccountService
 
     /**
      * @return AccountSettings
+     * @throws PrestaShopDatabaseException
      */
     public function getSettings()
     {
@@ -55,6 +57,7 @@ class AccountService
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
      */
     public function isConnectedToGetResponse()
     {
@@ -63,7 +66,7 @@ class AccountService
 
     public function disconnectFromGetResponse()
     {
-        $this->repository->updateApiSettings(null, AccountSettings::ACCOUNT_TYPE_SMB, null);
+        $this->repository->disconnectApiSettings();
     }
 
     /**

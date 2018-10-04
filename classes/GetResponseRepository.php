@@ -336,7 +336,7 @@ class GetResponseRepository implements DbRepositoryInterface
 			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
 			`campaign_id` char(5) NOT NULL,
 			`cycle_day` char(5) NOT NULL,
-			`account_type` enum(\'smb\',\'360en\',\'360pl\') NOT NULL DEFAULT \'smb\',
+            `account_type` enum(\'smb\',\'mx_us\',\'mx_pl\') NOT NULL DEFAULT \'smb\',
 			`crypto` char(32) NULL,
 			`invalid_request_date` DATETIME NULL,
 			PRIMARY KEY (`id`)
@@ -470,7 +470,7 @@ class GetResponseRepository implements DbRepositoryInterface
             `crypto`
         )
         VALUES (
-            ' . (int) $storeId . ', \'\', \'no\', \'no\', \'no\', \'\', \'no\', \'0\', \' \', \'gr\', \'\'
+            ' . (int) $storeId . ', \'\', \'no\', \'no\', \'no\', \'\', \'no\', \'0\', \' \', \'smb\', \'\'
         )
         ON DUPLICATE KEY UPDATE `id` = `id`;';
     }
@@ -512,9 +512,9 @@ class GetResponseRepository implements DbRepositoryInterface
             `active_custom`
         )
         VALUES
-            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'yes\', \'no\'),
+            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'yes\'),
             (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
             (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
             (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),
@@ -544,6 +544,7 @@ class GetResponseRepository implements DbRepositoryInterface
      * @param string $grShopId
      * @param int $externalOrderId
      * @return string
+     * @throws PrestaShopDatabaseException
      */
     public function getPayloadMd5FromOrderMapping($grShopId, $externalOrderId)
     {
