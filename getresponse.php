@@ -280,28 +280,26 @@ class Getresponse extends Module
      */
     public function hookCreateAccount($params)
     {
-        $this->createSubscriber($params);
+        $this->createSubscriber($params['newCustomer'], false);
     }
 
     /**
-     * @param array $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @param Customer $contact
+     * @param bool $fromNewsletter
      */
-    public function createSubscriber(array $params)
+    public function createSubscriber($contact, $fromNewsletter = false)
     {
         try {
-
             $accountSettings = $this->getSettings();
 
-            if (!$accountSettings->canSubscriberBeSend()) {
+            if (!$this->getSettings()->canSubscriberBeSend() || 1 != $contact->newsletter) {
                 return;
             }
 
-            $contact = isset($params['newNewsletterContact']) ? $params['newNewsletterContact'] : $params['newCustomer'];
             $addContactSettings = GetResponse\Contact\AddContactSettings::createFromAccountSettings($accountSettings);
 
             $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings($accountSettings);
-            $contactService->addContact($contact, $addContactSettings, isset($params['newNewsletterContact']));
+            $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
 
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\GetresponseApiException $e) {
@@ -424,16 +422,14 @@ class Getresponse extends Module
             && Validate::isEmail(Tools::getValue('email'))
             && $this->getSettings()->isNewsletterSubscriptionOn()
         ) {
-            $client = new stdClass();
-            $client->newsletter = 1;
-            $client->firstname = 'Friend';
-            $client->lastname = '';
-            $client->email = Tools::getValue('email');
 
-            $data = [];
-            $data['newNewsletterContact'] = $client;
+            $contact = new \Customer();
+            $contact->newsletter = 1;
+            $contact->firstname = 'Friend';
+            $contact->lastname = '';
+            $contact->email = Tools::getValue('email');
 
-            $this->createSubscriber($data);
+            $this->createSubscriber($contact, true);
         }
     }
 

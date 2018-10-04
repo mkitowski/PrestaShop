@@ -1,1 +1,1 @@
-{$gr_tracking_snippet}
+{$gr_tracking_snippet nofilter}

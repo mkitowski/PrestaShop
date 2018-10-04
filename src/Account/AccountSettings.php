@@ -263,6 +263,6 @@ class AccountSettings
      */
     public function canSubscriberBeSend()
     {
-        return $this->isSubscriptionActive() && !empty($this->getContactListId()) && $this->isNewsletterSubscriptionOn();
+        return $this->isSubscriptionActive() && !empty($this->getContactListId());
     }
 }

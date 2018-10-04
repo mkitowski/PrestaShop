@@ -225,7 +225,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             'api_key' => Tools::getValue('api_key'),
             'is_enterprise' => Tools::getValue('is_enterprise'),
             'domain' => Tools::getValue('domain'),
-            'account_type' => Tools::getValue('account_type')
+            'account_type' => Tools::getValue('account_type'),
+            'action' => 'api',
         ];
 
         return $helper->generateForm(array($fields_form));
