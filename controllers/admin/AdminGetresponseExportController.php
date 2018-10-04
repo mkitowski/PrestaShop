@@ -147,9 +147,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'required' => true,
                         'label' => $this->l('Contact list'),
                         'options' => [
-                            'query' => [
-                                    ['id' => '', 'name' => $this->l('Select a list')]
-                                ] + $this->getCampaigns(),
+                            'query' => $this->getCampaigns(),
                             'id' => 'id',
                             'name' => 'name'
                         ]
@@ -261,7 +259,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     private function getCampaigns()
     {
-        $campaigns = [];
+        $campaigns = [
+            [
+                'id' => 0,
+                'name' => $this->l('Select a list')
+            ]
+        ];
 
         /** @var ContactList $contactList */
         foreach ($this->contactListService->getContactLists() as $contactList) {

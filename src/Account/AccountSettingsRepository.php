@@ -2,6 +2,7 @@
 namespace GetResponse\Account;
 
 use Db;
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use PrestaShopDatabaseException;
 
 /**
@@ -94,6 +95,58 @@ class AccountSettingsRepository
             `id_shop` = ' . (int) $this->idShop;
 
         $this->db->execute($query);
+    }
+
+    public function disconnectApiSettings()
+    {
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_settings 
+        SET
+            `api_key` = null,
+            `active_subscription` = "no",
+            `active_newsletter_subscription` = "no",
+            `active_tracking` = "no",
+            `tracking_snippet` = "",
+            `update_address` = "no",
+            `campaign_id` = "",
+            `cycle_day` = "",
+            `cycle_day` = "",
+            `account_type` = "' . pSQL(AccountSettings::ACCOUNT_TYPE_SMB) . '",
+            `crypto` = null
+         WHERE
+            `id_shop` = ' . (int) $this->idShop;
+        $this->db->execute($query);
+
+        $query = '
+        UPDATE 
+            ' .  _DB_PREFIX_ . 'getresponse_webform 
+        SET
+            `webform_id` = "",
+            `active_subscription` = "no",
+            `sidebar` = "left",
+            `style` = "webform" 
+         WHERE
+            `id_shop` = ' . (int) $this->idShop;
+        $this->db->execute($query);
+
+        $query = '
+        DELETE FROM
+            ' . _DB_PREFIX_ . 'getresponse_ecommerce 
+        WHERE
+            `id_shop` = ' . (int) $this->idShop;
+        $this->db->execute($query);
+
+        $sql = '
+                UPDATE
+                    ' . _DB_PREFIX_ . 'getresponse_customs
+                SET
+                    `custom_name` = "",
+                    `active_custom` = "' . pSQL(CustomFieldMapping::INACTIVE) . '"
+                WHERE
+                    `id_shop` = ' . (int) $this->idShop . '
+                    AND `default` = "' . pSQL(CustomFieldMapping::DEFAULT_NO) . '"';
+        $this->db->execute($sql);
     }
 
 }

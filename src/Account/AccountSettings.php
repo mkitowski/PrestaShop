@@ -21,8 +21,8 @@ class AccountSettings
     const UPDATE_ADDRESS_NO = 'no';
 
     const ACCOUNT_TYPE_SMB = 'smb';
-    const ACCOUNT_TYPE_360_US = '360en';
-    const ACCOUNT_TYPE_360_PL = '360pl';
+    const ACCOUNT_TYPE_360_US = 'mx_us';
+    const ACCOUNT_TYPE_360_PL = 'mx_pl';
 
     /** @var int */
     private $id;
