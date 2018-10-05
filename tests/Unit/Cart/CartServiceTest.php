@@ -19,7 +19,6 @@ class CartServiceTest extends BaseTestCase
 {
     /** @var GrCartService | PHPUnit_Framework_MockObject_MockObject */
     private $grCartService;
-
     /** @var CartService */
     private $sut;
 
@@ -73,23 +72,19 @@ class CartServiceTest extends BaseTestCase
      */
     public function shouldSkipProductsWithEmptySku()
     {
+        $product1 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
+        $product1['quantity'] = 1;
+
+        $product2 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_3_WITHOUT_SKU);
+        $product2['quantity'] = 2;
+
         $params = [
             'id' => 'grId',
             'id_currency' => 1,
             'id_customer' => 1,
             'total_with_tax' => (float)10,
             'total' => (float)8,
-            'products' => [
-                [
-                    'id_product' => 1,
-                    'quantity' => 1,
-                ],
-                [
-                    'id_product' => 6,
-                    'quantity' => 1,
-                ],
-
-            ]
+            'products' => [$product1, $product2]
         ];
 
         $contactListId = 'contactListId';
@@ -97,7 +92,7 @@ class CartServiceTest extends BaseTestCase
 
         $cart = new Cart($params);
 
-        $getresponseProduct = (new ProductService())->createProductFromPrestaShopProduct(new \Product(1), 1);
+        $getresponseProduct = (new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1);
         $productsCollection = new ProductsCollection();
         $productsCollection->add($getresponseProduct);
 
@@ -127,23 +122,19 @@ class CartServiceTest extends BaseTestCase
      */
     public function shouldSendCart()
     {
+        $product1 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
+        $product1['quantity'] = 1;
+
+        $product2 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_2_WITH_SKU);
+        $product2['quantity'] = 2;
+
         $params = [
             'id' => 'grId',
             'id_currency' => 1,
             'id_customer' => 1,
-            'total_with_tax' => (float)10,
-            'total' => (float)8,
-            'products' => [
-                [
-                    'id_product' => 1,
-                    'quantity' => 1,
-                ],
-                [
-                    'id_product' => 4,
-                    'quantity' => 4,
-                ],
-
-            ]
+            'total_with_tax' => 10.0,
+            'total' => 8.0,
+            'products' => [$product1, $product2]
         ];
 
         $contactListId = 'contactListId';
@@ -152,8 +143,8 @@ class CartServiceTest extends BaseTestCase
         $cart = new Cart($params);
 
         $productsCollection = new ProductsCollection();
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(1), 1));
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(4), 4));
+        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1));
+        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 2));
 
         $grCart = new GrCart(
             $params['id'],
