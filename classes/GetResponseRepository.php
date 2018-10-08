@@ -557,11 +557,7 @@ class GetResponseRepository implements DbRepositoryInterface
             `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
             `order_id` = ' . (int) $externalOrderId;
 
-        if ($results = $this->db->executeS($query)) {
-            return $results[0];
-        }
-
-        return '';
+        return $results = $this->db->getValue($query);
     }
 
     /**
