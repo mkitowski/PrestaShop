@@ -10,6 +10,7 @@ use GetResponse\Order\OrderServiceFactory;
 use GrShareCode\Api\ApiTypeException;
 use GrShareCode\GetresponseApiException;
 use Order;
+use PrestaShopDatabaseException;
 
 /**
  * Class ExportService
@@ -31,6 +32,7 @@ class ExportService
      * @param ExportSettings $exportSettings
      * @throws ApiTypeException
      * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
      */
     public function export(ExportSettings $exportSettings)
     {
@@ -84,6 +86,7 @@ class ExportService
      * @param ExportSettings $exportSettings
      * @throws GetresponseApiException
      * @throws ApiTypeException
+     * @throws PrestaShopDatabaseException
      */
     private function exportContactOrders($contacts, ExportSettings $exportSettings)
     {

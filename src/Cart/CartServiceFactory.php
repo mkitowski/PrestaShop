@@ -5,12 +5,14 @@ use Db;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
+use GetResponse\Cache\CacheWrapper;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
 use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\GetresponseApiClient;
 use GrShareCode\Product\ProductService;
+use PrestaShopDatabaseException;
 
 /**
  * Class CartServiceFactory
@@ -29,7 +31,8 @@ class CartServiceFactory
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
         $productService = new ProductService($apiClient, $repository);
-        $cartService = new GrCartService($apiClient, $repository, $productService);
+        $cache = new CacheWrapper();
+        $cartService = new GrCartService($apiClient, $repository, $productService, $cache);
 
         return new CartService($cartService);
     }
@@ -37,6 +40,7 @@ class CartServiceFactory
     /**
      * @return CartService
      * @throws ApiTypeException
+     * @throws PrestaShopDatabaseException
      */
     public static function create()
     {
@@ -45,7 +49,8 @@ class CartServiceFactory
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
         $productService = new ProductService($apiClient, $repository);
-        $cartService = new GrCartService($apiClient, $repository, $productService);
+        $cache = new CacheWrapper();
+        $cartService = new GrCartService($apiClient, $repository, $productService, $cache);
 
         return new CartService($cartService);
     }

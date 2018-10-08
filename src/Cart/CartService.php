@@ -41,10 +41,6 @@ class CartService
 
         $productCollection = $this->getOrderProductsCollection($products);
 
-        if (!$productCollection->getIterator()->count()) {
-            return;
-        }
-
         $grCart = new GrCart(
             (string)$cart->id,
             $productCollection,

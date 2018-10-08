@@ -50,7 +50,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `variant_id` = ' . $externalVariantId . '
                ';
 
-        $mapping = $this->db->executeS($sql);
+        $mapping = $this->db->executeS($sql, true, false);
 
         if (empty($mapping)) {
             return new ProductMapping(null, null, null, null, null);
@@ -93,7 +93,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
                     `cart_id` = ' . (int) $externalCartId;
 
-        return $this->db->getValue($sql);
+        return $this->db->getValue($sql, false);
     }
 
     /**
@@ -109,7 +109,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
                     `order_id` = ' . (int) $externalOrderId;
 
-        return $this->db->getValue($sql);
+        return $this->db->getValue($sql, false);
     }
 
     /**
@@ -150,7 +150,7 @@ class GetResponseRepository implements DbRepositoryInterface
                     `product_id` = "' . $this->db->escape($externalProductId) . '"
                ';
 
-        $mapping = $this->db->ExecuteS($sql);
+        $mapping = $this->db->executeS($sql, true, false);
 
         if (empty($mapping)) {
             return new ProductMapping(null, null, null, null, null);
@@ -206,7 +206,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             `id_shop` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->executeS($sql)) {
+        if ($results = $this->db->executeS($sql, true, false)) {
             return $results[0];
         }
 
@@ -233,7 +233,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             id_shop = ' . (int) $this->idShop;
 
-        if ($results = $this->db->executeS($sql)) {
+        if ($results = $this->db->executeS($sql, true, false)) {
             return $results;
         }
 
@@ -267,7 +267,7 @@ class GetResponseRepository implements DbRepositoryInterface
             ' . _DB_PREFIX_ . 'getresponse_jobs'
         ;
 
-        if ($results = $this->db->executeS($sql)) {
+        if ($results = $this->db->executeS($sql, true, false)) {
             foreach ($results as $result) {
                 $collection->add(new GrJob($result['name'], $result['content']));
             }
@@ -557,7 +557,7 @@ class GetResponseRepository implements DbRepositoryInterface
             `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
             `order_id` = ' . (int) $externalOrderId;
 
-        if ($results = $this->db->executeS($query)) {
+        if ($results = $this->db->executeS($query, true, false)) {
             return $results[0];
         }
 
@@ -610,7 +610,7 @@ class GetResponseRepository implements DbRepositoryInterface
         WHERE
             `shop_id` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->executeS($query)) {
+        if ($results = $this->db->executeS($query, true, false)) {
             return $results[0];
         }
 
