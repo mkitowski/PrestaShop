@@ -5,7 +5,7 @@
  */
 class Cart
 {
-    /** @var int */
+    /** @var string */
     public $id;
 
     /** @var int */
@@ -30,8 +30,8 @@ class Cart
     {
         $this->products = $params['products'];
         $this->id = isset($params['id']) ? $params['id'] : null;
-        $this->total = isset($params['total']) ? $params['total'] : null;
-        $this->total_with_tax = isset($params['total_with_tax']) ? $params['total_with_tax'] : null;
+        $this->total = isset($params['total']) ? (float)$params['total'] : (float)0;
+        $this->total_with_tax = isset($params['total_with_tax']) ? (float)$params['total_with_tax'] : (float)0;
         $this->id_currency = isset($params['id_currency']) ? $params['id_currency'] : null;
         $this->id_customer = isset($params['id_customer']) ? $params['id_customer'] : null;
     }
@@ -50,6 +50,6 @@ class Cart
      */
     public function getOrderTotal($taxIncluded)
     {
-        return $taxIncluded ? $this->total : $this->total_with_tax;
+        return $taxIncluded ? $this->total_with_tax : $this->total;
     }
 }

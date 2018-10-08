@@ -102,8 +102,7 @@ class AccountServiceTest extends BaseTestCase
     {
         $this->accountSettingsRepository
             ->expects(self::once())
-            ->method('updateApiSettings')
-            ->with(null, 'smb', null);
+            ->method('disconnectApiSettings');
 
         $this->sut->disconnectFromGetResponse();
     }

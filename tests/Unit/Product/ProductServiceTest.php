@@ -17,27 +17,19 @@ class ProductServiceTest extends BaseTestCase
     /** @var ProductService */
     private $productService;
 
+    protected function setUp()
+    {
+        $this->productService = new ProductService();
+    }
+
     /**
      * @test
      */
     public function shouldCreateProductFromPrestashopProduct()
     {
-        $productParams = [
-            'id' => 1,
-            'name' => 'Tshirt with getResponse logo.',
-            'reference' => 'this is sku number',
-            'description_short' => 'Product short description',
-            'price' => 5.3,
-            'price_tax' => 8.0,
-            'link_rewrite' => 'link_rewrite',
-            'images' => [['id_image' => '1', 'position' => 1], ['id_image' => '2', 'position' => 2]],
-            'categories' => [
-                ['name' => 'categoryName10', 'id' => '10', 'id_parent' => '1'],
-                ['name' => 'categoryName11', 'id' => '11', 'id_parent' => '2']
-            ]
-        ];
+        $productParams = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
 
-        $product = new Product($productParams);
+        $product = new Product(\ProductGenerator::PROD_1_WITH_SKU);
         $quantity = 2;
 
         $grProduct = $this->productService->createProductFromPrestaShopProduct($product, $quantity);
@@ -53,10 +45,5 @@ class ProductServiceTest extends BaseTestCase
         $variantProduct = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $quantity);
         $this->assertEquals($variantProduct, $grProduct->getVariants()->getIterator()->current());
 
-    }
-
-    protected function setUp()
-    {
-        $this->productService = new ProductService();
     }
 }

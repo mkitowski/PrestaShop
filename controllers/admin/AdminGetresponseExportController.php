@@ -76,7 +76,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
             if (empty($exportSettings->getContactListId())) {
                 $this->errors[] = $this->l('You need to select list');
+                return;
+            }
 
+            if (empty($exportSettings->getShopId())) {
+                $this->errors[] = $this->l('You need to select store');
                 return;
             }
 

@@ -32,11 +32,10 @@ class Product
     /** @var array */
     private $categories;
 
-    public function __construct($param)
+    public function __construct($id)
     {
-        if (is_int($param)) {
-            $param = ProductParams::createFromId($param);
-        }
+        $param = \ProductGenerator::genProductParams($id);
+
         $this->id = isset($param['id']) ? $param['id'] : null;
         $this->name = isset($param['name'])? $param['name'] : null;
         $this->reference = isset($param['reference']) ? $param['reference'] : null;
@@ -58,9 +57,9 @@ class Product
     }
 
     /**
-     * @param null|int $limit
+     * @return array
      */
-    public function getImages($id_lang)
+    public function getImages()
     {
         return $this->images;
     }

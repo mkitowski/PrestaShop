@@ -50,7 +50,7 @@ class AccountSettingsTest extends BaseTestCase
                 'activeNewsletterSubscription' => 'no',
             ]
         );
-        $this->assertFalse($settings->canSubscriberBeSend());
+        $this->assertTrue($settings->canSubscriberBeSend());
     }
 
     /**

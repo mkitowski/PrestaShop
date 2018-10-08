@@ -557,7 +557,7 @@ class GetResponseRepository implements DbRepositoryInterface
             `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND 
             `order_id` = ' . (int) $externalOrderId;
 
-        if ($results = $this->db->executeS($query, true, false)) {
+        if ($results = $this->db->executeS($query)) {
             return $results[0];
         }
 
@@ -608,13 +608,9 @@ class GetResponseRepository implements DbRepositoryInterface
         FROM
             ' . _DB_PREFIX_ . 'getresponse_settings
         WHERE
-            `shop_id` = ' . (int) $this->idShop;
+            `id_shop` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->executeS($query, true, false)) {
-            return $results[0];
-        }
-
-        return '';
+        return $this->db->getValue($query, false);
     }
 
     /**

@@ -45,8 +45,8 @@ class CartService
             (string)$cart->id,
             $productCollection,
             (new Currency((int)$cart->id_currency))->iso_code,
-            (float)$cart->getOrderTotal(false),
-            (float)$cart->getOrderTotal(true)
+            $cart->getOrderTotal(false),
+            $cart->getOrderTotal(true)
         );
 
         $customer = new Customer($cart->id_customer);

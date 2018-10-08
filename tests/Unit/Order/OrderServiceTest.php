@@ -2,6 +2,7 @@
 namespace GetResponse\Tests\Unit\Order;
 
 use GetResponse\Order\OrderService;
+use GetResponse\Product\ProductService;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Address\Address;
 use GrShareCode\Order\AddOrderCommand;
@@ -55,14 +56,10 @@ class OrderServiceTest extends BaseTestCase
      */
     public function shouldNotSendOrderIfProductSkuIsEmpty()
     {
-        $order = new Order([
-            'products' => [
-                [
-                    'id_product' => 6,
-                    'product_quantity' => 5,
-                ]
-            ]
-        ]);
+        $product = \ProductGenerator::genProductParams(\ProductGenerator::PROD_3_WITHOUT_SKU);
+        $product['product_quantity'] = 5;
+
+        $order = new Order(['products' => [$product]]);
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
@@ -79,17 +76,23 @@ class OrderServiceTest extends BaseTestCase
      */
     public function shouldSendOrder()
     {
+        $product1 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
+        $product1['product_quantity'] = 2;
+
+        $product2 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_2_WITH_SKU);
+        $product2['product_quantity'] = 1;
+
+        $productService = new ProductService();
+        $productsCollection = new ProductsCollection();
+        $productsCollection->add(
+            $productService->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 2)
+        );
+        $productsCollection->add(
+            $productService->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 1)
+        );
+
         $params = [
-            'products' => [
-                [
-                    'id_product' => 1,
-                    'product_quantity' => 2,
-                ],
-                [
-                    'id_product' => 4,
-                    'product_quantity' => 1,
-                ]
-            ],
+            'products' => [$product1, $product2],
             'id' => 'id',
             'current_state' => 'pending',
             'date_add' => '2018-10-10 12:12:12',
@@ -105,7 +108,7 @@ class OrderServiceTest extends BaseTestCase
 
         $order = new GrOrder(
             $params['id'],
-            $this->getProductCollection(),
+            $productsCollection,
             12.0,
             2.0,
             'http://my-prestashop.com/?controller=order-detail&id_order=id',
@@ -223,33 +226,6 @@ class OrderServiceTest extends BaseTestCase
         );
 
         return $imagesCollection;
-    }
-
-    /**
-     * @return ProductsCollection
-     */
-    private function getProductCollection()
-    {
-        $productCollection = new ProductsCollection();
-        $productCollection->add(
-            (new Product(
-                1,
-                'Tshirt with getResponse logo.',
-                $this->getVariantsCollection1(),
-                $this->getCategoriesCollection()
-            ))->setUrl('http://my-prestashop.com/product/1')
-        );
-
-        $productCollection->add(
-            (new Product(
-                4,
-            'Tshirt with getResponse logo4.',
-                $this->getVariantsCollection2(),
-                $this->getCategoriesCollection()
-            ))->setUrl('http://my-prestashop.com/product/4')
-        );
-
-        return $productCollection;
     }
 
     /**

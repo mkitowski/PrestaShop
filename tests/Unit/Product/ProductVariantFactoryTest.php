@@ -23,15 +23,8 @@ class ProductVariantFactoryTest extends BaseTestCase
      */
     public function shouldCreateProduct()
     {
-        $productParams = [
-            'id' => 1,
-            'name' => 'Tshirt with getResponse logo.',
-            'reference' => 'this is sku number',
-            'description_short' => 'Product short description',
-            'price' => 5.3,
-            'price_tax' => 8.0
-        ];
-        $product = new Product($productParams);
+        $productParams = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
+        $product = new Product(\ProductGenerator::PROD_1_WITH_SKU);
 
         $imagesCollection = new ImagesCollection();
         $imagesCollection->add(new Image('source1', 1));
