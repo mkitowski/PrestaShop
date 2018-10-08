@@ -608,13 +608,9 @@ class GetResponseRepository implements DbRepositoryInterface
         FROM
             ' . _DB_PREFIX_ . 'getresponse_settings
         WHERE
-            `shop_id` = ' . (int) $this->idShop;
+            `id_shop` = ' . (int) $this->idShop;
 
-        if ($results = $this->db->executeS($query)) {
-            return $results[0];
-        }
-
-        return '';
+        return $this->db->getValue($query);
     }
 
     /**
