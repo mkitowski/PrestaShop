@@ -51,6 +51,38 @@ class ProductVariantFactoryTest extends BaseTestCase
 
     }
 
+    /**
+     * @test
+     */
+    public function shouldCreateProductWithoutShortDescription()
+    {
+        $productParams = \ProductGenerator::genProductParams(\ProductGenerator::PROD_3_WITHOUT_SHORT_DESCRIPTION);
+        $product = new Product(\ProductGenerator::PROD_3_WITHOUT_SHORT_DESCRIPTION);
+
+        $imagesCollection = new ImagesCollection();
+        $imagesCollection->add(new Image('source1', 1));
+        $imagesCollection->add(new Image('source2', 2));
+        $quantity = 2;
+
+        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $quantity);
+
+        $expectedVariant = new Variant(
+            $productParams['id'],
+            $productParams['name'],
+            $productParams['price'],
+            $productParams['price_tax'],
+            $productParams['reference']
+        );
+
+        $expectedVariant
+            ->setQuantity($quantity)
+            ->setImages($imagesCollection)
+            ->setUrl('http://my-prestashop.com/product/' . $productParams['id']);
+
+        $this->assertEquals($expectedVariant, $variant);
+
+    }
+
     protected function setUp()
     {
         $this->productVariantFactory = new ProductVariantFactory();

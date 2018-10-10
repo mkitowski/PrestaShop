@@ -2,10 +2,10 @@
 
 class ProductGenerator
 {
-
     const PROD_1_WITH_SKU = 1;
     const PROD_2_WITH_SKU = 2;
     const PROD_3_WITHOUT_SKU = 3;
+    const PROD_3_WITHOUT_SHORT_DESCRIPTION = 4;
 
     private static $products = [
         1 => [
@@ -49,9 +49,22 @@ class ProductGenerator
                 ['name' => 'categoryName10', 'id' => '10', 'id_parent' => '1'],
                 ['name' => 'categoryName11', 'id' => '11', 'id_parent' => '2']
             ]
+        ],
+        4 => [
+            'id' => 4,
+            'id_product' => 4,
+            'name' => 'majtki',
+            'reference' => 'majtki',
+            'description_short' => '',
+            'price' => 32.0,
+            'price_tax' => 33.0,
+            'images' => [['id_image' => '2', 'position' => 4], ['id_image' => '3', 'position' => 5]],
+            'categories' => [
+                ['name' => 'categoryName10', 'id' => '10', 'id_parent' => '1'],
+                ['name' => 'categoryName11', 'id' => '11', 'id_parent' => '2']
+            ]
         ]
     ];
-
 
     /**
      * @param int $id

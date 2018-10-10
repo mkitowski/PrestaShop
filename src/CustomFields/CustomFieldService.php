@@ -30,14 +30,16 @@ class CustomFieldService
      */
     public function getCustomFieldsFromGetResponse(CustomFieldMappingCollection $customFieldMappingCollection)
     {
-        $customFields = [];
 
-        /** @var CustomFieldMapping $customFieldMapping */
-        foreach ($customFieldMappingCollection as $customFieldMapping){
-            $customFields[] = $customFieldMapping->getName();
-        }
-
-        $customFieldList = implode(',', $customFields);
+//        @todo: When new method available in shareCode
+//        $customFields = [];
+//
+//        /** @var CustomFieldMapping $customFieldMapping */
+//        foreach ($customFieldMappingCollection as $customFieldMapping){
+//            $customFields[] = $customFieldMapping->getName();
+//        }
+//
+//        $customFieldList = implode(',', $customFields);
 //        $this->grCustomFieldService->getAllCustomFieldsWithNames($customFieldList);
 
         return $this->grCustomFieldService->getAllCustomFields();

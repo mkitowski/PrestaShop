@@ -34,7 +34,7 @@ class ProductVariantFactory
             ->setQuantity($quantity)
             ->setImages($imagesCollection)
             ->setUrl((new Link())->getProductLink($product))
-            ->setDescription(substr($this->normalizeToString($product->description_short), 0, self::VARIANT_DESC_MAX_LENGTH));
+            ->setDescription($this->getDescription($product));
 
         return $variant;
     }
@@ -46,6 +46,21 @@ class ProductVariantFactory
     private function normalizeToString($text)
     {
         return is_array($text) ? reset($text) : $text;
+    }
+
+    /**
+     * @param Product $product
+     * @return bool|string
+     */
+    private function getDescription(Product $product)
+    {
+        $description = $this->normalizeToString($product->description_short);
+
+        if (empty($description)) {
+            return null;
+        }
+
+        return substr($description, 0, self::VARIANT_DESC_MAX_LENGTH);
     }
 
 }
