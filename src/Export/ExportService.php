@@ -58,7 +58,13 @@ class ExportService
 
         foreach ($contacts as $contact) {
 
-            $customer = new Customer($contact['id']);
+            if (0 == $contact['id']) {
+                // flow for newsletters subscribers
+                $customer = new Customer();
+                $customer->email = $contact['email'];
+            } else {
+                $customer = new Customer($contact['id']);
+            }
 
             $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
                 $customer,

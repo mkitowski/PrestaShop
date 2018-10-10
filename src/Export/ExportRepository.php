@@ -45,17 +45,7 @@ class ExportRepository
         if ($newsletterGuests && $this->checkModuleStatus($newsletterModule)) {
             $ngWhere = 'UNION SELECT
                     0 as id,
-                    "Friend" as firstname,
-                    "" as lastname,
-                    n.email as email,
-                    "" as company,
-                    "" as birthday,
-                    "" as address1,
-                    "" as address2,
-                    "" as postcode,
-                    "" as city,
-                    "" as phone,
-                    "" as country
+                    n.email as email
                 FROM
                     ' . $newsletterTableName . ' n
                 WHERE
@@ -67,17 +57,7 @@ class ExportRepository
 
         $sql = 'SELECT
                     cu.id_customer as id,
-                    cu.firstname as firstname,
-                    cu.lastname as lastname,
-                    cu.email as email,
-                    cu.company as company,
-                    cu.birthday as birthday,
-                    ad.address1 as address1,
-                    ad.address2 as address2,
-                    ad.postcode as postcode,
-                    ad.city as city,
-                    ad.phone as phone,
-                    co.iso_code as country
+                    cu.email as email
                 FROM
                     ' . _DB_PREFIX_ . 'customer as cu
                 LEFT JOIN

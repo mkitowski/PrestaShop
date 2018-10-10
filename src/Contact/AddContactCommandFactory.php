@@ -49,7 +49,7 @@ class AddContactCommandFactory
             );
 
         $email = $contact->email;
-        $name = $contact->firstname . ' ' . $contact->lastname;
+        $name = trim($contact->firstname . ' ' . $contact->lastname);
 
         return new AddContactCommand(
             $email,
