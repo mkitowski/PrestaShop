@@ -33,7 +33,7 @@ class EcommerceValidator
     private function validate()
     {
         if ($this->ecommerceDto->isEnabled() && empty($this->ecommerceDto->getShopId())) {
-            $this->errors[] = Translate::getAdminTranslation('You need to select shop');
+            $this->errors[] = Translate::getAdminTranslation('You need to select store');
 
             return;
         }

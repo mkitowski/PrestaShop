@@ -129,7 +129,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     private function generateForm()
     {
-        $shops[] = ['shopId' => '', 'name' => $this->l('Select a shop')];
+        $shops[] = ['shopId' => '', 'name' => $this->l('Select a store')];
 
         /** @var Shop $shop */
         foreach ($this->ecommerceService->getAllShops() as $shop) {

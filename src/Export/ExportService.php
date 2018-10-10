@@ -96,6 +96,11 @@ class ExportService
      */
     private function exportContactOrders($contacts, ExportSettings $exportSettings)
     {
+
+        if (!$exportSettings->isEcommerce()) {
+            return;
+        }
+
         $orderService = OrderServiceFactory::create();
 
         foreach ($contacts as $contact) {

@@ -8,6 +8,7 @@ use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Export\ExportServiceFactory;
 use GetResponse\Export\ExportSettings;
+use GetResponse\Export\ExportValidator;
 use GetResponse\Helper\FlashMessages;
 use GrShareCode\Api\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
@@ -33,7 +34,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->ecommerceService = EcommerceServiceFactory::create();
     }
 
-
     public function initContent()
     {
         $this->display = 'view';
@@ -41,7 +41,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('Export Customer Data on Demand');
         parent::initContent();
     }
-
 
     public function initPageHeaderToolbar()
     {
@@ -74,13 +73,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
                 Tools::getValue('shop')
             );
 
-            if (empty($exportSettings->getContactListId())) {
-                $this->errors[] = $this->l('You need to select list');
-                return;
-            }
+            $validator = new ExportValidator($exportSettings);
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
 
-            if (empty($exportSettings->getShopId())) {
-                $this->errors[] = $this->l('You need to select store');
                 return;
             }
 
@@ -126,7 +122,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderExportForm()
     {
-        $shops[] = ['shopId' => '', 'name' => $this->l('Select a shop')];
+        $shops[] = ['shopId' => '', 'name' => $this->l('Select a store')];
 
         /** @var Shop $shop */
         foreach ($this->ecommerceService->getAllShops() as $shop) {
