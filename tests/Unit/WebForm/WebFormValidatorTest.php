@@ -40,7 +40,6 @@ class WebFormValidatorTest extends BaseTestCase
         $validator = new WebFormValidator($webFormDto);
         $this->assertFalse($validator->isValid());
         $this->assertEquals(['You need to select a form and its placement'], $validator->getErrors());
-
     }
 
 }
