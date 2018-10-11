@@ -1,3 +1,7 @@
+####Latest release
+#####Warning! Version 16.3.0 breaks compatibility. If your current plugin version is older than 16.3, please remove plugin completely from administration panel before installing new version. 
+If you are using getResponse ecommerce functionality, we recommend to setup new shop (You can add shop via 'GetResponse Ecommerce' -> 'Add new Shop').
+
 # GetResponse PrestaShop Integration
 
 Thanks to GetResponse integration with PrestaShop, you can easily create professional email marketing campaigns for your online store and nurture relationships with your customers. Simply import contact lists and use forms for better customer segmentation.
@@ -71,15 +75,7 @@ You can add your GetResponse forms to your PrestaShop store.
 Choose the location to insert the form.
 
 3. (Legacy web forms only) You can display the form in its original GetResponse style or the plain PrestaShop style.
-
-### Can I categorize my PrestaShop customers automatically?
-
-GetResponse enables you to automatically move or copy your customers from one GetResponse campaign to another when they make a purchase in a particular PrestaShop product category.
-
-1. Click Create new segment.
-
-2. Choose automation parameters. When you select the “move” option, the rule moves contacts from ALL existing campaigns to the destination campaign. To add contacts to another campaign simply choose the “copy” option.
-
+ 
 ## Support
 
 If you have any trouble installing or working the plugin feel free to contact us by [phone, email or chat](https://support.getresponse.com/). You can also get more info on [GetResponse App Center](https://connect.getresponse.com/) page.

@@ -1,75 +1,114 @@
 <?php
-require_once 'AdminGetresponseController.php';
 
-/**
- * Class AdminGetresponseWebTrackingController
- *
- * @author Getresponse <grintegrations@getresponse.com>
- * @copyright GetResponse
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+use GetResponse\WebTracking\WebTrackingDto;
+use GetResponse\WebTracking\WebTrackingService;
+use GetResponse\WebTracking\WebTrackingServiceFactory;
+
+require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseWebTrackingController extends AdminGetresponseController
 {
+    /** @var WebTrackingService */
+    private $webTrackingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->webTrackingService = WebTrackingServiceFactory::create();
+    }
+
     public function initContent()
     {
         $this->display = 'edit';
+        $this->show_form_cancel_button = false;
+        $this->toolbar_title[] = $this->l('Administration');
+        $this->toolbar_title[] = $this->l('Web Event Trackinge');
+
         parent::initContent();
     }
 
-    /**
-     * Toolbar title
-     */
-    public function initToolBarTitle()
+    public function postProcess()
     {
-        $this->toolbar_title[] = $this->l('Administration');
-        $this->toolbar_title[] = $this->l('Web Event Tracking');
-    }
+        if (Tools::isSubmit('submitWebTrackingForm')) {
 
-    public function renderForm()
-    {
-        if (Tools::isSubmit('submitTracking')) {
-            $this->updateTracking();
+            $tracking = new WebTrackingDto(Tools::getValue('tracking'));
+            $this->webTrackingService->updateTracking($tracking);
+
+            $this->confirmations[] = $tracking->isEnabled()
+                ? $this->l('Web event traffic tracking enabled')
+                : $this->l('Web event traffic tracking disabled');
         }
 
-        $settings = $this->db->getSettings();
-        $this->show_form_cancel_button = false;
+        parent::postProcess();
+    }
 
-        if ($settings['active_tracking'] != 'disabled') {
-            $this->fields_form = array(
-                'legend' => array(
+    /**
+     * @return string
+     */
+    public function renderForm()
+    {
+        $webTracking = $this->webTrackingService->getWebTracking();
+
+        $helper = new HelperForm();
+        $helper->submit_action = 'submitWebTrackingForm';
+        $helper->token = Tools::getAdminTokenLite('AdminGetresponseWebTrackingForm');
+
+        if ($webTracking !== null && !$webTracking->isTrackingDisabled()) {
+            $helper->tpl_vars = ['fields_value' => ['tracking' => $webTracking->isTrackingActive()]];
+            $fields_form = $this->getFormForTrackingEnabled();
+        } else {
+            $fields_form = $this->getFormFieldsForTrackingDisabled();
+        }
+
+        return $helper->generateForm([$fields_form]);
+    }
+
+    /**
+     * @return array
+     */
+    private function getFormForTrackingEnabled()
+    {
+        return [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Web Event Tracking'),
-                ),
+                ],
                 'description' => $this->l('
                     Enable event tracking in GetResponse to uncover who is visiting your stores, 
                     how often, and why. Analyze and react to customer buying habits.
                 '),
-                'input' => array(
-                    array(
+                'input' => [
+                    [
                         'type' => 'switch',
                         'label' => $this->l('Send web event data to GetResponse'),
                         'name' => 'tracking',
                         'class' => 't',
                         'is_bool' => true,
-                        'values' => array(
-                            array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Yes')),
-                            array('id' => 'active_off', 'value' => 0, 'label' => $this->l('No'))
-                        ),
-                    )
-                ),
-                'submit' => array(
+                        'values' => [
+                            ['id' => 'active_on', 'value' => WebTrackingDto::TRACKING_ON, 'label' => $this->l('Yes')],
+                            ['id' => 'active_off', 'value' => WebTrackingDto::TRACKING_OFF, 'label' => $this->l('No')]
+                        ],
+                    ]
+                ],
+                'submit' => [
                     'title' => $this->l('Save'),
                     'name' => 'submitTracking',
                     'icon' => 'process-icon-save'
-                )
-            );
+                ]
+            ]
+        ];
+    }
 
-            $this->fields_value['tracking'] = ($settings['active_tracking'] == 'yes');
-        } else {
-            $this->fields_form = array(
-                'legend' => array(
+    /**
+     * @return array
+     */
+    private function getFormFieldsForTrackingDisabled()
+    {
+        return [
+            'form' => [
+                'legend' => [
                     'title' => $this->l('Web Event Tracking'),
-                ),
+                ],
                 'description' =>
                     $this->l('
                         We can’t start sending data from PrestaShop to GetResponse yet. 
@@ -79,41 +118,8 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                         If you have a Max or Pro account, try disconnecting and reconnecting 
                         the GetResponse account within the GetResponse module. This should correct the issue.
                     ')
-            );
-        }
-
-        return parent::renderForm();
+            ]
+        ];
     }
 
-    /**
-     * Tracking on/off switch
-     */
-    public function updateTracking()
-    {
-        $tracking = Tools::getValue('tracking');
-        $settings = $this->db->getSettings();
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
-        $snippet = '';
-
-        if ($tracking == 1) {
-            $code = (array)$api->getTrackingCode();
-            if (!empty($code) && is_object($code[0]) && 0 < strlen($code[0]->snippet)) {
-                $snippet = $code[0]->snippet;
-            }
-            $this->confirmations[] = $this->l('Web event traffic tracking enabled');
-        } elseif ($tracking == 0) {
-            $this->confirmations[] = $this->l('Web event traffic tracking disabled');
-        }
-
-        $this->db->updateTracking($tracking == 1 ? 'yes' : 'no', $snippet);
-    }
-
-    /**
-     * Get Admin Token
-     * @return string
-     */
-    public function getToken()
-    {
-        return Tools::getAdminTokenLite('AdminGetresponseWebTracking');
-    }
 }
