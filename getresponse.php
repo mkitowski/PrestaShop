@@ -2,9 +2,9 @@
 /**
  * This module integrate GetResponse and PrestaShop Allows subscribe via checkout page and export your contacts.
  *
- *  @author Getresponse <grintegrations@getresponse.com>
- *  @copyright GetResponse
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * @author Getresponse <grintegrations@getresponse.com>
+ * @copyright GetResponse
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
@@ -12,108 +12,105 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/DbConnection.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GetResponseAPI3.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrApi.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrShop.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/GrEcommerce.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrGeneralException.php');
-include_once(_PS_MODULE_DIR_ . '/getresponse/classes/exceptions/GrConfigurationNotFoundException.php');
+include_once _PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php';
+include_once _PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php';
+include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php';
+include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedException.php';
 
 class Getresponse extends Module
 {
-    /** @var DbConnection */
-    private $db;
+    const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
+    const VERSION = '16.3.0';
 
-    /** @var GrApi */
-    private $api;
+    /** @var GetResponseRepository */
+    private $repository;
 
-    /** @var array */
+    /** @var GetResponse\Account\AccountSettings */
     private $settings;
 
-    private $usedHooks = array(
-        'newOrder',
-        'createAccount',
-        'leftColumn',
-        'rightColumn',
-        'header',
-        'footer',
-        'top',
-        'home',
-        'cart',
-        'postUpdateOrderStatus',
-        'hookOrderConfirmation',
-        'displayBackOfficeHeader'
-    );
+    /** @var bool */
+    private $isConnectedToGetResponse = true;
 
     public function __construct()
     {
-        $this->name                   = 'getresponse';
-        $this->tab                    = 'emailing';
-        $this->version                = '16.2.11';
-        $this->author                 = 'GetResponse';
-        $this->need_instance          = 0;
-        $this->module_key             = '7e6dc54b34af57062a5e822bd9b8d5ba';
-        $this->ps_versions_compliancy = array('min' => '1.5.6.2', 'max' => _PS_VERSION_);
-        $this->displayName            = $this->l('GetResponse');
-
-        $this->description            = $this->l('
-            Add your Prestashop contacts to GetResponse or manage them via automation rules.
-            Automatically follow-up new subscriptions with engaging email marketing campaigns
-            ');
-        $this->confirmUninstall       = $this->l(
-            'Warning: all the module data will be deleted. Are you sure you want uninstall this module?'
-        );
+        $this->name = 'getresponse';
+        $this->tab = 'emailing';
+        $this->version = self::VERSION;
+        $this->author = 'GetResponse';
+        $this->need_instance = 0;
+        $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
+        $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
+        $this->displayName = $this->l('GetResponse');
+        $this->description = $this->l(GetResponse\Config\ConfigService::MODULE_DESCRIPTION);
+        $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
 
-        $this->db = new DbConnection(Db::getInstance(), GrShop::getUserShopId());
+        $this->repository = new GetResponseRepository(Db::getInstance(), GetResponse\Helper\Shop::getUserShopId());
 
-        if (version_compare(_PS_VERSION_, '1.5') === -1) {
-            $this->context->smarty->assign(array('flash_message' => array(
-                'message' => $this->l('Unsupported Prestashop version'),
-                'status' => 'danger'
-            )));
-        }
 
         if (!function_exists('curl_init')) {
-            $this->context->smarty->assign(array('flash_message' => array(
-                'message' => $this->l('Curl library not found'),
-                'status' => 'danger'
-            )));
+            $this->context->smarty->assign([
+                'flash_message' => [
+                    'message' => $this->l('Curl library not found'),
+                    'status' => 'danger'
+                ]
+            ]);
         }
     }
 
     public function hookDisplayBackOfficeHeader()
     {
+        if (isset($this->context->controller->module)
+            && $this->context->controller->module->name === $this->name
+            && $confirmations = GetResponse\Helper\FlashMessages::getConfirmations()) {
+
+            $this->context->smarty->assign('conf', $confirmations[0]);
+        }
+
         $this->context->controller->addCss($this->_path . 'views/css/tab.css');
     }
 
-    /******************************************************************/
-    /** Install Methods ***********************************************/
-    /******************************************************************/
+    /**
+     * @return bool
+     */
+    public function install()
+    {
+        if (!parent::install() || !$this->installTab()) {
+            return false;
+        }
 
+        foreach (GetResponse\Config\ConfigService::USED_HOOKS as $hook) {
+            if (!$this->registerHook($hook)) {
+                return false;
+            }
+        }
+
+        // Update Version Number
+        if (!Configuration::updateValue('GR_VERSION', $this->version)) {
+            return false;
+        }
+
+        $this->repository->prepareDatabase();
+
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
     public function installTab()
     {
-        new TabCore();
-        $tab             = new Tab();
-        $tab->active     = 1;
+        $tab = new Tab();
+        $tab->active = 1;
         $tab->class_name = 'Getresponse';
-        $tab->name       = array();
+        $tab->name = array();
+        $tab->id_parent = strpos(_PS_VERSION_, '1.6') === 0 ? 0 : (int)Tab::getIdFromClassName('AdminAdmin');
+        $tab->module = $this->name;
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'GetResponse';
         }
-
-        if (substr(_PS_VERSION_, 0, 3) === '1.6') {
-            $tab->id_parent = 0;
-        } else {
-            $tab->id_parent = (int) Tab::getIdFromClassName('AdminAdmin');
-        }
-        $tab->module = $this->name;
-
         $tab->add();
-
         $this->createSubTabs($tab->id);
 
         return true;
@@ -126,40 +123,10 @@ class Getresponse extends Module
     public function createSubTabs($tabId)
     {
         $langs = Language::getLanguages();
-        $tabvalue = array(
-            array(
-                'class_name' => 'AdminGetresponseAccount',
-                'name' => 'GetResponse Account',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseExport',
-                'name' => 'Export Customer Data',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseSubscribeRegistration',
-                'name' => 'Subscribe via Registration',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseSubscribeForm',
-                'name' => 'Subscribe via Forms',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseContactList',
-                'name' => 'Contact List Rules',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseWebTracking',
-                'name' => 'Web Event Tracking',
-            ),
-            array(
-                'class_name' => 'AdminGetresponseEcommerce',
-                'name' => 'GetResponse Ecommerce',
-            ),
-        );
-        foreach ($tabvalue as $tab) {
+        foreach (GetResponse\Config\ConfigService::BACKOFFICE_TABS as $tab) {
             $newtab = new Tab();
             $newtab->class_name = $tab['class_name'];
-            $newtab->id_parent = $tabId;
+            $newtab->id_parent = isset($tab['parent']) ? $tab['parent'] : $tabId;
             $newtab->module = $this->name;
             $newtab->position = 0;
             foreach ($langs as $l) {
@@ -167,62 +134,8 @@ class Getresponse extends Module
             }
             $newtab->add();
         }
+
         return true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function install()
-    {
-        if (!parent::install() ||!$this->installTab()) {
-            return false;
-        }
-
-        foreach ($this->usedHooks as $hook) {
-            if (!$this->registerHook($hook)) {
-                return false;
-            }
-        }
-
-        //Update Version Number
-        if (!Configuration::updateValue('GR_VERSION', $this->version)) {
-            return false;
-        }
-
-        $this->db->prepareDatabase();
-        return true;
-    }
-
-    /******************************************************************/
-    /** Uninstall Methods *********************************************/
-    /******************************************************************/
-
-    public function uninstallTab()
-    {
-        $classes = array(
-            'AdminGetresponseExport',
-            'AdminGetresponseSubscribeRegistration',
-            'AdminGetresponseSubscribeForm',
-            'AdminGetresponseContactList',
-            'AdminGetresponseWebTracking',
-            'AdminGetresponseEcommerce',
-            'AdminGetresponseAccount',
-            'AdminGetresponse',
-            'Getresponse'
-        );
-
-        $result = true;
-        foreach ($classes as $class) {
-            $idTab = (int) Tab::getIdFromClassName($class);
-            if (false === $idTab) {
-                return false;
-            }
-            $tab = new Tab($idTab);
-            $result = $tab->delete() && $result;
-        }
-
-        return $result;
     }
 
     public function getContent()
@@ -235,299 +148,169 @@ class Getresponse extends Module
      */
     public function uninstall()
     {
-        if (!parent::uninstall() ||!$this->uninstallTab()) {
+        if (!parent::uninstall() || !$this->uninstallTab()) {
             return false;
         }
 
-        foreach ($this->usedHooks as $hook) {
+        foreach (GetResponse\Config\ConfigService::USED_HOOKS as $hook) {
             if (!$this->unregisterHook($hook)) {
                 return false;
             }
         }
 
-        //Delete Version Entry
         if (!Configuration::deleteByName('GR_VERSION')) {
             return false;
         }
 
-        $this->db->clearDatabase();
+        $this->repository->clearDatabase();
+
         return true;
     }
 
     /**
-     * @return GrApi
-     * @throws GrConfigurationNotFoundException
+     * @return bool
      */
-    private function getApi()
+    public function uninstallTab()
     {
-        if (empty($this->api)) {
-            $settings = $this->getSettings();
-            $this->api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+        $result = true;
+        foreach (GetResponse\Config\ConfigService::INSTALLED_CLASSES as $class) {
+            $idTab = (int)Tab::getIdFromClassName($class);
+            if (false === $idTab) {
+                return false;
+            }
+            $tab = new Tab($idTab);
+            $result = $tab->delete() && $result;
         }
 
-        return $this->api;
+        return $result;
     }
 
     /**
-     * @return array
-     * @throws GrConfigurationNotFoundException
+     * @param $params
+     * @throws GrShareCode\Api\ApiTypeException
+     * @throws PrestaShopDatabaseException
+     */
+    public function hookCart($params)
+    {
+        try {
+            $accountSettings = $this->getSettings();
+            $cartHook = new GetResponse\Hook\NewCart();
+            $cartHook->sendCart($params['cart'], $accountSettings);
+        } catch (GetResponseNotConnectedException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
+        }
+    }
+
+    /**
+     * @return GetResponse\Account\AccountSettings|null
+     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GetResponseNotConnectedException
+     * @throws PrestaShopDatabaseException
      */
     private function getSettings()
     {
-        if (empty($this->settings)) {
-            $this->settings = $this->db->getSettings();
+        if (!$this->isConnectedToGetResponse) {
+            throw new GetResponseNotConnectedException('GetResponse account is not connected.');
         }
 
-        if (empty($this->settings['api_key'])) {
-            throw new GrConfigurationNotFoundException();
+        if (!$this->settings) {
+
+            $settings = new GetResponse\Account\AccountSettingsRepository(Db::getInstance(), GetResponse\Helper\Shop::getUserShopId());
+            $settings->getSettings();
+            if (!GetResponse\Account\AccountStatusFactory::create()->isConnectedToGetResponse()) {
+                $this->isConnectedToGetResponse = false;
+                throw new GetResponseNotConnectedException('GetResponse account is not connected.');
+            }
+
+            $this->settings = GetResponse\Account\AccountServiceFactory::create()->getSettings();
         }
 
         return $this->settings;
     }
 
     /**
-     * @return bool
-     */
-    public function isPluginEnabled()
-    {
-        try {
-            $this->getSettings();
-        } catch (GrConfigurationNotFoundException $e) {
-            return false;
-        }
-        return true;
-    }
-
-    /******************************************************************/
-    /** Hook Methods **************************************************/
-    /******************************************************************/
-
-    /**
-     * @param array $params
-     */
-    public function hookCart($params)
-    {
-        $grIdShop = $this->db->getGetResponseShopId();
-        if (empty($grIdShop)) {
-            return; // E-commerce is disabled
-        }
-
-        /** @var CartCore $cart */
-        $cart = $params['cart'];
-        if (empty($cart) || 0 === (int)$cart->id_customer) {
-            return;
-        }
-
-        $customer = new Customer($cart->id_customer);
-        $settings = $this->db->getSettings();
-        $ecommerce = new GrEcommerce($this->db);
-        $idSubscriber = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id']);
-
-        if (empty($idSubscriber)) {
-            return;
-        }
-
-        $products = $cart->getProducts(true);
-        $md5 = md5(json_encode($products));
-
-        // Cart didn't change
-        if ($this->db->getGetResponseCartMD5($cart->id) === $md5) {
-            return;
-        }
-
-        $grIdCart = $this->db->getGetResponseCartId($cart->id);
-
-        if (count($products) === 0) {
-            $ecommerce->removeCart($cart->id, $grIdCart, $grIdShop);
-        } else {
-            $ecommerce->sendCartDataToGR($cart, $grIdShop, $grIdCart, $idSubscriber);
-        }
-
-        $this->db->updateGetResponseCartMD5($cart->id, $md5);
-    }
-
-    /**
-     * @param array $params
+     * @param $params
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookNewOrder($params)
     {
-        if ($this->isPluginEnabled()) {
-            $this->addSubscriberForOrder($params);
-            $this->convertCartToOrder($params);
+        $this->sendOrderToGr($params['order']);
+    }
+
+    /**
+     * @param Order $order
+     * @throws GrShareCode\Api\ApiTypeException
+     */
+    private function sendOrderToGr(Order $order)
+    {
+        try {
+            $accountSettings = $this->getSettings();
+            $orderHook = new GetResponse\Hook\NewOrder();
+            $orderHook->sendOrder($order, $accountSettings);
+        } catch (GetResponseNotConnectedException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
     }
 
     /**
      * @param array $params
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookHookOrderConfirmation($params)
     {
-        $this->convertCartToOrder($params);
+        $this->sendOrderToGr($params['order']);
     }
 
     /**
      * @param array $params
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        $grIdShop = $this->db->getGetResponseShopId();
-        if (empty($grIdShop)) {
-            return; // E-commerce is disabled
-        }
-
-        if (isset($params['id_order']) && !empty($params['id_order'])) {
-            $params['order'] = new Order($params['id_order']);
-            $this->convertCartToOrder($params);
+        if (isset($params['order'])) {
+            $this->sendOrderToGr($params['order']);
         }
     }
 
     /**
      * @param array $params
-     */
-    private function convertCartToOrder($params)
-    {
-        /** @var OrderCore $order */
-        $order = $params['order'];
-        $grIdShop = $this->db->getGetResponseShopId();
-
-        if (empty($grIdShop) || empty($order) || 0 === (int)$order->id_customer) {
-            return;
-        }
-
-        /** @var CustomerCore $customer */
-        $customer = new Customer($order->id_customer);
-        $settings = $this->db->getSettings();
-        $ecommerce = new GrEcommerce($this->db);
-        $grIdContact = $ecommerce->getSubscriberId($customer->email, $settings['campaign_id'], true);
-
-        if (empty($grIdContact)) {
-            return;
-        }
-
-        $idOrder = (isset($order->id_order) && !empty($order->id_order)) ? $order->id_order : $order->id;
-        $grOrder = $ecommerce->createOrderObject($params, $grIdContact, $grIdShop);
-        $ecommerce->sendOrderDataToGR($grIdShop, $grOrder, $idOrder);
-    }
-
-    /**
-     * @param array $params
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookCreateAccount($params)
     {
-        if ($this->isPluginEnabled()) {
-            $this->createSubscriber($params);
-        }
+        $this->createSubscriber($params['newCustomer'], false);
     }
 
     /**
-     * @param array $params
+     * @param Customer $contact
+     * @param bool $fromNewsletter
      */
-    public function createSubscriber($params)
+    public function createSubscriber($contact, $fromNewsletter = false)
     {
-        $settings = $this->getSettings();
-        $api = new GrApi($settings['api_key'], $settings['account_type'], $settings['crypto']);
+        try {
+            $accountSettings = $this->getSettings();
 
-        if (isset($settings['active_subscription'])
-            && $settings['active_subscription'] == 'yes'
-            && !empty($settings['campaign_id'])
-        ) {
-            if (isset($params['newNewsletterContact'])) {
-                $prefix = 'newNewsletterContact';
-            } else {
-                $prefix  = 'newCustomer';
+            if (!$this->getSettings()->canSubscriberBeSend() || 1 != $contact->newsletter) {
+                return;
             }
 
-            $customs = $api->mapCustoms((array)$params[$prefix], null, $this->db->getCustoms(), 'create');
+            $addContactSettings = GetResponse\Contact\AddContactSettings::createFromAccountSettings($accountSettings);
 
-            if (isset($params[$prefix]->newsletter) && $params[$prefix]->newsletter == 1) {
-                $api->addContact(
-                    $settings['campaign_id'],
-                    $params[$prefix]->firstname,
-                    $params[$prefix]->lastname,
-                    $params[$prefix]->email,
-                    $settings['cycle_day'],
-                    $customs
-                );
+            $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings($accountSettings);
+            $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
 
-                $ecommerce = new GrEcommerce($this->db);
-                $ecommerce->getSubscriberId($params[$prefix]->email, $settings['campaign_id'], true);
-            }
-        }
-    }
-
-    /**
-     * @param array $params
-     *
-     * @throws Exception
-     */
-    public function addSubscriberForOrder($params)
-    {
-        $customerPostData = $params['customer'];
-
-        //update_contact
-        $contact = $this->db->getContactByEmail($customerPostData->email);
-        $customs = $this->getApi()->mapCustoms((array) $contact, $_POST, $this->db->getCustoms(), 'order');
-
-        // automation
-        if (!empty($params['order']->product_list)) {
-            $categories = array();
-            foreach ($params['order']->product_list as $products) {
-                $tempCategories = Product::getProductCategories($products['id_product']);
-                foreach ($tempCategories as $tmp) {
-                    $categories[$tmp] = $tmp;
-                }
-            }
-
-            $automations = $this->db->getAutomationSettings(true);
-
-            if (!empty($automations)) {
-
-                $automationRulesApplied = false;
-
-                foreach ($automations as $automation) {
-
-                    if (in_array($automation['category_id'], $categories)) {
-                        // do automation
-                        if ($automation['action'] == 'move') {
-
-                            $this->getApi()->moveContactToGr(
-                                $automation['campaign_id'],
-                                $customerPostData->firstname,
-                                $customerPostData->lastname,
-                                $customerPostData->email,
-                                $customs,
-                                $automation['cycle_day']
-                            );
-
-                        } elseif ($automation['action'] == 'copy') {
-
-                            $this->getApi()->addContact(
-                                $automation['campaign_id'],
-                                $customerPostData->firstname,
-                                $customerPostData->lastname,
-                                $customerPostData->email,
-                                $automation['cycle_day'],
-                                $customs
-                            );
-                            
-                        }
-                        $automationRulesApplied = true;
-                    }
-                }
-
-                if (!$automationRulesApplied) {
-                    $this->addContact($customerPostData, $customs);
-                }
-                return; //return so we do not hit standard case
-            }
+        } catch (GetResponseNotConnectedException $e) {
+        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (PrestaShopException $e) {
         }
 
-        // standard case
-        $this->addContact($customerPostData, $customs);
     }
 
     /**
      * @return string
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayRightColumn()
     {
@@ -535,7 +318,35 @@ class Getresponse extends Module
     }
 
     /**
+     * @param string $position
      * @return string
+     * @throws GrShareCode\Api\ApiTypeException
+     */
+    private function displayWebForm($position)
+    {
+        try {
+            $formDisplay = new GetResponse\Hook\FormDisplay(
+                GetResponse\WebForm\WebFormServiceFactory::createFromSettings($this->getSettings())
+            );
+
+            $assignData = $formDisplay->displayWebForm($position);
+
+        } catch (GetResponseNotConnectedException $e) {
+        }
+
+
+        if (!empty($assignData)) {
+            $this->smarty->assign($assignData);
+
+            return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
+        }
+
+        return '';
+    }
+
+    /**
+     * @return string
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayLeftColumn()
     {
@@ -544,14 +355,21 @@ class Getresponse extends Module
 
     /**
      * @return string
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayHeader()
     {
-        $settings = $this->db->getSettings();
+        try {
+            $settings = $this->getSettings();
 
-        if (isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes') {
-            $this->smarty->assign(array('gr_tracking_snippet' => $settings['tracking_snippet']));
-            return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
+            if ($settings->isTrackingActive()) {
+
+                $this->smarty->assign(['gr_tracking_snippet' => $settings->getTrackingSnippet()]);
+
+                return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
+            }
+
+        } catch (GetResponseNotConnectedException $e) {
         }
 
         return '';
@@ -559,6 +377,7 @@ class Getresponse extends Module
 
     /**
      * @return string
+     * @throws GrShareCode\Api\ApiTypeException
      */
     public function hookDisplayTop()
     {
@@ -567,32 +386,24 @@ class Getresponse extends Module
 
     /**
      * @return string
+     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GetResponseNotConnectedException
      */
     public function hookDisplayFooter()
     {
-        $email = false;
-        $settings = $this->db->getSettings();
-
-        if (Tools::isSubmit('submitNewsletter')
-            && '0' == Tools::getValue('action')
-            && Validate::isEmail(Tools::getValue('email'))
-            && isset($settings['active_newsletter_subscription'])
-            && $settings['active_newsletter_subscription'] == 'yes'
-        ) {
-            $client = new stdClass();
-            $client->newsletter = 1;
-            $client->firstname = 'Friend';
-            $client->lastname = '';
-            $client->email = Tools::getValue('email');
-
-            $data = array();
-            $data['newNewsletterContact'] = $client;
-
-            $this->createSubscriber($data);
+        try {
+            $settings = $this->getSettings();
+        } catch (GetResponseNotConnectedException $e) {
+            return '';
         }
 
-        if (isset($this->context->customer) && !empty($this->context->customer->email) &&
-            isset($settings['active_tracking']) && $settings['active_tracking'] == 'yes'
+        $email = false;
+
+        $this->createNewsletterSubscriber();
+
+        if (isset($this->context->customer)
+            && !empty($this->context->customer->email)
+            && $settings->isTrackingActive()
         ) {
             $email = $this->context->customer->email;
         }
@@ -601,39 +412,25 @@ class Getresponse extends Module
     }
 
     /**
-     * @return string
+     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GetResponseNotConnectedException
      */
-    public function hookDisplayHome()
+    private function createNewsletterSubscriber()
     {
-        return $this->displayWebForm('home');
-    }
+        if (Tools::isSubmit('submitNewsletter')
+            && '0' == Tools::getValue('action')
+            && Validate::isEmail(Tools::getValue('email'))
+            && $this->getSettings()->isNewsletterSubscriptionOn()
+        ) {
 
-    /**
-     * @param string $position
-     * @return mixed
-     */
-    private function displayWebForm($position)
-    {
-        if (!empty($position)) {
-            $webformSettings = $this->db->getWebformSettings();
+            $contact = new \Customer();
+            $contact->newsletter = 1;
+            $contact->firstname = 'Friend';
+            $contact->lastname = '';
+            $contact->email = Tools::getValue('email');
 
-            if (!empty($webformSettings) && $webformSettings['active_subscription'] == 'yes'
-                && $webformSettings['sidebar'] == $position
-            ) {
-                $setStyle = null;
-                if (!empty($webformSettings['style']) && $webformSettings['style'] == 'prestashop') {
-                    $setStyle = '&css=1';
-                }
-                $this->smarty->assign(array(
-                    'webform_url' => $webformSettings['url'],
-                    'style' => $setStyle,
-                    'position' => $position
-                ));
-                return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
-            }
+            $this->createSubscriber($contact, true);
         }
-
-        return '';
     }
 
     /**
@@ -644,6 +441,7 @@ class Getresponse extends Module
     {
         if (!empty($email)) {
             $this->smarty->assign(array('tracking_email' => $email));
+
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_mail.tpl');
         }
 
@@ -651,23 +449,12 @@ class Getresponse extends Module
     }
 
     /**
-     * @param object $contact
-     * @param array $customs
-     *
-     * @throws Exception
+     * @return string
+     * @throws GrShareCode\Api\ApiTypeException
      */
-    private function addContact($contact, $customs)
+    public function hookDisplayHome()
     {
-        $settings = $this->getSettings();
-        if (isset($contact->newsletter) && $contact->newsletter == 1) {
-            $this->getApi()->addContact(
-                $settings['campaign_id'],
-                $contact->firstname,
-                $contact->lastname,
-                $contact->email,
-                $settings['cycle_day'],
-                $customs
-            );
-        }
+        return $this->displayWebForm('home');
     }
+
 }

@@ -20,8 +20,8 @@ $(document).ready(function () {
 
             for (var i = 0; i < Object.keys(autoresponders).length; i++) {
                 if (autoresponders[i].campaignId == campaignId) {
-                    var text = (autoresponders[i].triggerSettings.dayOfCycle + ': ' + autoresponders[i].name + ' (' + autoresponders[i].subject + ')');
-                    autorespondersList.append('<option value="' + autoresponders[i].triggerSettings.dayOfCycle + '">' + text + '</option>');
+                    var text = (autoresponders[i].dayOfCycle + ': ' + autoresponders[i].name + ' (' + autoresponders[i].subject + ')');
+                    autorespondersList.append('<option value="' + autoresponders[i].dayOfCycle + '">' + text + '</option>');
                 }
             }
 
