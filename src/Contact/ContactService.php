@@ -10,6 +10,7 @@ use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\GetresponseApiException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
+use PrestaShopDatabaseException;
 
 /**
  * Class ContactService
@@ -34,6 +35,7 @@ class ContactService
      * @param bool $isNewsletterContact
      * @throws GetresponseApiException
      * @throws ApiTypeException
+     * @throws PrestaShopDatabaseException
      */
     public function addContact(Customer $contact, AddContactSettings $addContactSettings, $isNewsletterContact = false)
     {

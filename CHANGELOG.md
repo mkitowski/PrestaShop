@@ -1,5 +1,12 @@
 # Changelog
 
+## 16.3.0
+*(2018-10-11)*
+
+#####Warning! This version breaks compatibility. Please remove completely plugin from administration panel. Than add module from using getresponse.zip file. 
+* removed 'Contact List Rules' functionality
+* added ecommerce data export within 'Export Customer Data' section
+
 ## 16.2.10
 *(2018-04-24)*
 

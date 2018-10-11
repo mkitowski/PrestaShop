@@ -1,6 +1,7 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\ContactList\AddContactListDto;
 use GetResponse\ContactList\AddContactListValidator;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
@@ -49,16 +50,15 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
     {
         if (Tools::isSubmit('addCampaignForm')) {
 
-            $addContactListCommand = new AddContactListCommand(
+            $addContactListDto = new AddContactListDto(
                 Tools::getValue('campaign_name'),
                 Tools::getValue('from_field'),
                 Tools::getValue('replyto'),
                 Tools::getValue('subject'),
-                Tools::getValue('body'),
-                $this->context->language->iso_code
+                Tools::getValue('body')
             );
 
-            $validator = new AddContactListValidator($addContactListCommand);
+            $validator = new AddContactListValidator($addContactListDto);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
 
@@ -66,7 +66,7 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
             }
 
             try {
-                $this->contactListService->createContactList($addContactListCommand);
+                $this->contactListService->createContactList($addContactListDto, $this->context->language->iso_code);
                 FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('List created'));
                 Tools::redirectAdmin($this->context->link->getAdminLink(Tools::getValue('referer')));
             } catch (GrApiException $e) {

@@ -127,18 +127,24 @@ class ContactListService
     }
 
     /**
-     * @param AddContactListCommand $addContactListCommand
+     * @param AddContactListDto $addContactListDto
+     * @param string $languageCode
      * @throws GrApiException
      */
-    public function createContactList(AddContactListCommand $addContactListCommand)
+    public function createContactList(AddContactListDto $addContactListDto, $languageCode)
     {
         try {
-            $campaign = $this->grContactListService->createContactList($addContactListCommand);
-
-            if (isset($campaign->codeDescription)) {
-                throw new GrApiException($campaign->codeDescription, $campaign->code);
-            }
-        } catch (Exception $e) {
+            $this->grContactListService->createContactList(
+                new AddContactListCommand(
+                    $addContactListDto->getContactListName(),
+                    $addContactListDto->getFromField(),
+                    $addContactListDto->getReplyTo(),
+                    $addContactListDto->getBodyId(),
+                    $addContactListDto->getSubjectId(),
+                    $languageCode
+                )
+            );
+        } catch (GetresponseApiException $e) {
             throw GrApiException::createForCampaignNotAddedException($e);
         }
     }

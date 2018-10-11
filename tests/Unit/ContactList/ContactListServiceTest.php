@@ -2,12 +2,15 @@
 namespace GetResponse\Tests\Unit\ContactList;
 
 use GetResponse\Account\AccountSettings;
+use GetResponse\ContactList\AddContactListDto;
 use GetResponse\ContactList\ContactListRepository;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\Tests\Unit\BaseTestCase;
+use GrApiException;
 use GrShareCode\ContactList\AddContactListCommand;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
+use GrShareCode\GetresponseApiException;
 use PHPUnit_Framework_MockObject_MockObject;
 
 class ContactListServiceTest extends BaseTestCase
@@ -91,33 +94,73 @@ class ContactListServiceTest extends BaseTestCase
      */
     public function shouldCreateContactListFromAddContactListCommand()
     {
-        $addContactListCommand = new AddContactListCommand();
+        $contactListName = 'contactListName';
+        $fromField = 'fromField';
+        $replyTo = 'replyTo';
+        $subjectId = 'subjectId';
+        $bodyId = 'bodyId';
+        $languageCode = 'languageCode';
+
+        $addContactListDto = new AddContactListDto(
+            $contactListName,
+            $fromField,
+            $replyTo,
+            $subjectId,
+            $bodyId
+        );
 
         $this->grContactListService
             ->expects(self::once())
             ->method('createContactList')
-            ->with($addContactListCommand)
+            ->with(new AddContactListCommand(
+                $contactListName,
+                $fromField,
+                $replyTo,
+                $bodyId,
+                $subjectId,
+                $languageCode
+            ))
             ->willReturn(['campaignId' => 'campaignId']);
 
-        $this->sut->createContactList($addContactListCommand);
+        $this->sut->createContactList($addContactListDto, $languageCode);
     }
-//
-//    /**
-//     * @test
-//     */
-//    public function shouldCreateContactListFromAddContactListCommandThrowGrApiException()
-//    {
-//        $addContactListCommand = new AddContactListCommand();
-//
-//        $this->grContactListService
-//            ->expects(self::once())
-//            ->method('createContactList')
-//            ->with($addContactListCommand)
-//            ->willReturn((new \stdClass())->codeDescription);
-//
-//        $this->expectException(\GrApiException::class);
-//
-//        $this->sut->createContactList($addContactListCommand);
-//    }
+
+    /**
+     * @test
+     */
+    public function shouldCreateContactListFromAddContactListCommandThrowGrApiException()
+    {
+        $contactListName = 'contactListName';
+        $fromField = 'fromField';
+        $replyTo = 'replyTo';
+        $subjectId = 'subjectId';
+        $bodyId = 'bodyId';
+        $languageCode = 'languageCode';
+
+        $addContactListDto = new AddContactListDto(
+            $contactListName,
+            $fromField,
+            $replyTo,
+            $subjectId,
+            $bodyId
+        );
+
+        $this->grContactListService
+            ->expects(self::once())
+            ->method('createContactList')
+            ->with(new AddContactListCommand(
+                $contactListName,
+                $fromField,
+                $replyTo,
+                $bodyId,
+                $subjectId,
+                $languageCode
+            ))
+            ->willThrowException(new GetresponseApiException());
+
+        $this->expectException(GrApiException::class);
+
+        $this->sut->createContactList($addContactListDto, $languageCode);
+    }
 
 }

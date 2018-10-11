@@ -17,7 +17,6 @@ require_once __DIR__ . '/Unit/PrestashopMock/Address.php';
 require_once __DIR__ . '/Unit/PrestashopMock/Country.php';
 require_once __DIR__ . '/Unit/PrestashopMock/PrestaShopDatabaseException.php';
 require_once __DIR__ . '/../classes/GetResponseRepository.php';
-
-require __DIR__ . '/Unit/ShareCodeMock/AddContactListCommand.php';
+require_once __DIR__ . '/../classes/GrApiException.php';
 
 define('__PS_BASE_URI__', 'http://my-prestashop.com/');

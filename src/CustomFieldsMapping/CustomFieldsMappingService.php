@@ -32,11 +32,11 @@ class CustomFieldsMappingService
         $customFieldMapping = $this->getCustomFieldMappingById($customFieldMappingFromRequest->getId());
 
         if (!$customFieldMapping) {
-            throw CustomFieldMappingException::createForNotFoundCustomFieldMapping($customFieldMapping->getId());
+            throw CustomFieldMappingException::createForNotFoundCustomFieldMapping($customFieldMappingFromRequest->getId());
         }
 
         if ($customFieldMapping->isDefault()) {
-            throw CustomFieldMappingException::createForDefaultCustomFieldMapping($customFieldMapping->getId());
+            throw CustomFieldMappingException::createForDefaultCustomFieldMapping($customFieldMappingFromRequest->getId());
         }
 
         $this->repository->updateCustom($customFieldMappingFromRequest);

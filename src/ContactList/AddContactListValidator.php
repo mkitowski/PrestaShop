@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\ContactList;
 
-use GrShareCode\ContactList\AddContactListCommand;
 use Translate;
 
 /**
@@ -13,34 +12,34 @@ class AddContactListValidator
     /** @var array */
     private $errors;
 
-    /** @var AddContactListCommand */
-    private $addContactListCommand;
+    /** @var AddContactListDto */
+    private $addContactListDto;
 
     /**
-     * @param AddContactListCommand $addContactListCommand
+     * @param AddContactListDto $addContactListDto
      */
-    public function __construct(AddContactListCommand $addContactListCommand)
+    public function __construct(AddContactListDto $addContactListDto)
     {
-        $this->addContactListCommand = $addContactListCommand;
+        $this->addContactListDto = $addContactListDto;
         $this->errors = [];
         $this->validate();
     }
 
     private function validate()
     {
-        if (strlen($this->addContactListCommand->getContactListName()) < 4) {
+        if (strlen($this->addContactListDto->getContactListName()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "list name" field is invalid');
         }
-        if (strlen($this->addContactListCommand->getFromField()) < 4) {
+        if (strlen($this->addContactListDto->getFromField()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "from" field is required');
         }
-        if (strlen($this->addContactListCommand->getReplyTo()) < 4) {
+        if (strlen($this->addContactListDto->getReplyTo()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "reply-to" field is required');
         }
-        if (strlen($this->addContactListCommand->getSubscriptionConfirmationSubjectId()) < 4) {
+        if (strlen($this->addContactListDto->getSubjectId()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "confirmation subject" field is required');
         }
-        if (strlen($this->addContactListCommand->getSubscriptionConfirmationBodyId()) < 4) {
+        if (strlen($this->addContactListDto->getBodyId()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "confirmation body" field is required');
         }
     }
