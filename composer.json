@@ -1,0 +1,34 @@
+{
+  "name": "GetResponse/PrestaShop",
+  "homepage": "https://github.com/GetResponse/PrestaShop",
+  "authors": [
+    {
+      "name": "GetResponse",
+      "email": "devzone@getresponse.com",
+      "homepage": "https://getresponse.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url":  "git@github.com:GetResponse/share-code-plugin.git"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "GetResponse/share-code-plugin" : "^5.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "GetResponse\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "GetResponse\\Tests\\": "tests/"
+    }
+  }
+}

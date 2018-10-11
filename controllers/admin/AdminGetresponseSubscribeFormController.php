@@ -1,16 +1,22 @@
 <?php
-require_once 'AdminGetresponseController.php';
 
-/**
- * Class AdminGetresponseController
- *
- * @author Getresponse <grintegrations@getresponse.com>
- * @copyright GetResponse
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+use GetResponse\WebForm\WebForm;
+use GetResponse\WebForm\WebFormDto;
+use GetResponse\WebForm\WebFormServiceFactory;
+use GetResponse\WebForm\WebFormValidator;
+use GrShareCode\WebForm\WebForm as GetResponseForm;
+use GrShareCode\WebForm\WebFormCollection;
+
+require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseSubscribeFormController extends AdminGetresponseController
 {
+    /** @var \GetResponse\WebForm\WebFormService */
+    private $webFormService;
+
+    /** @var WebFormCollection */
+    private $getResponseWebFormCollection;
+
     public function __construct()
     {
         parent::__construct();
@@ -20,229 +26,183 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeForm'),
-            'base_url', __PS_BASE_URI__
+            'selected_tab' => 'subscribe_via_registration'
         ));
+
+        $this->webFormService = WebFormServiceFactory::create();
+        $this->getResponseWebFormCollection = $this->webFormService->getGetResponseFormCollection();
     }
 
     public function initContent()
     {
         $this->display = 'edit';
         $this->show_form_cancel_button = false;
+        $this->toolbar_title[] = $this->l('GetResponse');
+        $this->toolbar_title[] = $this->l('Add Contacts via GetResponse Forms');
 
         parent::initContent();
     }
 
-
-    public function initToolBarTitle()
+    public function postProcess()
     {
-        $this->toolbar_title[] = $this->l('GetResponse');
-        $this->toolbar_title[] = $this->l('Add Contacts via GetResponse Forms');
+        if (Tools::isSubmit('submitSubscribeForm')) {
+
+            $webFormDto = new WebFormDto(
+                Tools::getValue('form', null),
+                Tools::getValue('position', null),
+                Tools::getValue('style', null),
+                Tools::getValue('subscription', null)
+            );
+
+            $validator = new WebFormValidator($webFormDto);
+            if (!$validator->isValid()) {
+                $this->errors = $validator->getErrors();
+
+                return;
+            }
+
+            $this->webFormService->updateWebForm($webFormDto);
+
+            $this->confirmations[] = $webFormDto->isEnabled()
+                ? $this->l('Form published')
+                : $this->l('Form unpublished');
+
+        }
+        parent::postProcess();
     }
 
-    /**
-     * render main view
-     * @return string
-     */
     public function renderForm()
     {
-        $this->show_form_cancel_button = false;
-        $settings = $this->db->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
-
-        $this->context->smarty->assign(array(
-            'is_connected' => $isConnected,
-            'active_tracking' => $settings['active_tracking']
-        ));
-
-        if (false === $isConnected) {
-            $this->apiView();
-            return parent::renderView();
-        }
-
-        $subscription = Tools::getValue('subscription', null);
-
-        if ($subscription != null) {
-            $this->performSubscribeViaForm();
-        }
-
-        return $this->subscribeViaFormView();
-    }
-
-    public function renderSubscribeForm($forms = [])
-    {
-        $this->fields_form = array(
-            'legend' => array(
-                'title' => $this->l('Add Your GetResponse Forms (or Exit Popups) to Your Shop'),
-                'icon' => 'icon-gears'
-            ),
-            'input' => array(
-                array(
-                    'type'      => 'switch',
-                    'label'     => $this->l('Add contacts to GetResponse via forms (or exit popups)'),
-                    'name'      => 'subscription',
-                    'class'     => 't',
-                    'is_bool'   => true,
-                    'values'    => array(
-                        array('id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')),
-                        array('id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled'))
-                    ),
-                ),
-                array(
-                    'type' => 'select',
-                    'label' => $this->l('Form'),
-                    'name' => 'form',
-                    'required' => true,
-                    'options' => array(
-                        'query' => $forms,
-                        'id' => 'id_option',
-                        'name' => 'name'
-                    )
-                ),
-                array(
-                    'type' => 'select',
-                    'label' => $this->l('Block position'),
-                    'name' => 'position',
-                    'required' => true,
-                    'options' => array(
-                        'query' => array(
-                            array('id_option' => '', 'name' => $this->l('Select where to place the form')),
-                            array('id_option' => 'home', 'name' => $this->l('Homepage')),
-                            array('id_option' => 'left', 'name' => $this->l('Left sidebar')),
-                            array('id_option' => 'right', 'name' => $this->l('Right sidebar')),
-                            array('id_option' => 'top', 'name' => $this->l('Top')),
-                            array('id_option' => 'footer', 'name' => $this->l('Footer')),
-                        ),
-                        'id' => 'id_option',
-                        'name' => 'name'
-                    )
-                ),
-                array(
-                    'type' => 'select',
-                    'label' => $this->l('Style'),
-                    'name' => 'style',
-                    'required' => true,
-                    'options' => array(
-                        'query' => array(
-                            array('id_option' => 'webform', 'name' => $this->l('Web Form')),
-                            array('id_option' => 'prestashop', 'name' => 'Prestashop'),
-                        ),
-                        'id' => 'id_option',
-                        'name' => 'name'
-                    )
-                )
-            ),
-            'submit' => array(
-                'title' => $this->l('Save'),
-                'name' => 'saveWebForm',
-                'icon' => 'process-icon-save'
-            )
+        $helper = new HelperForm();
+        $helper->submit_action = 'submitSubscribeForm';
+        $helper->token = Tools::getAdminTokenLite('AdminGetresponseSubscribeForm');
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getFormFieldsValue()
         );
 
-        return parent::renderForm();
-    }
+        $optionList = $this->getFormsOptions();
 
-    public function getFieldsValue($obj)
-    {
-        $webformSettings = $this->db->getWebformSettings();
-
-        return array(
-            'position' => $webformSettings['sidebar'],
-            'form' => $webformSettings['webform_id'],
-            'style' => $webformSettings['style'],
-            'subscription' => $webformSettings['active_subscription'] == 'yes' ? 1 : 0
-        );
-    }
-
-    public function performSubscribeViaForm()
-    {
-        $this->redirectIfNotAuthorized();
-        $webFormId      = Tools::getValue('form', null);
-        $webFormSidebar = Tools::getValue('position', null);
-        $webFormStyle = Tools::getValue('style', null);
-        $subscription = Tools::getValue('subscription', null);
-
-        $this->db->updateWebformSubscription($subscription == 1 ? 'yes' : 'no');
-
-        if (empty($webFormId) || empty($webFormSidebar)) {
-            $this->errors[] = $this->l('You need to select a form and its placement');
-            return;
-        }
-
-        $api = $this->getGrAPI();
-
-        $webForms = array_merge($api->getWebForms(), $api->getForms());
-        $mergedWebForms = array();
-
-        foreach ($webForms as $form) {
-            $mergedWebForms[$form->webformId] = $form->scriptUrl;
-        }
-
-        // set web form info to DB
-        $this->db->updateWebformSettings(
-            $webFormId,
-            $subscription == 1 ? 'yes' : 'no',
-            $webFormSidebar,
-            $webFormStyle,
-            $mergedWebForms[$webFormId]
-        );
-        if ($subscription) {
-            $this->confirmations[] = $this->l('Form published');
-        } else {
-            $this->confirmations[] = $this->l('Form unpublished');
-        }
-
-        $this->subscribeViaFormView();
+        return $helper->generateForm(array($this->getFormFields($optionList)));
     }
 
     /**
-     * Subscription via webform
+     * @return array
      */
-    public function subscribeViaFormView()
+    private function getFormFieldsValue()
     {
-        $this->redirectIfNotAuthorized();
+        $webForm = $this->webFormService->getWebForm();
 
-        $api = $this->getGrAPI();
-        $this->context->smarty->assign(array('selected_tab' => 'subscribe_via_form'));
-
-        // get old webforms
-        $webforms = $api->getWebForms();
-
-        // get new forms
-        $forms = $api->getForms();
-
-        $options = $this->convertFormsToDisplayArray($webforms, $forms);
-
-        return $this->renderSubscribeForm($options);
+        return [
+            'position' => Tools::getValue('position', $webForm->getSidebar()),
+            'form' => Tools::getValue('form', $webForm->getId()),
+            'style' => Tools::getValue('style', $webForm->getStyle()),
+            'subscription' => Tools::getValue(
+                'subscription',
+                $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
+            )
+        ];
     }
 
-    public function convertFormsToDisplayArray($webforms, $old)
+    /**
+     * @param WebFormCollection $webforms
+     * @return array
+     */
+    private function getFormsOptions()
     {
-        $options = array(array('id_option' => '', 'name' => 'Select a form you want to display'));
-        foreach ($webforms as $form) {
-            $disabled = $form->status != 'enabled' ? $this->l('(DISABLED IN GR)') : '';
-            $options[] = array(
-                'id_option' => $form->webformId,
-                'name' => $form->name . ' (' . $form->campaign->name . ') ' . $disabled
-            );
-        }
+        $options = [
+            [
+                'id_option' => '',
+                'name' => 'Select a form you want to display'
+            ]
+        ];
 
-        foreach ($old as $form) {
-            $disabled = $form->status != 'published' ? $this->l('(DISABLED IN GR)') : '';
-            $options[] = array(
-                'id_option' => $form->webformId,
-                'name' => $form->name . ' (' . $form->campaign->name . ') ' . $disabled
-            );
+        /** @var GetResponseForm $form */
+        foreach ($this->getResponseWebFormCollection as $form) {
+            $disabled = $form->isEnabled() ? '' : $this->l('(DISABLED IN GR)');
+            $options[] = [
+                'id_option' => $form->getWebFormId(),
+                'name' => $form->getName() . ' (' . $form->getCampaignName() . ') ' . $disabled
+            ];
         }
 
         return $options;
     }
 
     /**
-     * Get Admin Token
-     * @return bool|string
+     * @param array $options
+     * @return array
      */
-    public function getToken()
+    private function getFormFields($options = [])
     {
-        return Tools::getAdminTokenLite('AdminGetresponseSubscribeForm');
+        return [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Add Your GetResponse Forms (or Exit Popups) to Your Shop'),
+                    'icon' => 'icon-gears'
+                ],
+                'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => $this->l('Add contacts to GetResponse via forms (or exit popups)'),
+                        'name' => 'subscription',
+                        'class' => 't',
+                        'is_bool' => true,
+                        'values' => [
+                            ['id' => 'active_on', 'value' => 1, 'label' => $this->l('Enabled')],
+                            ['id' => 'active_off', 'value' => 0, 'label' => $this->l('Disabled')]
+                        ],
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Form'),
+                        'name' => 'form',
+                        'required' => true,
+                        'options' => [
+                            'query' => $options,
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ]
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Block position'),
+                        'name' => 'position',
+                        'required' => true,
+                        'options' => [
+                            'query' => [
+                                ['id_option' => '', 'name' => $this->l('Select where to place the form')],
+                                ['id_option' => 'home', 'name' => $this->l('Homepage')],
+                                ['id_option' => 'left', 'name' => $this->l('Left sidebar')],
+                                ['id_option' => 'right', 'name' => $this->l('Right sidebar')],
+                                ['id_option' => 'top', 'name' => $this->l('Top')],
+                                ['id_option' => 'footer', 'name' => $this->l('Footer')],
+                            ],
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ]
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Style'),
+                        'name' => 'style',
+                        'required' => true,
+                        'options' => [
+                            'query' => [
+                                ['id_option' => 'webform', 'name' => $this->l('Web Form')],
+                                ['id_option' => 'prestashop', 'name' => 'Prestashop'],
+                            ],
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ]
+                    ]
+                ],
+                'submit' => [
+                    'title' => $this->l('Save'),
+                    'name' => 'saveWebForm',
+                    'icon' => 'process-icon-save'
+                ]
+            ]
+        ];
     }
+
 }
