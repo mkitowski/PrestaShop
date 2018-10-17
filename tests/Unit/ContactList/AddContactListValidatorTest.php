@@ -36,10 +36,10 @@ class AddContactListValidatorTest extends BaseTestCase
     {
         $dto = new AddContactListDto(
             'con',
-            'fro',
-            'rep',
-            'sub',
-            'bod'
+            '',
+            '',
+            '',
+            ''
         );
 
         $validator = new AddContactListValidator($dto);

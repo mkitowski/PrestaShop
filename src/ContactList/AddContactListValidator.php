@@ -30,16 +30,16 @@ class AddContactListValidator
         if (strlen($this->addContactListDto->getContactListName()) < 4) {
             $this->errors[] = Translate::getAdminTranslation('The "list name" field is invalid');
         }
-        if (strlen($this->addContactListDto->getFromField()) < 2) {
+        if ($this->addContactListDto->getFromField() === '') {
             $this->errors[] = Translate::getAdminTranslation('The "from" field is required');
         }
-        if (strlen($this->addContactListDto->getReplyTo()) < 2) {
+        if ($this->addContactListDto->getReplyTo() === '') {
             $this->errors[] = Translate::getAdminTranslation('The "reply-to" field is required');
         }
-        if (strlen($this->addContactListDto->getSubjectId()) < 2) {
+        if ($this->addContactListDto->getSubjectId() === '') {
             $this->errors[] = Translate::getAdminTranslation('The "confirmation subject" field is required');
         }
-        if (strlen($this->addContactListDto->getBodyId()) < 2) {
+        if ($this->addContactListDto->getBodyId() === '') {
             $this->errors[] = Translate::getAdminTranslation('The "confirmation body" field is required');
         }
     }
