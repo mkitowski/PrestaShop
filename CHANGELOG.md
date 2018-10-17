@@ -1,5 +1,11 @@
 # Changelog
 
+## 16.3.1
+*(2018-10-17)*
+
+#### Bug fixes
+* fixed issue with cycle day when adding contact
+
 ## 16.3.0
 *(2018-10-11)*
 
