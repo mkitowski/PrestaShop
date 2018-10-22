@@ -1,6 +1,8 @@
 <?php
 namespace GetResponse\Account;
 
+use PrestaShopDatabaseException;
+
 /**
  * Class AccountStatus
  * @package GetResponse\Account
@@ -20,6 +22,7 @@ class AccountStatus
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
      */
     public function isConnectedToGetResponse()
     {
