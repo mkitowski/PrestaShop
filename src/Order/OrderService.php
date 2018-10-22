@@ -4,6 +4,7 @@ namespace GetResponse\Order;
 use Address;
 use Country;
 use Currency;
+use CurrencyCore;
 use Customer;
 use DateTime;
 use GetResponse\Product\ProductService;
@@ -60,7 +61,7 @@ class OrderService
             (float)$order->total_paid_tax_excl,
             (float)($order->total_paid_tax_incl - $order->total_paid_tax_excl),
             Tools::getHttpHost(true) . __PS_BASE_URI__ . '?controller=order-detail&id_order=' . $order->id,
-            (new Currency((int)$order->id_currency))->iso_code,
+            $this->getCurrencyIsoCode((int)$order->id_currency),
             $this->getOrderStatus($order),
             (string)$order->id_cart,
             '',
@@ -173,6 +174,17 @@ class OrderService
             ->setCompany($address->company);
 
         return $grAddress;
+    }
+
+    /**
+     * @param int $currencyId
+     * @return string
+     */
+    private function getCurrencyIsoCode($currencyId)
+    {
+        $isoCode = (new Currency($currencyId))->iso_code;
+
+        return !empty($isoCode) ? $isoCode : CurrencyCore::getDefaultCurrency()->iso_code;
     }
 
 }
