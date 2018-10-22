@@ -4,6 +4,7 @@ namespace GetResponse\Cart;
 
 use Cart;
 use Currency;
+use CurrencyCore;
 use Customer;
 use GetResponse\Product\ProductService;
 use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
@@ -44,7 +45,7 @@ class CartService
         $grCart = new GrCart(
             (string)$cart->id,
             $productCollection,
-            (new Currency((int)$cart->id_currency))->iso_code,
+            $this->getCurrencyIsoCode((int)$cart->id_currency),
             $cart->getOrderTotal(false),
             $cart->getOrderTotal(true)
         );
@@ -84,5 +85,16 @@ class CartService
         }
 
         return $productsCollection;
+    }
+
+    /**
+     * @param int $currencyId
+     * @return string
+     */
+    private function getCurrencyIsoCode($currencyId)
+    {
+        $isoCode = (new Currency($currencyId))->iso_code;
+
+        return !empty($isoCode) ? $isoCode : CurrencyCore::getDefaultCurrency()->iso_code;
     }
 }
