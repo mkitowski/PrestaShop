@@ -8,6 +8,8 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
+use GrShareCode\Validation\Assert\InvalidArgumentException;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -20,7 +22,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.3.1';
+    const VERSION = '16.3.2';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -193,12 +195,27 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
+
             $accountSettings = $this->getSettings();
             $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart($params['cart'], $accountSettings);
+
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\GetresponseApiException $e) {
+            $errorMessage = 'GetResponse error: HookCart: ApiException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (InvalidArgumentException $e) {
+            $errorMessage = 'GetResponse error: HookCart: ShareCodeAssertionException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (PrestaShopDatabaseException $e) {
+            $errorMessage = 'GetResponse error: HookCart: PrestaShopDatabaseException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (PrestaShopException $e) {
+            $errorMessage = 'GetResponse error: HookCart: PrestaShopException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (Exception $e) {
+            $errorMessage = 'GetResponse error: HookCart: GlobalException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         }
     }
 
@@ -216,8 +233,6 @@ class Getresponse extends Module
 
         if (!$this->settings) {
 
-            $settings = new GetResponse\Account\AccountSettingsRepository(Db::getInstance(), GetResponse\Helper\Shop::getUserShopId());
-            $settings->getSettings();
             if (!GetResponse\Account\AccountStatusFactory::create()->isConnectedToGetResponse()) {
                 $this->isConnectedToGetResponse = false;
                 throw new GetResponseNotConnectedException('GetResponse account is not connected.');
@@ -250,7 +265,20 @@ class Getresponse extends Module
             $orderHook->sendOrder($order, $accountSettings);
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\GetresponseApiException $e) {
+            $errorMessage = 'GetResponse error: HookOrder: ApiException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (InvalidArgumentException $e) {
+            $errorMessage = 'GetResponse error: HookOrder: ShareCodeAssertionException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (PrestaShopDatabaseException $e) {
+            $errorMessage = 'GetResponse error: HookOrder: PrestaShopDatabaseException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (PrestaShopException $e) {
+            $errorMessage = 'GetResponse error: HookOrder: PrestaShopException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (Exception $e) {
+            $errorMessage = 'GetResponse error: HookOrder: GlobalException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         }
     }
 
@@ -303,7 +331,20 @@ class Getresponse extends Module
 
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\GetresponseApiException $e) {
+            $errorMessage = 'GetResponse error: CreateSubscriber: ApiException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (InvalidArgumentException $e) {
+            $errorMessage = 'GetResponse error: CreateSubscriber: ShareCodeAssertionException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (PrestaShopDatabaseException $e) {
+            $errorMessage = 'GetResponse error: CreateSubscriber: PrestaShopDatabaseException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (PrestaShopException $e) {
+            $errorMessage = 'GetResponse error: CreateSubscriber: PrestaShopException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+        } catch (Exception $e) {
+            $errorMessage = 'GetResponse error: CreateSubscriber: GlobalException: ' . $e->getMessage();
+            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         }
 
     }
@@ -414,6 +455,7 @@ class Getresponse extends Module
     /**
      * @throws GrShareCode\Api\ApiTypeException
      * @throws GetResponseNotConnectedException
+     * @throws PrestaShopDatabaseException
      */
     private function createNewsletterSubscriber()
     {
