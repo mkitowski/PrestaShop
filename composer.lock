@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "getresponse/share-code-plugin",
-            "version": "5.0.2",
+            "version": "5.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/GetResponse/share-code-plugin.git",
-                "reference": "be0f933988c35d4ef2ac0c7801de54c2d7823868"
+                "reference": "1d218a7be306ca68f4bd2a04723ab4449203f82c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GetResponse/share-code-plugin/zipball/be0f933988c35d4ef2ac0c7801de54c2d7823868",
-                "reference": "be0f933988c35d4ef2ac0c7801de54c2d7823868",
+                "url": "https://api.github.com/repos/GetResponse/share-code-plugin/zipball/1d218a7be306ca68f4bd2a04723ab4449203f82c",
+                "reference": "1d218a7be306ca68f4bd2a04723ab4449203f82c",
                 "shasum": ""
             },
             "require": {
@@ -48,10 +48,10 @@
             ],
             "description": "Share code plugin",
             "support": {
-                "source": "https://github.com/GetResponse/share-code-plugin/tree/5.0.2",
+                "source": "https://github.com/GetResponse/share-code-plugin/tree/5.0.3",
                 "issues": "https://github.com/GetResponse/share-code-plugin/issues"
             },
-            "time": "2018-10-16T09:41:13+00:00"
+            "time": "2018-10-31T10:37:32+00:00"
         }
     ],
     "packages-dev": [
