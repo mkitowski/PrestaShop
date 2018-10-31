@@ -40,7 +40,7 @@ class CartService
     {
         $products = $cart->getProducts();
 
-        $productCollection = $this->getOrderProductsCollection($products);
+        $productCollection = $this->getCartProductsCollection($products);
 
         $grCart = new GrCart(
             (string)$cart->id,
@@ -63,7 +63,7 @@ class CartService
      * @return ProductsCollection
      * @throws PrestaShopException
      */
-    private function getOrderProductsCollection(array $products)
+    private function getCartProductsCollection(array $products)
     {
         $productsCollection = new ProductsCollection();
 
@@ -71,9 +71,6 @@ class CartService
 
             $prestashopProduct = new Product($product['id_product']);
 
-            if (empty($prestashopProduct->reference)) {
-                continue;
-            }
             $productService = new ProductService();
 
             $getresponseProduct = $productService->createProductFromPrestaShopProduct(

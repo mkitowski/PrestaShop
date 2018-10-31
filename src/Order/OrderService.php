@@ -96,9 +96,6 @@ class OrderService
 
             $prestashopProduct = new Product($product['id_product']);
 
-            if (empty($prestashopProduct->reference)) {
-                continue;
-            }
             $productService = new ProductService();
             $getresponseProduct = $productService->createProductFromPrestaShopProduct(
                 $prestashopProduct,
