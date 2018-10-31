@@ -1,5 +1,11 @@
 # Changelog
 
+## 16.3.3
+*(2018-10-31)*
+
+#### Bug fixes
+* fixed issue with installation
+
 ## 16.3.2
 *(2018-10-17)*
 * added exception logger for hooks 
