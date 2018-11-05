@@ -3,10 +3,10 @@ namespace GetResponse\Tests\Unit\Cart;
 
 use Cart;
 use GetResponse\Cart\CartService;
-use GetResponse\Product\ProductService;
+use GetResponse\Product\ProductFactory;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GrShareCode\Cart\Command\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Product\ProductsCollection;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -92,7 +92,7 @@ class CartServiceTest extends BaseTestCase
 
         $cart = new Cart($params);
 
-        $getresponseProduct = (new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1);
+        $getresponseProduct = (new ProductFactory())->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1);
         $productsCollection = new ProductsCollection();
         $productsCollection->add($getresponseProduct);
 
@@ -143,8 +143,8 @@ class CartServiceTest extends BaseTestCase
         $cart = new Cart($params);
 
         $productsCollection = new ProductsCollection();
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1));
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 2));
+        $productsCollection->add((new ProductFactory())->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1));
+        $productsCollection->add((new ProductFactory())->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 2));
 
         $grCart = new GrCart(
             $params['id'],

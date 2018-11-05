@@ -3,7 +3,7 @@ namespace GetResponse\Contact;
 
 use Customer;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
-use GrShareCode\Contact\AddContactCommand;
+use GrShareCode\Contact\Command\AddContactCommand;
 use GrShareCode\CustomField\CustomFieldCollection;
 
 /**
@@ -56,8 +56,7 @@ class AddContactCommandFactory
             $name,
             $contactListId,
             $dayOfCycle !== '' ? $dayOfCycle : null,
-            $contactCustomFieldCollection,
-            Contact::ORIGIN
+            $contactCustomFieldCollection
         );
     }
 }

@@ -10,14 +10,14 @@ use Product;
 /**
  * Class ProductService
  */
-class ProductService
+class ProductFactory
 {
     /**
      * @param Product $product
-     * @param int $quantity
+     * @param $quantity
      * @return GrProduct
      */
-    public function createProductFromPrestaShopProduct(Product $product, $quantity)
+    public function createShareCodeProductFromProduct(Product $product, $quantity)
     {
         $categoryCollection = (new ProductCategoryCollectionFactory)->createFromCategories($product->getCategories());
         $imagesCollection = (new ProductImagesFactory)->createFromImages(

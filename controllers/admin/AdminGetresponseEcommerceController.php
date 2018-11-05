@@ -6,7 +6,8 @@ use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
 use GrShareCode\GetresponseApiException;
-use GrShareCode\Shop\AddShopCommand;
+use GrShareCode\Shop\Command\AddShopCommand;
+use GrShareCode\Shop\Command\DeleteShopCommand;
 use GrShareCode\Shop\Shop;
 
 require_once 'AdminGetresponseController.php';
@@ -56,7 +57,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     public function postProcess()
     {
         if (Tools::isSubmit('delete' . $this->name)) {
-            $this->ecommerceService->deleteShop(Tools::getValue('shopId'));
+            $this->ecommerceService->deleteShop(new DeleteShopCommand(Tools::getValue('shopId')));
             $this->confirmations[] = $this->l('Ecommerce settings saved');
         }
 

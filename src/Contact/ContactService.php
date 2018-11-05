@@ -4,7 +4,6 @@ namespace GetResponse\Contact;
 use Customer;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GrShareCode\Api\ApiTypeException;
-use GrShareCode\Contact\AddContactCommand;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\GetresponseApiException;
@@ -66,15 +65,6 @@ class ContactService
             $addContactSettings->isUpdateContactCustomFields()
         );
 
-        $this->grContactService->upsertContact($addContactCommand);
-    }
-
-    /**
-     * @param AddContactCommand $addContactCommand
-     * @throws GetresponseApiException
-     */
-    public function upsertContact(AddContactCommand $addContactCommand)
-    {
-        $this->grContactService->upsertContact($addContactCommand);
+        $this->grContactService->addContact($addContactCommand);
     }
 }

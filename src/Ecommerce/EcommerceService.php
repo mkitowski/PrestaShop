@@ -3,7 +3,8 @@ namespace GetResponse\Ecommerce;
 
 use GetResponse\Account\AccountSettings;
 use GrShareCode\GetresponseApiException;
-use GrShareCode\Shop\AddShopCommand;
+use GrShareCode\Shop\Command\AddShopCommand;
+use GrShareCode\Shop\Command\DeleteShopCommand;
 use GrShareCode\Shop\ShopsCollection;
 use GrShareCode\Shop\ShopService;
 
@@ -62,12 +63,12 @@ class EcommerceService
     }
 
     /**
-     * @param string $shopId
+     * @param DeleteShopCommand $deleteShopCommand
      * @throws GetresponseApiException
      */
-    public function deleteShop($shopId)
+    public function deleteShop(DeleteShopCommand $deleteShopCommand)
     {
-        $this->shopService->deleteShop($shopId);
+        $this->shopService->deleteShop($deleteShopCommand);
     }
 
     /**

@@ -6,8 +6,8 @@ use Cart;
 use Currency;
 use CurrencyCore;
 use Customer;
-use GetResponse\Product\ProductService;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GetResponse\Product\ProductFactory;
+use GrShareCode\Cart\Command\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\GetresponseApiException;
@@ -61,7 +61,6 @@ class CartService
     /**
      * @param array $products
      * @return ProductsCollection
-     * @throws PrestaShopException
      */
     private function getOrderProductsCollection(array $products)
     {
@@ -74,9 +73,9 @@ class CartService
             if (empty($prestashopProduct->reference)) {
                 continue;
             }
-            $productService = new ProductService();
+            $productService = new ProductFactory();
 
-            $getresponseProduct = $productService->createProductFromPrestaShopProduct(
+            $getresponseProduct = $productService->createShareCodeProductFromProduct(
                 $prestashopProduct,
                 $product['quantity']
             );

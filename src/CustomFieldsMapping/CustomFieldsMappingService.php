@@ -44,7 +44,6 @@ class CustomFieldsMappingService
 
     /**
      * @return CustomFieldMappingCollection
-     * @throws PrestaShopDatabaseException
      */
     public function getActiveCustomFieldMapping()
     {

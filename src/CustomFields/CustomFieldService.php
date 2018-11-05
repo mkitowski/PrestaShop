@@ -3,6 +3,7 @@ namespace GetResponse\CustomFields;
 
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+use GrShareCode\CustomField\Command\CreateCustomFieldCommand;
 use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\CustomField\CustomFieldService as GrCustomFieldService;
 use GrShareCode\GetresponseApiException;
@@ -56,7 +57,11 @@ class CustomFieldService
 
             if (!$this->grCustomFieldService->getCustomFieldByName($customFieldMapping->getName())) {
 
-                $this->grCustomFieldService->createCustomField($customFieldMapping->getName(), $customFieldMapping->getName());
+                $this->grCustomFieldService->createCustomField(
+                    new CreateCustomFieldCommand(
+                        $customFieldMapping->getName(),
+                        [$customFieldMapping->getValue()]
+                    ));
             }
         }
     }

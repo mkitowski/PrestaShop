@@ -10,13 +10,16 @@
   ],
   "repositories": [
     {
-      "type": "vcs",
-      "url":  "git@github.com:GetResponse/share-code-plugin.git"
+      "type": "path",
+      "url": "../../../share-code-plugin",
+      "options": {
+        "symlink": true
+      }
     }
   ],
   "minimum-stability": "dev",
   "require": {
-    "GetResponse/share-code-plugin" : "^5.0"
+    "GetResponse/share-code-plugin" : "dev-feature/mwojcik/grintegrat-2751 as 5.2"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.0"

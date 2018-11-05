@@ -40,7 +40,8 @@ class WebFormServiceTest extends BaseTestCase
                 'webFormName2',
                 'http://getresponse.com/webform/webFormId1',
                 'contactListId1',
-                'enabled'
+                'enabled',
+                GrWebForm::VERSION_V1
             ));
         $webFormCollection->add(
             new GrWebForm(
@@ -48,7 +49,8 @@ class WebFormServiceTest extends BaseTestCase
                 'webFormName2',
                 'http://getresponse.com/webform/webFormId2',
                 'contactListId2',
-                'disabled'
+                'disabled',
+                GrWebForm::VERSION_V1
             ));
 
         $this->grWebFormService
@@ -80,7 +82,8 @@ class WebFormServiceTest extends BaseTestCase
                 'webFormName2',
                 'http://getresponse.com/webform/webFormId1',
                 'contactListId1',
-                'enabled'
+                'enabled',
+                GrWebForm::VERSION_V1
             ));
         $webFormCollection->add(
             new GrWebForm(
@@ -88,7 +91,8 @@ class WebFormServiceTest extends BaseTestCase
                 'webFormName2',
                 'http://getresponse.com/webform/webFormId2',
                 'contactListId2',
-                'disabled'
+                'disabled',
+                GrWebForm::VERSION_V1
             ));
 
         $webFrom = new WebForm('webFormId2', 'no', 'home', 'webform', '');

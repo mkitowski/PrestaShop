@@ -8,7 +8,11 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Contact\ContactCustomFieldCollectionFactory as GrContactCustomFieldCollectionFactory;
+use GrShareCode\Contact\ContactFactory;
+use GrShareCode\Contact\ContactPayloadFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
+use GrShareCode\CustomField\CustomFieldService;
 use GrShareCode\GetresponseApiClient;
 
 /**
@@ -24,28 +28,42 @@ class ContactServiceFactory
      */
     public static function createFromSettings(AccountSettings $accountSettings)
     {
-        $api = ApiFactory::createFromSettings($accountSettings);
-        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-
-        return new ContactService(
-            new GrContactService($apiClient)
+        return self::inject(
+            new GetresponseApiClient(
+                ApiFactory::createFromSettings($accountSettings),
+                new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
+            )
         );
     }
 
     /**
      * @return ContactService
      * @throws ApiTypeException
+     * @throws \PrestaShopDatabaseException
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId());
-        $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
-        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
+        return self::inject(
+            new GetresponseApiClient(
+                ApiFactory::createFromSettings(
+                    (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+                ),
+                new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
+            )
+        );
+    }
 
+    private static function inject(GetresponseApiClient $getresponseApiClient)
+    {
         return new ContactService(
-            new GrContactService($apiClient)
+            new GrContactService(
+                $getresponseApiClient,
+                new ContactPayloadFactory(),
+                new ContactFactory(new GrContactCustomFieldCollectionFactory()),
+                new CustomFieldService($getresponseApiClient),
+                new GetResponseRepository(Db::getInstance(), Shop::getUserShopId()),
+                Contact::ORIGIN
+            )
         );
     }
 }

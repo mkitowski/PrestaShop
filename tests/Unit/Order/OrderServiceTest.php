@@ -1,16 +1,16 @@
 <?php
 namespace GetResponse\Tests\Unit\Order;
 
+use GetResponse\Order\OrderFactory;
 use GetResponse\Order\OrderService;
-use GetResponse\Product\ProductService;
+use GetResponse\Product\ProductFactory;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Address\Address;
-use GrShareCode\Order\AddOrderCommand;
+use GrShareCode\Order\Command\AddOrderCommand;
 use GrShareCode\Order\Order as GrOrder;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\Category\Category;
 use GrShareCode\Product\Category\CategoryCollection;
-use GrShareCode\Product\Product;
 use GrShareCode\Product\ProductsCollection;
 use GrShareCode\Product\Variant\Images\Image;
 use GrShareCode\Product\Variant\Images\ImagesCollection;
@@ -32,6 +32,15 @@ class OrderServiceTest extends BaseTestCase
     /** @var OrderService */
     private $sut;
 
+    protected function setUp()
+    {
+        $this->grOrderService = $this->getMockWithoutConstructing(GrOrderService::class);
+        $this->sut = new OrderService(
+            $this->grOrderService,
+            new OrderFactory(new ProductFactory())
+        );
+    }
+
     /**
      * @test
      */
@@ -46,7 +55,7 @@ class OrderServiceTest extends BaseTestCase
 
         $this->grOrderService
             ->expects(self::never())
-            ->method('sendOrder');
+            ->method('addOrder');
 
         $this->sut->sendOrder($order, $contactListId, $grShopId);
     }
@@ -66,7 +75,7 @@ class OrderServiceTest extends BaseTestCase
 
         $this->grOrderService
             ->expects(self::never())
-            ->method('sendOrder');
+            ->method('addOrder');
 
         $this->sut->sendOrder($order, $contactListId, $grShopId);
     }
@@ -82,13 +91,13 @@ class OrderServiceTest extends BaseTestCase
         $product2 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_2_WITH_SKU);
         $product2['product_quantity'] = 1;
 
-        $productService = new ProductService();
+        $productService = new ProductFactory();
         $productsCollection = new ProductsCollection();
         $productsCollection->add(
-            $productService->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 2)
+            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 2)
         );
         $productsCollection->add(
-            $productService->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 1)
+            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 1)
         );
 
         $params = [
@@ -96,7 +105,6 @@ class OrderServiceTest extends BaseTestCase
             'id' => 'id',
             'current_state' => 'pending',
             'date_add' => '2018-10-10 12:12:12',
-            'id_address_delivery' => 5,
             'id_cart' => 5,
             'id_customer' => 1,
             'total_paid_tax_excl' => '12',
@@ -108,32 +116,30 @@ class OrderServiceTest extends BaseTestCase
 
         $order = new GrOrder(
             $params['id'],
-            $productsCollection,
             12.0,
-            2.0,
-            'http://my-prestashop.com/?controller=order-detail&id_order=id',
             'PLN',
-            'pending',
-            '5',
-            '',
-            0.0,
-            'pending',
-            '2018-10-10T12:12:12+0000',
-            $this->getAddress(),
-            $this->getAddress()
+            $productsCollection
         );
+
+        $order->setTotalPriceTax(2.0);
+        $order->setOrderUrl('http://my-prestashop.com/?controller=order-detail&id_order=id');
+        $order->setStatus('pending');
+        $order->setExternalCartId('5');
+        $order->setShippingPrice(0.0);
+        $order->setProcessedAt('2018-10-10T12:12:12+0000');
+
 
         $expected = new AddOrderCommand(
             $order,
             'customer@getresponse.com',
             'contactListId',
-            'grShopId',
-            false
+            'grShopId'
         );
+
 
         $this->grOrderService
             ->expects(self::once())
-            ->method('sendOrder')
+            ->method('addOrder')
             ->with($expected);
 
         $this->sut->sendOrder(new Order($params), $contactListId, $grShopId);
@@ -160,12 +166,6 @@ class OrderServiceTest extends BaseTestCase
         );
 
         return $categoryCollection;
-    }
-
-    protected function setUp()
-    {
-        $this->grOrderService = $this->getMockWithoutConstructing(GrOrderService::class);
-        $this->sut = new OrderService($this->grOrderService);
     }
 
     /**

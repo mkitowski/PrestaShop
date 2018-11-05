@@ -3,8 +3,6 @@
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
-use GrShareCode\Job\Job as GrJob;
-use GrShareCode\Job\JobCollection as GrJobCollection;
 
 class GetResponseRepository implements DbRepositoryInterface
 {
@@ -239,55 +237,6 @@ class GetResponseRepository implements DbRepositoryInterface
 
         return array();
     }
-
-    /**
-     * @param GrJob $job
-     */
-    public function addJob(GrJob $job)
-    {
-        $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_jobs
-                SET
-                    `name` = "' . $this->db->escape($job->getName()) . '",
-                    `content` = "' . $this->db->escape($job->getMessageContent()) .'"';
-        $this->db->execute($sql);
-    }
-
-    /**
-     * @return GrJobCollection
-     */
-    public function getJobsToProcess()
-    {
-        $collection = new GrJobCollection();
-
-        $sql = '
-        SELECT
-            `name`,
-            `content`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_jobs'
-        ;
-
-        if ($results = $this->db->executeS($sql, true, false)) {
-            foreach ($results as $result) {
-                $collection->add(new GrJob($result['name'], $result['content']));
-            }
-        }
-
-        return $collection;
-    }
-
-    /**
-     * @param GrJob $job
-     */
-    public function deleteJob(GrJob $job)
-    {
-        $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'getresponse_jobs
-                WHERE
-                    `name` = "' . $this->db->escape($job->getName()) . '" AND
-                    `content` = "' . $this->db->escape($job->getMessageContent()) . '"';
-        $this->db->execute($sql);
-    }
-
 
     /**
      * @param CustomFieldMapping $custom
@@ -630,4 +579,29 @@ class GetResponseRepository implements DbRepositoryInterface
 
         $this->db->execute($query);
     }
+
+    /**
+     * @return string
+     */
+    public function getOriginCustomFieldId()
+    {
+        $query = "SELECT `origin_custom_id` FROM " . _DB_PREFIX_ . "getresponse_settings WHERE `id_shop` = " . (int) $this->idShop;
+        return $this->db->getValue($query, false);
+    }
+
+    /**
+     * @param string $id
+     */
+    public function setOriginCustomFieldId($id)
+    {
+        $query = "UPDATE " .  _DB_PREFIX_ . "getresponse_settings SET origin_custom_id = '" . pSQL($id) . "' WHERE `id_shop` = " . (int) $this->idShop;
+        $this->db->execute($query);
+    }
+
+    public function clearOriginCustomField()
+    {
+        $this->setOriginCustomFieldId('');
+    }
+
+
 }

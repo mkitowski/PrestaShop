@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.3.4
+*(2018-11-04)*
+* technical changes
+
 ## 16.3.2
 *(2018-10-17)*
 * added exception logger for hooks 

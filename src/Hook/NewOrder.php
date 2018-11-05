@@ -1,8 +1,6 @@
 <?php
 namespace GetResponse\Hook;
 
-use Currency;
-use Customer;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Order\OrderServiceFactory;
@@ -22,6 +20,7 @@ class NewOrder
      * @param AccountSettings $accountSettings
      * @throws ApiTypeException
      * @throws GetresponseApiException
+     * @throws PrestaShopException
      */
     public function sendOrder(Order $order, AccountSettings $accountSettings)
     {
@@ -34,10 +33,11 @@ class NewOrder
             return;
         }
 
-        $grShopId = $ecommerceService->getEcommerceSettings()->getGetResponseShopId();
-        $contactListId = $accountSettings->getContactListId();
-
-        $cartService = OrderServiceFactory::createFromSettings($accountSettings);
-        $cartService->sendOrder($order, $contactListId, $grShopId);
+        $orderService = OrderServiceFactory::createFromSettings($accountSettings);
+        $orderService->sendOrder(
+            $order,
+            $accountSettings->getContactListId(),
+            $ecommerceService->getEcommerceSettings()->getGetResponseShopId()
+        );
     }
 }

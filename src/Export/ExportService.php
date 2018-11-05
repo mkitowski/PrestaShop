@@ -2,15 +2,18 @@
 namespace GetResponse\Export;
 
 use Customer;
-use GetResponse\Contact\AddContactCommandFactory;
-use GetResponse\Contact\ContactServiceFactory;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
-use GetResponse\Order\OrderServiceFactory;
-use GrShareCode\Api\ApiTypeException;
+use GetResponse\Contact\ContactCustomFieldCollectionFactory;
+use GetResponse\CustomFields\CustomFieldService;
+use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
+use GetResponse\Order\OrderFactory;
+use GrShareCode\Contact\ContactCustomFieldsCollection;
+use GrShareCode\Export\Command\ExportContactCommand;
+use GrShareCode\Export\ExportContactService;
+use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
+use GrShareCode\Export\Settings\ExportSettings as ShareCodeExportSettings;
 use GrShareCode\GetresponseApiException;
+use GrShareCode\Order\OrderCollection;
 use Order;
-use PrestaShopDatabaseException;
 
 /**
  * Class ExportService
@@ -18,21 +21,46 @@ use PrestaShopDatabaseException;
  */
 class ExportService
 {
-    /**
-     * @var ExportRepository
-     */
+    /** @var ExportRepository */
     private $exportRepository;
+    /** @var ExportContactService */
+    private $shareCodeExportContactService;
+    /** @var OrderFactory */
+    private $orderFactory;
+    /** @var CustomFieldService */
+    private $customFieldsService;
+    /** @var CustomFieldsMappingService */
+    private $customFieldsMappingService;
+    /** @var ContactCustomFieldCollectionFactory */
+    private $contactCustomFieldCollectionFactory;
 
-    public function __construct(ExportRepository $exportRepository)
-    {
+    /**
+     * @param ExportRepository $exportRepository
+     * @param ExportContactService $shareCodeExportContactService
+     * @param OrderFactory $orderFactory
+     * @param CustomFieldsMappingService $customFieldsMappingService
+     * @param CustomFieldService $customFieldsService
+     * @param ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
+     */
+    public function __construct(
+        ExportRepository $exportRepository,
+        ExportContactService $shareCodeExportContactService,
+        OrderFactory $orderFactory,
+        CustomFieldsMappingService $customFieldsMappingService,
+        CustomFieldService $customFieldsService,
+        ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
+
+    ) {
         $this->exportRepository = $exportRepository;
+        $this->shareCodeExportContactService = $shareCodeExportContactService;
+        $this->orderFactory = $orderFactory;
+        $this->customFieldsMappingService = $customFieldsMappingService;
+        $this->customFieldsService = $customFieldsService;
+        $this->contactCustomFieldCollectionFactory = $contactCustomFieldCollectionFactory;
     }
 
     /**
      * @param ExportSettings $exportSettings
-     * @throws ApiTypeException
-     * @throws GetresponseApiException
-     * @throws PrestaShopDatabaseException
      */
     public function export(ExportSettings $exportSettings)
     {
@@ -42,21 +70,29 @@ class ExportService
             return;
         }
 
-        $customFieldMappingService = CustomFieldMappingServiceFactory::create();
-        $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
+        if ($exportSettings->isUpdateContactInfo()) {
+            try {
+                $customFieldMappingCollection = $this->customFieldsMappingService->getActiveCustomFieldMapping();
+                $this->customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
+                $grCustomFieldCollection = $this->customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
+            } catch (GetresponseApiException $e) {
+                // @todo log
+                return;
+            }
+        }
 
-        $customFieldsService = CustomFieldsServiceFactory::create();
-        $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
-        $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
-
-        $addContactCommandFactory = new AddContactCommandFactory(
-            $customFieldMappingCollection,
-            $grCustomFieldCollection
+        $shareCodeExportSettings = new ShareCodeExportSettings(
+            $exportSettings->getContactListId(),
+            $exportSettings->getCycleDay(),
+            new ShareCodeEcommerceSettings(
+                $exportSettings->isEcommerce(),
+                $exportSettings->getShopId()
+            )
         );
 
-        $contactService = ContactServiceFactory::create();
-
         foreach ($contacts as $contact) {
+
+            $shareCodeOrderCollection = new OrderCollection();
 
             if (0 == $contact['id']) {
                 // flow for newsletters subscribers
@@ -64,60 +100,42 @@ class ExportService
                 $customer->email = $contact['email'];
             } else {
                 $customer = new Customer($contact['id']);
+
+                $customerOrders = $this->exportRepository->getOrders($contact['id']);
+
+                foreach ($customerOrders as $customerOrder) {
+                    $shareCodeOrderCollection->add(
+                        $this->orderFactory->createShareCodeOrderFromOrder(new Order($customerOrder['id_order']))
+                    );
+                }
             }
 
-            $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
-                $customer,
-                $exportSettings->getContactListId(),
-                $exportSettings->getCycleDay(),
-                $exportSettings->isUpdateContactInfo()
-            );
+            if ($exportSettings->isUpdateContactInfo()) {
+                $contactCustomFieldCollection = $this->contactCustomFieldCollectionFactory
+                    ->createFromContactAndCustomFieldMapping(
+                        $customer,
+                        $customFieldMappingCollection,
+                        $grCustomFieldCollection,
+                        $exportSettings->isUpdateContactInfo()
+                    );
+            } else {
+                $contactCustomFieldCollection = new ContactCustomFieldsCollection();
+            }
 
             try {
-                $contactService->upsertContact($addContactCommand);
-            } catch (GetresponseApiException $e) {
-                // Muted API errors, ex.:
-                // - Cannot add contact that is blacklisted
-                // - Contact in queue
-                // - Email domain not exists
-            }
-        }
-
-        $this->exportContactOrders($contacts, $exportSettings);
-
-    }
-
-    /**
-     * @param array $contacts
-     * @param ExportSettings $exportSettings
-     * @throws GetresponseApiException
-     * @throws ApiTypeException
-     * @throws PrestaShopDatabaseException
-     */
-    private function exportContactOrders($contacts, ExportSettings $exportSettings)
-    {
-
-        if (!$exportSettings->isEcommerce()) {
-            return;
-        }
-
-        $orderService = OrderServiceFactory::create();
-
-        foreach ($contacts as $contact) {
-
-            $customerOrders = $this->exportRepository->getOrders($contact['id']);
-
-            foreach ($customerOrders as $customerOrder) {
-
-                $prestashopOrder = new Order($customerOrder['id_order']);
-
-                $orderService->sendOrder(
-                    $prestashopOrder,
-                    $exportSettings->getContactListId(),
-                    $exportSettings->getShopId(),
-                    true
+                $this->shareCodeExportContactService->exportContact(
+                    new ExportContactCommand(
+                        $customer->email,
+                        $customer->firstname . ' ' . $customer->lastname,
+                        $shareCodeExportSettings,
+                        $contactCustomFieldCollection,
+                        $shareCodeOrderCollection
+                    )
                 );
+            } catch (GetresponseApiException $e) {
+                // @todo log
             }
         }
+
     }
 }

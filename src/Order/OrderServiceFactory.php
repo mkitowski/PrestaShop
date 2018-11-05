@@ -6,12 +6,13 @@ use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
+use GetResponse\Product\ProductFactory;
 use GetResponseRepository;
 use GrShareCode\Api\ApiTypeException;
 use GrShareCode\GetresponseApiClient;
+use GrShareCode\Order\OrderPayloadFactory;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductService;
-use GrShop;
 use PrestaShopDatabaseException;
 
 /**
@@ -27,13 +28,18 @@ class OrderServiceFactory
      */
     public static function createFromSettings(AccountSettings $accountSettings)
     {
-        $api = ApiFactory::createFromSettings($accountSettings);
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-        $productService = new ProductService($apiClient, $repository);
-        $orderService = new GrOrderService($apiClient, $repository, $productService);
+        $apiClient = new GetresponseApiClient(ApiFactory::createFromSettings($accountSettings), $repository);
 
-        return new OrderService($orderService);
+        return new OrderService(
+            new GrOrderService(
+                $apiClient,
+                $repository,
+                new ProductService($apiClient, $repository),
+                new OrderPayloadFactory()
+            ),
+            new OrderFactory(new ProductFactory())
+        );
     }
 
     /**
@@ -42,14 +48,23 @@ class OrderServiceFactory
      * @throws PrestaShopDatabaseException
      */
     public static function create()
-    {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId());
-        $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
+    {;
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-        $productService = new ProductService($apiClient, $repository);
-        $orderService = new GrOrderService($apiClient, $repository, $productService);
+        $apiClient = new GetresponseApiClient(
+            ApiFactory::createFromSettings(
+                (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+            ),
+            $repository
+        );
 
-        return new OrderService($orderService);
+        return new OrderService(
+            new GrOrderService(
+                $apiClient,
+                $repository,
+                new ProductService($apiClient, $repository),
+                new OrderPayloadFactory()
+            ),
+            new OrderFactory(new ProductFactory())
+        );
     }
 }

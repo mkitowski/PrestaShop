@@ -2,7 +2,7 @@
 namespace GetResponse\Tests\Unit\Product;
 
 use GetResponse\Product\ProductImagesFactory;
-use GetResponse\Product\ProductService;
+use GetResponse\Product\ProductFactory;
 use GetResponse\Product\ProductVariantFactory;
 use GetResponse\Tests\Unit\BaseTestCase;
 use Product;
@@ -14,12 +14,12 @@ use Product;
 class ProductServiceTest extends BaseTestCase
 {
 
-    /** @var ProductService */
+    /** @var ProductFactory */
     private $productService;
 
     protected function setUp()
     {
-        $this->productService = new ProductService();
+        $this->productService = new ProductFactory();
     }
 
     /**
@@ -32,7 +32,7 @@ class ProductServiceTest extends BaseTestCase
         $product = new Product(\ProductGenerator::PROD_1_WITH_SKU);
         $quantity = 2;
 
-        $grProduct = $this->productService->createProductFromPrestaShopProduct($product, $quantity);
+        $grProduct = $this->productService->createShareCodeProductFromProduct($product, $quantity);
 
         $this->assertEquals($productParams['id'], $grProduct->getExternalId());
         $this->assertEquals($productParams['name'], $grProduct->getName());
