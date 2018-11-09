@@ -189,7 +189,7 @@ class Getresponse extends Module
 
     /**
      * @param $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws PrestaShopDatabaseException
      */
     public function hookCart($params)
@@ -201,7 +201,7 @@ class Getresponse extends Module
             $cartHook->sendCart($params['cart'], $accountSettings);
 
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
             $errorMessage = 'GetResponse error: HookCart: ApiException: ' . $e->getMessage();
             PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (InvalidArgumentException $e) {
@@ -221,7 +221,7 @@ class Getresponse extends Module
 
     /**
      * @return GetResponse\Account\AccountSettings|null
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws GetResponseNotConnectedException
      * @throws PrestaShopDatabaseException
      */
@@ -246,7 +246,7 @@ class Getresponse extends Module
 
     /**
      * @param $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookNewOrder($params)
     {
@@ -255,7 +255,7 @@ class Getresponse extends Module
 
     /**
      * @param Order $order
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     private function sendOrderToGr(Order $order)
     {
@@ -264,7 +264,7 @@ class Getresponse extends Module
             $orderHook = new GetResponse\Hook\NewOrder();
             $orderHook->sendOrder($order, $accountSettings);
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
             $errorMessage = 'GetResponse error: HookOrder: ApiException: ' . $e->getMessage();
             PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (InvalidArgumentException $e) {
@@ -284,7 +284,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookHookOrderConfirmation($params)
     {
@@ -293,7 +293,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookPostUpdateOrderStatus($params)
     {
@@ -304,7 +304,7 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookCreateAccount($params)
     {
@@ -330,7 +330,7 @@ class Getresponse extends Module
             $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
 
         } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\GetresponseApiException $e) {
+        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
             $errorMessage = 'GetResponse error: CreateSubscriber: ApiException: ' . $e->getMessage();
             PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (InvalidArgumentException $e) {
@@ -351,7 +351,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayRightColumn()
     {
@@ -361,7 +361,7 @@ class Getresponse extends Module
     /**
      * @param string $position
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     private function displayWebForm($position)
     {
@@ -387,7 +387,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayLeftColumn()
     {
@@ -396,7 +396,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayHeader()
     {
@@ -418,7 +418,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayTop()
     {
@@ -427,7 +427,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws GetResponseNotConnectedException
      */
     public function hookDisplayFooter()
@@ -453,7 +453,7 @@ class Getresponse extends Module
     }
 
     /**
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws GetResponseNotConnectedException
      * @throws PrestaShopDatabaseException
      */
@@ -492,7 +492,7 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\ApiTypeException
+     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayHome()
     {

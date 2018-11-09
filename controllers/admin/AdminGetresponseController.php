@@ -18,13 +18,11 @@
  * @method null initContent()
  */
 
-use GetResponse\Account\AccountSettingsRepository;
+
 use GetResponse\Account\AccountStatusFactory;
-use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop as GrShop;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
-use GrShareCode\GetresponseApi;
 
 class AdminGetresponseController extends ModuleAdminController
 {

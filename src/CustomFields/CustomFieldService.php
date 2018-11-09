@@ -6,7 +6,7 @@ use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GrShareCode\CustomField\Command\CreateCustomFieldCommand;
 use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\CustomField\CustomFieldService as GrCustomFieldService;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 /**
  * Class CustomFieldService

@@ -5,8 +5,9 @@ use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingValidator;
+use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 {

@@ -4,11 +4,10 @@ namespace GetResponse\Api;
 use Getresponse;
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountSettings;
-use GrShareCode\Api\ApiKeyAuthorization;
-use GrShareCode\Api\ApiType;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiKeyAuthorization;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\UserAgentHeader;
-use GrShareCode\GetresponseApi;
+use GrShareCode\Api\GetresponseApi;
 
 /**
  * Class ApiFactory

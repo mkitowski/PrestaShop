@@ -2,7 +2,7 @@
 namespace GetResponse\WebTracking;
 
 use GrShareCode\TrackingCode\TrackingCodeService;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use PrestaShopDatabaseException;
 
 /**

@@ -5,8 +5,8 @@ use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 require_once 'AdminGetresponseController.php';
 
@@ -43,6 +43,10 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('GetResponse Account');
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws ApiTypeException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('connectToGetResponse')) {
@@ -54,6 +58,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         }
         parent::postProcess();
     }
+
 
     private function connectToGetResponse()
     {

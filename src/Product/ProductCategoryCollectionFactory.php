@@ -5,7 +5,6 @@ use Category;
 use GrShareCode\Product\Category\Category as GrCategory;
 use GrShareCode\Product\Category\CategoryCollection;
 use Link;
-use Product;
 
 /**
  * Class ProductCategoryCollection

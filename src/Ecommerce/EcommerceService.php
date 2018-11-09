@@ -2,7 +2,7 @@
 namespace GetResponse\Ecommerce;
 
 use GetResponse\Account\AccountSettings;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Command\AddShopCommand;
 use GrShareCode\Shop\Command\DeleteShopCommand;
 use GrShareCode\Shop\ShopsCollection;

@@ -8,9 +8,9 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\Cache\CacheWrapper;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\Product\ProductService;
 use PrestaShopDatabaseException;
 

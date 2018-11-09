@@ -10,7 +10,7 @@ use GetResponse\Product\ProductFactory;
 use GrShareCode\Cart\Command\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Product\ProductsCollection;
 use Product;
 

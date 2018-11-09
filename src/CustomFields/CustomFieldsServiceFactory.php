@@ -6,9 +6,9 @@ use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\CustomField\CustomFieldService as GrCustomFieldService;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\GetresponseApiClient;
 
 /**
  * Class CustomFieldsServiceFactory

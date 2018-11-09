@@ -4,8 +4,8 @@ namespace GetResponse\Hook;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Order\OrderServiceFactory;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use Order;
 use PrestaShopException;
 

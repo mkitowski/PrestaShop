@@ -3,6 +3,8 @@
 use GetResponse\WebTracking\WebTrackingDto;
 use GetResponse\WebTracking\WebTrackingService;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 require_once 'AdminGetresponseController.php';
 
@@ -11,6 +13,10 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
     /** @var WebTrackingService */
     private $webTrackingService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -27,6 +33,10 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
         parent::initContent();
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('submitWebTrackingForm')) {

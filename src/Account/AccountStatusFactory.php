@@ -3,7 +3,6 @@ namespace GetResponse\Account;
 
 use Db;
 use GetResponse\Helper\Shop;
-use GrShop;
 
 /**
  * Class AccountStatusFactory

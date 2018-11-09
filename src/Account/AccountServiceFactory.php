@@ -5,8 +5,8 @@ use Db;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
 use GrShareCode\Account\AccountService as GrAccountService;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use GetResponse\Helper\Shop as GrShop;
 

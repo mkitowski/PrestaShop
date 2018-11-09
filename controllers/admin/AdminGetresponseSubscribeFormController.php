@@ -4,6 +4,9 @@ use GetResponse\WebForm\WebForm;
 use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebForm\WebFormValidator;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
+use GrShareCode\WebForm\FormNotFoundException;
 use GrShareCode\WebForm\WebForm as GetResponseForm;
 use GrShareCode\WebForm\WebFormCollection;
 
@@ -17,6 +20,12 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     /** @var WebFormCollection */
     private $getResponseWebFormCollection;
 
+    /**
+     * AdminGetresponseSubscribeFormController constructor.
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -43,6 +52,11 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         parent::initContent();
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     * @throws FormNotFoundException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('submitSubscribeForm')) {

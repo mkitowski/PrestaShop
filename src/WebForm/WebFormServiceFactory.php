@@ -6,11 +6,10 @@ use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
 use GetResponse\Helper\Shop as GrShop;
-use PrestaShopDatabaseException;
 
 /**
  * Class WebFormServiceFactory

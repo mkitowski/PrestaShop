@@ -1,8 +1,6 @@
 <?php
 namespace GetResponse\Config;
 
-use GetResponseRepository;
-
 /**
  * Class Config
  * @package GetResponse\Config

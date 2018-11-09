@@ -7,13 +7,13 @@ use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\Contact\ContactCustomFieldCollectionFactory as GrContactCustomFieldCollectionFactory;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Contact\ContactCustomField\ContactCustomFieldCollectionFactory as GrContactCustomFieldCollectionFactory;
 use GrShareCode\Contact\ContactFactory;
 use GrShareCode\Contact\ContactPayloadFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\CustomField\CustomFieldService;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\GetresponseApiClient;
 
 /**
  * Class ContactServiceFactory

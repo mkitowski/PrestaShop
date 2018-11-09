@@ -8,9 +8,9 @@ use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrApiException;
-use GrShareCode\ContactList\AddContactListCommand;
+use GrShareCode\ContactList\Command\AddContactListCommand;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use PHPUnit_Framework_MockObject_MockObject;
 
 class ContactListServiceTest extends BaseTestCase
@@ -91,6 +91,7 @@ class ContactListServiceTest extends BaseTestCase
 
     /**
      * @test
+     * @throws GrApiException
      */
     public function shouldCreateContactListFromAddContactListCommand()
     {
@@ -127,6 +128,7 @@ class ContactListServiceTest extends BaseTestCase
 
     /**
      * @test
+     * @throws GrApiException
      */
     public function shouldCreateContactListFromAddContactListCommandThrowGrApiException()
     {

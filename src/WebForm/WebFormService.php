@@ -5,7 +5,7 @@ use GrShareCode\WebForm\WebFormCollection;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
 use GrShareCode\WebForm\FormNotFoundException;
 use PrestaShopDatabaseException;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 /**
  * Class WebFormService

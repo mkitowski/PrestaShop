@@ -6,8 +6,9 @@ use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\ContactList\SubscribeViaRegistrationValidator;
 use GetResponse\Helper\FlashMessages;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
@@ -16,6 +17,10 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     /** @var ContactListService */
     private $contactListService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();

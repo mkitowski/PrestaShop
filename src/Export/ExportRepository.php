@@ -29,7 +29,7 @@ class ExportRepository
     /**
      * @param bool $newsletterGuests
      * @return array
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     public function getContacts($newsletterGuests = false)
     {
@@ -87,7 +87,7 @@ class ExportRepository
     /**
      * @param string $moduleName
      * @return bool
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     public function checkModuleStatus($moduleName)
     {
@@ -114,7 +114,7 @@ class ExportRepository
     /**
      * @param string $email
      * @return string
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getContactCategory($email)
     {
@@ -154,8 +154,8 @@ class ExportRepository
 
     /**
      * @param $customerId
-     * @return array|false|mysqli_result|null|PDOStatement|resource
-     * @throws PrestaShopDatabaseException
+     * @return array
+     * @throws \PrestaShopDatabaseException
      */
     public function getCustomerOrders($customerId)
     {
@@ -178,8 +178,8 @@ class ExportRepository
 
     /**
      * @param $customerId
-     * @return array|false|mysqli_result|null|PDOStatement|resource
-     * @throws PrestaShopDatabaseException
+     * @return array
+     * @throws \PrestaShopDatabaseException
      */
     public function getOrders($customerId)
     {

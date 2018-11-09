@@ -6,12 +6,12 @@ use GetResponse\Contact\ContactCustomFieldCollectionFactory;
 use GetResponse\CustomFields\CustomFieldService;
 use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
 use GetResponse\Order\OrderFactory;
-use GrShareCode\Contact\ContactCustomFieldsCollection;
+use GrShareCode\Contact\ContactCustomField\ContactCustomFieldsCollection;
 use GrShareCode\Export\Command\ExportContactCommand;
 use GrShareCode\Export\ExportContactService;
 use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
 use GrShareCode\Export\Settings\ExportSettings as ShareCodeExportSettings;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Order\OrderCollection;
 use Order;
 

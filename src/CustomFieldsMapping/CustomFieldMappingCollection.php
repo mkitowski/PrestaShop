@@ -11,6 +11,6 @@ class CustomFieldMappingCollection extends TypedCollection
 {
     public function __construct()
     {
-        $this->setItemType('\GetResponse\CustomFieldsMapping\CustomFieldMapping');
+        $this->setItemType(CustomFieldMapping::class);
     }
 }

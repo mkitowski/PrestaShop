@@ -1,17 +1,16 @@
 <?php
 namespace GetResponse\ContactList;
 
-use Exception;
 use GetResponse\Account\AccountSettings;
 use GrApiException;
-use GrShareCode\ContactList\AddContactListCommand;
+use GrShareCode\ContactList\Command\AddContactListCommand;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactListCollection;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
 use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationBodyCollection;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubjectCollection;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 /**
  * Class ContactListService

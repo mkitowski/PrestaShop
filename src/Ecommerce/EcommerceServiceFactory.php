@@ -7,8 +7,8 @@ use GetResponse\Account\AccountSettings;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop as GrShop;
 use GetResponseRepository;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\Shop\ShopService;
 
 /**

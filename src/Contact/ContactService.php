@@ -3,10 +3,10 @@ namespace GetResponse\Contact;
 
 use Customer;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\CustomField\CustomFieldCollection;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use PrestaShopDatabaseException;

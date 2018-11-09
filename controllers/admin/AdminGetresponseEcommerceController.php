@@ -5,7 +5,8 @@ use GetResponse\Ecommerce\EcommerceDto;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Command\AddShopCommand;
 use GrShareCode\Shop\Command\DeleteShopCommand;
 use GrShareCode\Shop\Shop;
@@ -19,6 +20,10 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     /** @var EcommerceService */
     private $ecommerceService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -54,6 +59,10 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('GetResponse Ecommerce');
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('delete' . $this->name)) {
@@ -119,6 +128,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     public function renderList()
     {
@@ -127,6 +137,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     private function generateForm()
     {
@@ -227,6 +238,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     private function generateShopList()
     {

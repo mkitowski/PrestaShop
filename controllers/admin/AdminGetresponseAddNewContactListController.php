@@ -6,11 +6,11 @@ use GetResponse\ContactList\AddContactListValidator;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\ContactList\AddContactListCommand;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\FromFields;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationBody;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubject;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseAddNewContactListController extends AdminGetresponseController
 {
@@ -19,6 +19,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
     /** @var ContactListService */
     private $contactListService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -76,6 +80,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
         }
     }
 
+    /**
+     * @return string
+     * @throws GetresponseApiException
+     */
     public function renderView()
     {
         $this->context->smarty->assign([
@@ -96,6 +104,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
         return Tools::getAdminTokenLite('AdminGetresponseAddNewContactList');
     }
 
+    /**
+     * @return string
+     * @throws GetresponseApiException
+     */
     public function renderAddContactListForm()
     {
         $fieldsForm = [

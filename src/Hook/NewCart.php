@@ -7,8 +7,8 @@ use Customer;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Cart\CartServiceFactory;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use PrestaShopException;
 
 /**

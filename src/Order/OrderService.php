@@ -3,7 +3,7 @@ namespace GetResponse\Order;
 
 use Customer;
 use GetResponse\Product\ProductFactory;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Order\Command\AddOrderCommand as GrAddOrderCommand;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductsCollection;

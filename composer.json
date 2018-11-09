@@ -19,7 +19,7 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "GetResponse/share-code-plugin" : "dev-feature/mwojcik/grintegrat-2751 as 5.2"
+    "GetResponse/share-code-plugin" : "dev-feature/mwojcik/grintegrat-2751 as 5.3"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.0"

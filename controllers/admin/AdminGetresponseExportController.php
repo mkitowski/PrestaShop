@@ -10,9 +10,9 @@ use GetResponse\Export\ExportServiceFactory;
 use GetResponse\Export\ExportSettings;
 use GetResponse\Export\ExportValidator;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Shop;
 
 class AdminGetresponseExportController extends AdminGetresponseController
@@ -25,6 +25,10 @@ class AdminGetresponseExportController extends AdminGetresponseController
     /** @var EcommerceService */
     private $ecommerceService;
 
+    /**
+     * @throws ApiTypeException
+     * @throws PrestaShopException
+     */
     public function __construct()
     {
         parent::__construct();

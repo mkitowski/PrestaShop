@@ -11,9 +11,10 @@ use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\Helper\Shop;
 use GetResponse\Order\OrderFactory;
 use GetResponse\Product\ProductFactory;
-use GrShareCode\Contact\ContactCustomField;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Contact\ContactCustomField\ContactCustomField;
 use GrShareCode\Export\ExportContactServiceFactory;
-use GrShareCode\GetresponseApiClient;
+use GrShareCode\Api\GetresponseApiClient;
 
 /**
  * Class ExportServiceFactory
@@ -24,8 +25,8 @@ class ExportServiceFactory
 
     /**
      * @return ExportService
-     * @throws \GrShareCode\Api\ApiTypeException
      * @throws \PrestaShopDatabaseException
+     * @throws ApiTypeException
      */
     public static function create()
     {

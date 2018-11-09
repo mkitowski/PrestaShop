@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4796d455ed15b1513dbe5c9162899639",
+    "content-hash": "7b3ada161de19e83d4026bcf6e17a927",
     "packages": [
         {
             "name": "getresponse/share-code-plugin",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../../../share-code-plugin",
-                "reference": "c43ab26792a13abb42bd37487e36668d35c333dc",
+                "reference": "ec55c41123a5b5489cc9d43e5101dfc4a4ef5677",
                 "shasum": null
             },
             "require": {
@@ -309,12 +309,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "4ba436b55987b4bf311cb7c6ba82aa528aac0a06"
+                "reference": "3660b2eed90abdf92ac2e9dae9a238d2701bfa77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/4ba436b55987b4bf311cb7c6ba82aa528aac0a06",
-                "reference": "4ba436b55987b4bf311cb7c6ba82aa528aac0a06",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/3660b2eed90abdf92ac2e9dae9a238d2701bfa77",
+                "reference": "3660b2eed90abdf92ac2e9dae9a238d2701bfa77",
                 "shasum": ""
             },
             "require": {
@@ -364,7 +364,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2018-08-05 17:53:17"
+            "time": "2018-11-04T18:50:11+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -1271,7 +1271,7 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "dev-master",
+            "version": "v1.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
@@ -1325,7 +1325,7 @@
                 "polyfill",
                 "portable"
             ],
-            "time": "2018-08-06 14:22:27"
+            "time": "2018-08-06T14:22:27+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -1439,8 +1439,8 @@
     ],
     "aliases": [
         {
-            "alias": "5.2",
-            "alias_normalized": "5.2.0.0",
+            "alias": "5.3",
+            "alias_normalized": "5.3.0.0",
             "version": "dev-feature/mwojcik/grintegrat-2751",
             "package": "getresponse/share-code-plugin"
         }

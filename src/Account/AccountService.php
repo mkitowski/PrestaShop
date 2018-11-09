@@ -3,7 +3,7 @@ namespace GetResponse\Account;
 
 use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use PrestaShopDatabaseException;
 
