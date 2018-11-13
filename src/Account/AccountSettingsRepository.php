@@ -125,7 +125,8 @@ class AccountSettingsRepository
             `webform_id` = "",
             `active_subscription` = "no",
             `sidebar` = "left",
-            `style` = "webform" 
+            `style` = "webform",
+            `url` = ""
          WHERE
             `id_shop` = ' . (int) $this->idShop;
         $this->db->execute($query);

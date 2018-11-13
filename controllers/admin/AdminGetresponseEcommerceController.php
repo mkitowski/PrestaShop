@@ -67,7 +67,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     {
         if (Tools::isSubmit('delete' . $this->name)) {
             $this->ecommerceService->deleteShop(new DeleteShopCommand(Tools::getValue('shopId')));
-            $this->confirmations[] = $this->l('Ecommerce settings saved');
+            $this->confirmations[] = $this->l('Store removed');
         }
 
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
