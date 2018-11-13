@@ -12,7 +12,6 @@ use GetResponse\Helper\Shop;
 use GetResponse\Order\OrderFactory;
 use GetResponse\Product\ProductFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
-use GrShareCode\Contact\ContactCustomField\ContactCustomField;
 use GrShareCode\Export\ExportContactServiceFactory;
 use GrShareCode\Api\GetresponseApiClient;
 
@@ -44,7 +43,7 @@ class ExportServiceFactory
                     $getResponseRepository
                 ),
                 $getResponseRepository,
-                new ContactCustomField('6bT0x', [Contact::ORIGIN])
+                Contact::ORIGIN
             ),
             new OrderFactory(new ProductFactory()),
             CustomFieldMappingServiceFactory::create(),
