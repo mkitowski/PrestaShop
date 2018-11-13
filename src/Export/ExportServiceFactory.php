@@ -33,15 +33,17 @@ class ExportServiceFactory
 
         $getResponseRepository = new \GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
 
+        $getresponseApiClient = new GetresponseApiClient(
+            ApiFactory::createFromSettings(
+                (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+            ),
+            $getResponseRepository
+        );
+
         return new ExportService(
             $exportRepository,
-            ExportContactServiceFactory::create(
-                new GetresponseApiClient(
-                    ApiFactory::createFromSettings(
-                        (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
-                    ),
-                    $getResponseRepository
-                ),
+            (new ExportContactServiceFactory())->create(
+                $getresponseApiClient,
                 $getResponseRepository,
                 Contact::ORIGIN
             ),

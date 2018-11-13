@@ -10,9 +10,8 @@ use GetResponse\Product\ProductFactory;
 use GetResponseRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\GetresponseApiClient;
-use GrShareCode\Order\OrderPayloadFactory;
-use GrShareCode\Order\OrderService as GrOrderService;
-use GrShareCode\Product\ProductService;
+use GrShareCode\DbRepositoryInterface;
+use GrShareCode\Order\OrderServiceFactory as ShareCodeOrderServiceFactory;
 use PrestaShopDatabaseException;
 
 /**
@@ -31,15 +30,7 @@ class OrderServiceFactory
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient(ApiFactory::createFromSettings($accountSettings), $repository);
 
-        return new OrderService(
-            new GrOrderService(
-                $apiClient,
-                $repository,
-                new ProductService($apiClient, $repository),
-                new OrderPayloadFactory()
-            ),
-            new OrderFactory(new ProductFactory())
-        );
+        return self::createOrderService($apiClient, $repository);
     }
 
     /**
@@ -48,7 +39,7 @@ class OrderServiceFactory
      * @throws PrestaShopDatabaseException
      */
     public static function create()
-    {;
+    {
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient(
             ApiFactory::createFromSettings(
@@ -57,13 +48,13 @@ class OrderServiceFactory
             $repository
         );
 
+        return self::createOrderService($apiClient, $repository);
+    }
+
+    private static function createOrderService(GetresponseApiClient $apiClient, DbRepositoryInterface $repository)
+    {
         return new OrderService(
-            new GrOrderService(
-                $apiClient,
-                $repository,
-                new ProductService($apiClient, $repository),
-                new OrderPayloadFactory()
-            ),
+            (new ShareCodeOrderServiceFactory())->create($apiClient, $repository),
             new OrderFactory(new ProductFactory())
         );
     }

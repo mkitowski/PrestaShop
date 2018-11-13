@@ -8,11 +8,7 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
-use GrShareCode\Contact\ContactCustomField\ContactCustomFieldCollectionFactory as GrContactCustomFieldCollectionFactory;
-use GrShareCode\Contact\ContactFactory;
-use GrShareCode\Contact\ContactPayloadFactory;
-use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\CustomField\CustomFieldService;
+use GrShareCode\Contact\ContactServiceFactory as ShareCodeContactServiceFactory;
 use GrShareCode\Api\GetresponseApiClient;
 
 /**
@@ -56,11 +52,8 @@ class ContactServiceFactory
     private static function inject(GetresponseApiClient $getresponseApiClient)
     {
         return new ContactService(
-            new GrContactService(
+            (new ShareCodeContactServiceFactory())->create(
                 $getresponseApiClient,
-                new ContactPayloadFactory(),
-                new ContactFactory(new GrContactCustomFieldCollectionFactory()),
-                new CustomFieldService($getresponseApiClient),
                 new GetResponseRepository(Db::getInstance(), Shop::getUserShopId()),
                 Contact::ORIGIN
             )

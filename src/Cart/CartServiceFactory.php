@@ -9,9 +9,10 @@ use GetResponse\Cache\CacheWrapper;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
-use GrShareCode\Cart\CartService as GrCartService;
+use GrShareCode\Cache\CacheInterface;
 use GrShareCode\Api\GetresponseApiClient;
-use GrShareCode\Product\ProductService;
+use GrShareCode\Cart\CartServiceFactory as ShareCodeCartServiceFactory;
+use GrShareCode\DbRepositoryInterface;
 use PrestaShopDatabaseException;
 
 /**
@@ -27,14 +28,13 @@ class CartServiceFactory
      */
     public static function createFromAccountSettings(AccountSettings $accountSettings)
     {
-        $api = ApiFactory::createFromSettings($accountSettings);
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-        $productService = new ProductService($apiClient, $repository);
-        $cache = new CacheWrapper();
-        $cartService = new GrCartService($apiClient, $repository, $productService, $cache);
 
-        return new CartService($cartService);
+        return self::createCartService(
+            new GetresponseApiClient(ApiFactory::createFromSettings($accountSettings), $repository),
+            $repository,
+            new CacheWrapper()
+        );
     }
 
     /**
@@ -44,14 +44,31 @@ class CartServiceFactory
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId());
-        $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-        $productService = new ProductService($apiClient, $repository);
-        $cache = new CacheWrapper();
-        $cartService = new GrCartService($apiClient, $repository, $productService, $cache);
+        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId());;
 
-        return new CartService($cartService);
+        return self::createCartService(
+            new GetresponseApiClient(ApiFactory::createFromSettings($accountSettingsRepository->getSettings()), $repository),
+            $repository,
+            new CacheWrapper()
+        );
+
     }
+
+    /**
+     * @param GetresponseApiClient $apiClient
+     * @param DbRepositoryInterface $repository
+     * @param CacheInterface $cache
+     * @return CartService
+     */
+    private static function createCartService(
+        GetresponseApiClient $apiClient,
+        DbRepositoryInterface $repository,
+        CacheInterface $cache
+    ) {
+        return new CartService(
+            (new ShareCodeCartServiceFactory())->create($apiClient, $repository, $cache)
+        );
+    }
+
 }
