@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
@@ -213,29 +214,10 @@ class GetResponseRepository implements DbRepositoryInterface
 
     /**
      * @return array
-     * @throws PrestaShopDatabaseException
      */
     public function getCustoms()
     {
-        $sql = '
-        SELECT
-            `id_custom`,
-            `id_shop`,
-            `custom_field`,
-            `custom_value`,
-            `custom_name`,
-            `default`,
-            `active_custom`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_customs
-        WHERE
-            id_shop = ' . (int) $this->idShop;
-
-        if ($results = $this->db->executeS($sql, true, false)) {
-            return $results;
-        }
-
-        return array();
+        return json_decode(ConfigurationSettings::get(ConfigurationSettings::GETRESPONSE_CUSTOMS), true);
     }
 
     /**
@@ -243,23 +225,22 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function updateCustom(CustomFieldMapping $custom)
     {
-        $sql = '
-                UPDATE
-                    ' . _DB_PREFIX_ . 'getresponse_customs
-                SET
-                    `custom_name` = "' . pSQL($custom->getName()) . '",
-                    `active_custom` = "' . pSQL($custom->getActive()) . '"
-                WHERE
-                    `id_shop` = ' . (int) $this->idShop . '
-                    AND `id_custom` = "' . pSQL($custom->getId()) . '"';
+        $customs = $this->getCustoms();
 
-        $this->db->execute($sql);
+        foreach ($customs as $_custom) {
+            if ($_custom['id_custom'] === $custom->getId()) {
+                $_custom['custom_name'] = $custom->getName();
+                $_custom['active_custom'] = $custom->getActive();
+            }
+        }
+
+        ConfigurationSettings::updateValue(ConfigurationSettings::GETRESPONSE_CUSTOMS, json_encode($customs));
     }
 
     public function clearDatabase()
     {
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;');
-        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;');
+        ConfigurationSettings::updateValue(ConfigurationSettings::GETRESPONSE_CUSTOMS, NULL);
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce`;');
@@ -289,17 +270,6 @@ class GetResponseRepository implements DbRepositoryInterface
 			`crypto` char(32) NULL,
 			`invalid_request_date` DATETIME NULL,
 			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_customs` (
-			`id_custom` int(11) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`custom_field` char(32) NOT NULL,
-			`custom_value` char(32) NOT NULL,
-			`custom_name` char(32) NOT NULL,
-			`default` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_custom` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			PRIMARY KEY (`id_custom`)
 			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_webform` (
@@ -378,13 +348,13 @@ class GetResponseRepository implements DbRepositoryInterface
                     }
                     $sql[] = $this->sqlMainSetting($shop['id_shop']);
                     $sql[] = $this->sqlWebformSetting($shop['id_shop']);
-                    $sql[] = $this->sqlCustomsSetting($shop['id_shop']);
+                    $sql[] = $this->setDefaultCustomFields($shop['id_shop']);
                 }
             }
         } else {
             $sql[] = $this->sqlMainSetting('1');
             $sql[] = $this->sqlWebformSetting('1');
-            $sql[] = $this->sqlCustomsSetting('1');
+            $sql[] = $this->setDefaultCustomFields('1');
         }
 
         //Install SQL
@@ -446,32 +416,16 @@ class GetResponseRepository implements DbRepositoryInterface
 
     /**
      * @param int $storeId
-     *
-     * @return string
      */
-    private function sqlCustomsSetting($storeId)
+    private function setDefaultCustomFields($storeId)
     {
-        return '
-        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_customs` (
-            `id_shop` ,
-            `custom_field`,
-            `custom_value`,
-            `custom_name`,
-            `default`,
-            `active_custom`
-        )
-        VALUES
-            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'yes\', \'no\'),
-            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'yes\', \'no\'),
-            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'yes\'),
-            (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'phone\', \'phone\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'country\', \'country\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'birthday\', \'birthday\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'company\', \'company\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'category\', \'category\', \'\', \'no\', \'no\');';
+        $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
+
+        foreach ($customFields as $field) {
+            $field['id_shop'] = $storeId;
+        }
+
+        ConfigurationSettings::updateValue(ConfigurationSettings::GETRESPONSE_CUSTOMS, json_encode($customFields));
     }
 
     /**

@@ -2,7 +2,6 @@
 namespace GetResponse\Account;
 
 use Db;
-use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use PrestaShopDatabaseException;
 
 /**
@@ -138,16 +137,7 @@ class AccountSettingsRepository
             `id_shop` = ' . (int) $this->idShop;
         $this->db->execute($query);
 
-        $sql = '
-                UPDATE
-                    ' . _DB_PREFIX_ . 'getresponse_customs
-                SET
-                    `custom_name` = "",
-                    `active_custom` = "' . pSQL(CustomFieldMapping::INACTIVE) . '"
-                WHERE
-                    `id_shop` = ' . (int) $this->idShop . '
-                    AND `default` = "' . pSQL(CustomFieldMapping::DEFAULT_NO) . '"';
-        $this->db->execute($sql);
+        Configuration::updateValue(ConfigurationSettings::GETRESPONSE_CUSTOMS, NULL);
     }
 
 }

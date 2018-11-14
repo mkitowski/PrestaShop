@@ -18,6 +18,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedException.php';
+include_once _PS_MODULE_DIR_ . '/getresponse/classes/ConfigurationSettings.php';
 
 class Getresponse extends Module
 {
@@ -89,7 +90,7 @@ class Getresponse extends Module
         }
 
         // Update Version Number
-        if (!Configuration::updateValue('GR_VERSION', $this->version)) {
+        if (!ConfigurationSettings::updateValue('GR_VERSION', $this->version)) {
             return false;
         }
 
@@ -160,7 +161,7 @@ class Getresponse extends Module
             }
         }
 
-        if (!Configuration::deleteByName('GR_VERSION')) {
+        if (!ConfigurationSettings::deleteByName('GR_VERSION')) {
             return false;
         }
 
