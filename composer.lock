@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "7b3ada161de19e83d4026bcf6e17a927",
@@ -101,7 +101,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2018-10-15 11:30:00"
+            "time": "2018-10-15T11:30:00+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -149,7 +149,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2018-06-11 23:09:50"
+            "time": "2018-06-11T23:09:50+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -427,7 +427,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-04-02 07:44:40"
+            "time": "2017-04-02T07:44:40+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -474,7 +474,7 @@
                 "filesystem",
                 "iterator"
             ],
-            "time": "2017-11-27 13:52:08"
+            "time": "2017-11-27T13:52:08+00:00"
         },
         {
             "name": "phpunit/php-text-template",
@@ -564,7 +564,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2018-01-06 05:27:16"
+            "time": "2018-01-06T05:27:16+00:00"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -613,7 +613,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2017-11-27 08:47:38"
+            "time": "2017-11-27T08:47:38+00:00"
         },
         {
             "name": "phpunit/phpunit",
@@ -695,7 +695,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2018-02-01 05:50:59"
+            "time": "2018-02-01T05:50:59+00:00"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -754,7 +754,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2017-06-30 09:13:00"
+            "time": "2017-06-30T09:13:00+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -799,7 +799,7 @@
             ],
             "description": "Looks up which function or method a line of code belongs to",
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
-            "time": "2018-05-15 05:52:48"
+            "time": "2018-05-15T05:52:48+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -863,7 +863,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2017-03-07 10:34:43"
+            "time": "2017-03-07T10:34:43+00:00"
         },
         {
             "name": "sebastian/diff",
@@ -915,7 +915,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2017-05-22 07:24:03"
+            "time": "2017-05-22T07:24:03+00:00"
         },
         {
             "name": "sebastian/environment",
@@ -965,7 +965,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2016-11-26 07:53:53"
+            "time": "2016-11-26T07:53:53+00:00"
         },
         {
             "name": "sebastian/exporter",
@@ -1032,7 +1032,7 @@
                 "export",
                 "exporter"
             ],
-            "time": "2017-03-07 10:36:49"
+            "time": "2017-03-07T10:36:49+00:00"
         },
         {
             "name": "sebastian/global-state",
@@ -1083,7 +1083,7 @@
             "keywords": [
                 "global state"
             ],
-            "time": "2017-02-23 14:11:06"
+            "time": "2017-02-23T14:11:06+00:00"
         },
         {
             "name": "sebastian/object-enumerator",
@@ -1129,7 +1129,7 @@
             ],
             "description": "Traverses array structures and object graphs to enumerate all referenced objects",
             "homepage": "https://github.com/sebastianbergmann/object-enumerator/",
-            "time": "2017-03-07 10:37:45"
+            "time": "2017-03-07T10:37:45+00:00"
         },
         {
             "name": "sebastian/recursion-context",
@@ -1182,7 +1182,7 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "time": "2017-03-08 08:21:15"
+            "time": "2017-03-08T08:21:15+00:00"
         },
         {
             "name": "sebastian/resource-operations",
@@ -1333,12 +1333,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "7228a3e2163ab5623231f126cf8d7701072f9d16"
+                "reference": "c41175c801e3edfda90f32e292619d10c27103d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/7228a3e2163ab5623231f126cf8d7701072f9d16",
-                "reference": "7228a3e2163ab5623231f126cf8d7701072f9d16",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/c41175c801e3edfda90f32e292619d10c27103d7",
+                "reference": "c41175c801e3edfda90f32e292619d10c27103d7",
                 "shasum": ""
             },
             "require": {
@@ -1384,7 +1384,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2018-10-02 16:38:08"
+            "time": "2018-11-11T19:52:12+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -1434,7 +1434,7 @@
                 "check",
                 "validate"
             ],
-            "time": "2018-05-29 14:25:02"
+            "time": "2018-05-29T14:25:02+00:00"
         }
     ],
     "aliases": [

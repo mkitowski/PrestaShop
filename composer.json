@@ -17,6 +17,10 @@
       }
     }
   ],
+  "config": {
+    "preferred-install": "dist"
+  },
+  "type": "prestashop-module",
   "minimum-stability": "dev",
   "require": {
     "GetResponse/share-code-plugin" : "dev-feature/mwojcik/grintegrat-2751 as 5.3"
