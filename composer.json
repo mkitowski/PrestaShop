@@ -1,6 +1,7 @@
 {
-  "name": "GetResponse/PrestaShop",
+  "name": "prestashop/getresponse",
   "homepage": "https://github.com/GetResponse/PrestaShop",
+  "description": "GetResponse for PrestaShop",
   "authors": [
     {
       "name": "GetResponse",
