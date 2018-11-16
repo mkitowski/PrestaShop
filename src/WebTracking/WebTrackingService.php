@@ -27,16 +27,13 @@ class WebTrackingService
     }
 
     /**
-     * @param string $trackingStatus
+     * @param string $status
      * @throws GetresponseApiException
-     * @throws WebTrackingException
      */
-    public function saveTracking($trackingStatus)
+    public function saveTracking($status)
     {
         $trackingCode = $this->trackingCodeService->getTrackingCode();
-        $this->repository->saveTracking(
-            new WebTracking($trackingStatus, $trackingCode->getSnippet())
-        );
+        $this->repository->saveTracking(new WebTracking($status, $trackingCode->getSnippet()));
     }
 
     /**

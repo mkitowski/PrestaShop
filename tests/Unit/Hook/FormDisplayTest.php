@@ -5,7 +5,6 @@ use GetResponse\Hook\FormDisplay;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;
 use GetResponse\WebForm\WebFormService;
-use PrestaShopDatabaseException;
 
 class FormDisplayTest extends BaseTestCase
 {
@@ -22,19 +21,6 @@ class FormDisplayTest extends BaseTestCase
     public function shouldNotDisplayWebFormIfEmptyPosition()
     {
         $this->assertEmpty($this->sut->displayWebForm(''));
-    }
-
-    /**
-     * @test
-     */
-    public function shouldNotDisplayWebFormIfDatabaseException()
-    {
-        $this->webFormService
-            ->expects(self::once())
-            ->method('getWebForm')
-            ->willThrowException(new PrestaShopDatabaseException());
-
-        $this->assertEmpty($this->sut->displayWebForm('top'));
     }
 
     /**

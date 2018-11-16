@@ -45,12 +45,7 @@ class EcommerceServiceTest extends BaseTestCase
         $this->repository
             ->expects(self::once())
             ->method('updateEcommerceSubscription')
-            ->with(true);
-
-        $this->repository
-            ->expects(self::once())
-            ->method('updateEcommerceShopId')
-            ->with($shopId);
+            ->with($ecommerceDto);
 
         $this->sut->updateEcommerceDetails($ecommerceDto);
     }
@@ -67,11 +62,7 @@ class EcommerceServiceTest extends BaseTestCase
         $this->repository
             ->expects(self::once())
             ->method('updateEcommerceSubscription')
-            ->with(false);
-
-        $this->repository
-            ->expects(self::never())
-            ->method('updateEcommerceShopId');
+            ->with($ecommerceDto);
 
         $this->sut->updateEcommerceDetails($ecommerceDto);
     }

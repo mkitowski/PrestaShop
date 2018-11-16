@@ -195,7 +195,7 @@ class GetResponseRepository implements DbRepositoryInterface
         $customs = $this->getCustoms();
 
         foreach ($customs as &$_custom) {
-            if ($_custom['id_custom'] === $custom->getId()) {
+            if ($_custom['id_custom'] === (int) $custom->getId()) {
                 $_custom['custom_name'] = $custom->getName();
                 $_custom['active_custom'] = $custom->getActive();
             }

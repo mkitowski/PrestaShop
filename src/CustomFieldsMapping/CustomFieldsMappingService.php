@@ -77,7 +77,7 @@ class CustomFieldsMappingService
     {
         foreach ($this->repository->getCustoms() as $customFields) {
 
-            if ((int) $customFieldMappingId === $customFields['id_custom']) {
+            if ($customFieldMappingId == $customFields['id_custom']) {
 
                 return new CustomFieldMapping(
                     $customFields['id_custom'],
