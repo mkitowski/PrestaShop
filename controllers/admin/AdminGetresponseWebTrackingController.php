@@ -1,6 +1,8 @@
 <?php
 
+use GetResponse\WebTracking\WebTracking;
 use GetResponse\WebTracking\WebTrackingDto;
+use GetResponse\WebTracking\WebTrackingException;
 use GetResponse\WebTracking\WebTrackingService;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
@@ -36,15 +38,21 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
     /**
      * @return bool|ObjectModel|void
      * @throws GetresponseApiException
+     * @throws WebTrackingException
      */
     public function postProcess()
     {
         if (Tools::isSubmit('submitWebTrackingForm')) {
 
-            $tracking = new WebTrackingDto(Tools::getValue('tracking'));
-            $this->webTrackingService->updateTracking($tracking);
+            $status = (int) Tools::getValue('tracking');
 
-            $this->confirmations[] = $tracking->isEnabled()
+            $this->webTrackingService->saveTracking(
+                $status === 1 ?
+                WebTracking::TRACKING_ACTIVE
+                : WebTracking::TRACKING_INACTIVE
+            );
+
+            $this->confirmations[] = $status === WebTracking::TRACKING_ACTIVE
                 ? $this->l('Web event traffic tracking enabled')
                 : $this->l('Web event traffic tracking disabled');
         }

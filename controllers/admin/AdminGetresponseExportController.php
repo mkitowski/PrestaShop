@@ -17,8 +17,6 @@ use GrShareCode\Shop\Shop;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
-    public $name = 'AdminGetresponseExport';
-
     /** @var ContactListService */
     public $contactListService;
 
@@ -36,6 +34,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
         $this->contactListService = ContactListServiceFactory::create();
         $this->ecommerceService = EcommerceServiceFactory::create();
+        $this->name = 'AdminGetresponseExport';
     }
 
     public function initContent()
@@ -104,14 +103,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderView()
     {
-        $settings = $this->repository->getSettings();
-
         $this->context->smarty->assign([
             'selected_tab' => 'export_customers',
             'export_customers_form' => $this->renderExportForm(),
             'export_customers_list' => $this->renderCustomList(),
             'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
-            'cycle_day' => $settings['cycle_day'],
+            'cycle_day' => null,
             'token' => $this->getToken(),
         ]);
 

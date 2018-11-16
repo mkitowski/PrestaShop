@@ -14,8 +14,6 @@ use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseAddNewContactListController extends AdminGetresponseController
 {
-    public $name = 'GRAddNewContactList';
-
     /** @var ContactListService */
     private $contactListService;
 
@@ -28,7 +26,7 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
-
+        $this->name = 'GRAddNewContactList';
         $this->context->smarty->assign([
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
@@ -49,6 +47,7 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
 
     /**
      * @throws GetresponseApiException
+     * @throws PrestaShopException
      */
     public function postProcess()
     {

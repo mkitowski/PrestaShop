@@ -1,14 +1,14 @@
 <?php
 namespace GetResponse\WebTracking;
 
-use GetResponse\Account\AccountSettings;
-
 /**
  * Class WebTrackingDto
  * @package GetResponse\WebTracking
  */
 class WebTrackingDto
 {
+    const TRACKING_ACTIVE = 'yes';
+    const TRACKING_INACTIVE = 'no';
     const TRACKING_ON = '1';
     const TRACKING_OFF = '0';
 
@@ -52,7 +52,7 @@ class WebTrackingDto
      */
     public function toSettings()
     {
-        return $this->getTracking() === self::TRACKING_ON ? AccountSettings::TRACKING_ACTIVE : AccountSettings::TRACKING_INACTIVE;
+        return $this->getTracking() === self::TRACKING_ON ? self::TRACKING_ACTIVE : self::TRACKING_INACTIVE;
     }
 
 }

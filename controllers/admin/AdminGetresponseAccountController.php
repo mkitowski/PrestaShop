@@ -5,6 +5,9 @@ use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
+use GetResponse\WebTracking\TrackingCodeServiceFactory;
+use GetResponse\WebTracking\WebTracking;
+use GetResponse\WebTracking\WebTrackingServiceFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 
@@ -12,7 +15,6 @@ require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseAccountController extends AdminGetresponseController
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -28,6 +30,9 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         ));
     }
 
+    /**
+     * @throws PrestaShopDatabaseException
+     */
     public function initContent()
     {
         $accountStatus = AccountStatusFactory::create();
@@ -46,6 +51,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
     /**
      * @return bool|ObjectModel|void
      * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
     public function postProcess()
     {
@@ -87,6 +93,16 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     $accountDto->getDomain()
                 );
 
+                $webTrackingService = WebTrackingServiceFactory::create();
+                $trackingCodeService = TrackingCodeServiceFactory::create();
+                $trackingCode = $trackingCodeService->getTrackingCode();
+
+                $trackingStatus = $trackingCode->isFeatureEnabled()
+                    ? WebTracking::TRACKING_INACTIVE
+                    : WebTracking::TRACKING_DISABLED;
+
+                $webTrackingService->saveTracking($trackingStatus);
+
                 $this->confirmations[] = $this->l('GetResponse account connected');
 
             } else {
@@ -102,6 +118,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             }
         } catch (GetresponseApiException $e) {
             $this->errors[] = $e->getMessage();
+        } catch (\GetResponse\WebTracking\WebTrackingException $e) {
         }
     }
 
@@ -109,6 +126,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
      * @return mixed
      * @throws ApiTypeException
      * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
      */
     public function renderView()
     {
@@ -127,13 +145,14 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             ]);
         }
 
-        $settings = $accountService->getSettings();
+        $accountSettings = AccountServiceFactory::create()->getAccountSettings();
+        $webTrackingService = WebTrackingServiceFactory::create();
 
         $this->context->smarty->assign([
             'selected_tab' => 'api',
             'is_connected' => $accountService->isConnectedToGetResponse(),
-            'active_tracking' => $settings->getActiveTracking(),
-            'api_key' => $settings->getHiddenApiKey()
+            'active_tracking' => $webTrackingService->getWebTracking()->isTrackingActive(),
+            'api_key' => $accountSettings->getHiddenApiKey()
         ]);
 
         return parent::renderView();

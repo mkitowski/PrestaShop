@@ -1,83 +1,36 @@
 <?php
 namespace GetResponse\Ecommerce;
 
-use Db;
+use Configuration;
+use ConfigurationSettings;
 
 /**
  * Class EcommerceRepository
  */
 class EcommerceRepository
 {
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
-
-    /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
-
     /**
      * @return Ecommerce|null
      */
     public function getEcommerceSettings()
     {
-        $query = 'SELECT * FROM
-                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-                WHERE
-                    `id_shop` = ' . (int)$this->idShop;
+        $result = json_decode(Configuration::get(ConfigurationSettings::ECOMMERCE), true);
 
-        if ($results = $this->db->ExecuteS($query)) {
-            return Ecommerce::fromDb($results[0]);
+        if (empty($result)) {
+            return null;
         }
 
-        return null;
+        return new Ecommerce($this->idShop, $result['shop_id']);
     }
 
     /**
-     * @param bool $isEnabled
+     * @param EcommerceDto $settings
      */
-    public function updateEcommerceSubscription($isEnabled)
+    public function updateEcommerceSubscription(EcommerceDto $settings)
     {
-        if ($isEnabled) {
-            $query = '
-                INSERT INTO 
-                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-                SET
-                    `id_shop` = ' . (int) $this->idShop . '
-            ';
-        } else {
-            $query = '
-                DELETE FROM
-                    ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-                WHERE
-                    `id_shop` = ' . (int) $this->idShop;
-        }
-
-        $this->db->execute($query);
+        Configuration::updateValue(
+            ConfigurationSettings::ECOMMERCE,
+            json_encode(['is_enabled' => $settings->isEnabled(), 'shop_id' => $settings->getShopId()])
+        );
     }
-
-    /**
-     * @param string $shopId
-     */
-    public function updateEcommerceShopId($shopId)
-    {
-        $query = '
-            UPDATE
-                ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-            SET
-                `gr_id_shop` = "' . $shopId . '"
-            WHERE
-                `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
-    }
-
 }

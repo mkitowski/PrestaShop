@@ -5,7 +5,6 @@ use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\TrackingCode\TrackingCodeService;
-use PrestaShopDatabaseException;
 
 /**
  * Class AccountService
@@ -47,17 +46,7 @@ class AccountService
     }
 
     /**
-     * @return AccountSettings
-     * @throws PrestaShopDatabaseException
-     */
-    public function getSettings()
-    {
-        return $this->repository->getSettings();
-    }
-
-    /**
      * @return bool
-     * @throws PrestaShopDatabaseException
      */
     public function isConnectedToGetResponse()
     {
@@ -66,7 +55,7 @@ class AccountService
 
     public function disconnectFromGetResponse()
     {
-        $this->repository->disconnectApiSettings();
+        $this->repository->clearConfiguration();
     }
 
     /**
@@ -81,16 +70,17 @@ class AccountService
      * @param string $apiKey
      * @param string $accountType
      * @param string $domain
-     * @throws GetresponseApiException
      */
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
-        $trackingCode = $this->trackingCodeService->getTrackingCode();
-        $trackingStatus = $trackingCode->isFeatureEnabled()
-            ? AccountSettings::TRACKING_INACTIVE
-            : AccountSettings::TRACKING_DISABLED;
-
-        $this->repository->updateTracking($trackingStatus, $trackingCode->getSnippet());
         $this->repository->updateApiSettings($apiKey, $accountType, $domain);
+    }
+
+    /**
+     * @return AccountSettings|null
+     */
+    public function getAccountSettings()
+    {
+        return $this->repository->getSettings();
     }
 }

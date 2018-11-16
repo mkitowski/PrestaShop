@@ -17,7 +17,7 @@ class Shop
             $cookie = $context->cookie->getAll();
 
             if (isset($cookie['shopContext'])) {
-                return (int)Tools::substr($cookie['shopContext'], 2, count($cookie['shopContext']));
+                return (int)Tools::substr($cookie['shopContext'], 2, Tools::strlen($cookie['shopContext']));
             }
         }
 

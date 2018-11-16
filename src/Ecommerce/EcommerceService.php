@@ -80,22 +80,10 @@ class EcommerceService
     }
 
     /**
-     * @return bool
-     */
-    public function isSubscribeViaRegistrationActive()
-    {
-        return $this->settings->isSubscriptionActive();
-    }
-
-    /**
      * @param EcommerceDto $ecommerceDto
      */
     public function updateEcommerceDetails(EcommerceDto $ecommerceDto)
     {
-        $this->repository->updateEcommerceSubscription($ecommerceDto->isEnabled());
-
-        if ($ecommerceDto->isEnabled()) {
-            $this->repository->updateEcommerceShopId($ecommerceDto->getShopId());
-        }
+        $this->repository->updateEcommerceSubscription($ecommerceDto);
     }
 }

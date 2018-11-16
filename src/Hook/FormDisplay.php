@@ -2,7 +2,6 @@
 namespace GetResponse\Hook;
 
 use GetResponse\WebForm\WebFormService;
-use PrestaShopDatabaseException;
 
 /**
  * Class FormDisplay
@@ -31,11 +30,7 @@ class FormDisplay
             return [];
         }
 
-        try {
-            $webForm = $this->webFormService->getWebForm();
-        } catch (PrestaShopDatabaseException $e) {
-            return [];
-        }
+        $webForm = $this->webFormService->getWebForm();
 
         if (!$webForm
             || !$webForm->isStatusActive()

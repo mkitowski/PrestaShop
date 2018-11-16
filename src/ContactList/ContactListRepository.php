@@ -1,7 +1,8 @@
 <?php
 namespace GetResponse\ContactList;
 
-use Db;
+use Configuration;
+use ConfigurationSettings;
 
 /**
  * Class ContactListRepository
@@ -9,22 +10,6 @@ use Db;
  */
 class ContactListRepository
 {
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
-
-    /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
-
     /**
      * @param string $activeSubscription
      * @param string $campaignId
@@ -34,19 +19,15 @@ class ContactListRepository
      */
     public function updateSettings($activeSubscription, $campaignId, $updateAddress, $cycleDay, $newsletter)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `active_subscription` = "' . pSQL($activeSubscription) . '",
-            `active_newsletter_subscription` = "' . pSQL($newsletter) . '",
-            `campaign_id` = "' . pSQL($campaignId) . '",
-            `update_address` = "' . pSQL($updateAddress) . '",
-            `cycle_day` = "' . pSQL($cycleDay) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(
+            ConfigurationSettings::REGISTRATION,
+            json_encode([
+                'active_subscription' => $activeSubscription,
+                'active_newsletter_subscription' => $newsletter,
+                'campaign_id' => $campaignId,
+                'update_address' => $updateAddress,
+                'cycle_day' => $cycleDay
+            ])
+        );
     }
-
 }

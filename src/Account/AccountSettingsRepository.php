@@ -1,8 +1,8 @@
 <?php
 namespace GetResponse\Account;
 
-use Db;
-use PrestaShopDatabaseException;
+use Configuration;
+use ConfigurationSettings;
 
 /**
  * Class AccountSettingsRepository
@@ -10,70 +10,18 @@ use PrestaShopDatabaseException;
  */
 class AccountSettingsRepository
 {
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
-
     /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
-
-    /**
-     * @return null|AccountSettings
-     * @throws PrestaShopDatabaseException
+     * @return AccountSettings
      */
     public function getSettings()
     {
-        $sql = '
-        SELECT
-            `id`,
-            `id_shop`,
-            `api_key`,
-            `active_subscription`,
-            `active_newsletter_subscription`,
-            `active_tracking`,
-            `tracking_snippet`,
-            `update_address`,
-            `campaign_id`,
-            `cycle_day`,
-            `account_type`,
-            `crypto`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
+        $result = json_decode(Configuration::get(ConfigurationSettings::ACCOUNT), true);
 
-        if ($results = $this->db->ExecuteS($sql)) {
-            return AccountSettingsFactory::fromDb($results[0]);
+        if (empty($result)) {
+            return AccountSettings::createEmptyInstance();
         }
 
-        return null;
-    }
-
-    /**
-     * @param string $trackingStatus
-     * @param string $snippet
-     */
-    public function updateTracking($trackingStatus, $snippet)
-    {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        SET
-            `active_tracking` = "' . pSQL($trackingStatus) . '",
-            `tracking_snippet` = "' . pSQL($snippet, true) . '"
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
-
-        $this->db->execute($query);
+        return AccountSettings::createFromSettings($result);
     }
 
     /**
@@ -83,61 +31,25 @@ class AccountSettingsRepository
      */
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = "' . pSQL($apiKey) . '",
-            `account_type` = "' . pSQL($accountType) . '",
-            `crypto` = "' . pSQL($domain) . '"
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(
+        ConfigurationSettings::ACCOUNT,
+            json_encode([
+                'api_key' => $apiKey,
+                'type' => $accountType,
+                'domain' => $domain
+            ])
+        );
     }
 
-    public function disconnectApiSettings()
+    public function clearConfiguration()
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = null,
-            `active_subscription` = "no",
-            `active_newsletter_subscription` = "no",
-            `active_tracking` = "no",
-            `tracking_snippet` = "",
-            `update_address` = "no",
-            `campaign_id` = "",
-            `cycle_day` = "",
-            `cycle_day` = "",
-            `account_type` = "' . pSQL(AccountSettings::ACCOUNT_TYPE_SMB) . '",
-            `crypto` = null
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
-
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_webform 
-        SET
-            `webform_id` = "",
-            `active_subscription` = "no",
-            `sidebar` = "left",
-            `style` = "webform",
-            `url` = ""
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
-
-        $query = '
-        DELETE FROM
-            ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
-
-        Configuration::updateValue(ConfigurationSettings::GETRESPONSE_CUSTOMS, NULL);
+        Configuration::updateValue(ConfigurationSettings::ACCOUNT, NULL);
+        Configuration::updateValue(ConfigurationSettings::REGISTRATION, NULL);
+        Configuration::updateValue(ConfigurationSettings::WEB_FORM, NULL);
+        Configuration::updateValue(ConfigurationSettings::WEB_TRACKING, NULL);
+        Configuration::updateValue(ConfigurationSettings::TRACKING_CODE, NULL);
+        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, NULL);
+        Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, NULL);
     }
 
 }

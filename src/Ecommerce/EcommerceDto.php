@@ -49,5 +49,4 @@ class EcommerceDto
     {
         return $this->ecommerceStatus === self::STATUS_ACTIVE;
     }
-
 }

@@ -15,8 +15,6 @@ require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseEcommerceController extends AdminGetresponseController
 {
-    private $name = 'GREcommerce';
-
     /** @var EcommerceService */
     private $ecommerceService;
 
@@ -29,6 +27,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-ecommerce.js');
+        $this->name = 'GREcommerce';
         $this->ecommerceService = EcommerceServiceFactory::create();
     }
 

@@ -45,7 +45,7 @@ class WebTrackingServiceTest extends BaseTestCase
             ->with($webTrackingDto->toSettings(), $trackingCodeSnippet);
 
 
-        $this->sut->updateTracking($webTrackingDto);
+        $this->sut->saveTracking($webTrackingDto);
     }
 
     /**
@@ -67,7 +67,7 @@ class WebTrackingServiceTest extends BaseTestCase
             ->method('updateTracking')
             ->with($webTrackingDto->toSettings(), '');
 
-        $this->sut->updateTracking($webTrackingDto);
+        $this->sut->saveTracking($webTrackingDto);
     }
 
     /**

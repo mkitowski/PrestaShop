@@ -22,14 +22,14 @@ class ContactListServiceFactory
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $accountSettingsRepository = new AccountSettingsRepository();
         $settings = $accountSettingsRepository->getSettings();
         $api = ApiFactory::createFromSettings($settings);
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
         return new ContactListService(
-            new ContactListRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new ContactListRepository(),
             new GrContactListService($apiClient),
             $settings
         );

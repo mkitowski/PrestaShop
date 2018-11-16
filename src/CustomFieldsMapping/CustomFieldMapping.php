@@ -41,7 +41,7 @@ class CustomFieldMapping
      */
     public function __construct($id, $value, $name, $active, $field, $default)
     {
-        $this->id = $id;
+        $this->id = (int) $id;
         $this->value = $value;
         $this->name = $name;
         $this->active = $active;

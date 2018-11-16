@@ -1,6 +1,7 @@
 <?php
 namespace GetResponse\Hook;
 
+use Configuration;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Order\OrderServiceFactory;
@@ -33,10 +34,14 @@ class NewOrder
             return;
         }
 
+        // @TODO move this code to repository and use service in this place.
+        $registrationSettings = json_decode(Configuration::get(\ConfigurationSettings::REGISTRATION), true);
+
+
         $orderService = OrderServiceFactory::createFromSettings($accountSettings);
         $orderService->sendOrder(
             $order,
-            $accountSettings->getContactListId(),
+            $registrationSettings['campaign_id'],
             $ecommerceService->getEcommerceSettings()->getGetResponseShopId()
         );
     }

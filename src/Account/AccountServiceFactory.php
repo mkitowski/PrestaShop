@@ -6,6 +6,7 @@ use GetResponse\Api\ApiFactory;
 use GetResponseRepository;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use GetResponse\Helper\Shop as GrShop;
@@ -29,7 +30,7 @@ class AccountServiceFactory
 
         return new AccountService(
             new GrAccountService($apiClient),
-            new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new AccountSettingsRepository(),
             new TrackingCodeService($apiClient)
         );
     }
@@ -37,10 +38,11 @@ class AccountServiceFactory
     /**
      * @return AccountService
      * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $accountSettingsRepository = new AccountSettingsRepository();
         $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
@@ -65,7 +67,7 @@ class AccountServiceFactory
 
         return new AccountService(
             new GrAccountService($apiClient),
-            new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new AccountSettingsRepository(),
             new TrackingCodeService($apiClient)
         );
     }

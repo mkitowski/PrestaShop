@@ -1,9 +1,6 @@
 <?php
 namespace GetResponse\Account;
 
-use Db;
-use GetResponse\Helper\Shop;
-
 /**
  * Class AccountStatusFactory
  * @package GetResponse\Account
@@ -16,7 +13,7 @@ class AccountStatusFactory
     public static function create()
     {
         return new AccountStatus(
-            new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId())
+            new AccountSettingsRepository()
         );
     }
 }
