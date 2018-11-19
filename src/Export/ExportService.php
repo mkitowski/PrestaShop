@@ -12,6 +12,7 @@ use GrShareCode\Export\ExportContactService;
 use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
 use GrShareCode\Export\Settings\ExportSettings as ShareCodeExportSettings;
 use GrShareCode\Api\Exception\GetresponseApiException;
+use GrShareCode\GrShareCodeException;
 use GrShareCode\Order\OrderCollection;
 use Order;
 
@@ -132,8 +133,8 @@ class ExportService
                         $shareCodeOrderCollection
                     )
                 );
-            } catch (GetresponseApiException $e) {
-                // @todo log
+            } catch (GrShareCodeException $e) {
+                \PrestaShopLoggerCore::addLog('Getresponse export error: ' . $e->getMessage(), 2, null, 'GetResponse', 'GetResponse');
             }
         }
 

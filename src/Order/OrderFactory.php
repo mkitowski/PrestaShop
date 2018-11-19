@@ -34,9 +34,6 @@ class OrderFactory
 
             $prestashopProduct = new \Product($product['id_product']);
 
-            if (empty($prestashopProduct->reference)) {
-                continue;
-            }
             $getresponseProduct = $this->productFactory->createShareCodeProductFromProduct(
                 $prestashopProduct,
                 (int)$product['product_quantity']
