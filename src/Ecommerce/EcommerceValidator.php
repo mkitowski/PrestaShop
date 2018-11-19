@@ -1,6 +1,7 @@
 <?php
 namespace GetResponse\Ecommerce;
 
+use GetResponse\Settings\Registration\RegistrationRepository;
 use Translate;
 
 /**
@@ -32,13 +33,15 @@ class EcommerceValidator
 
     private function validate()
     {
+        $registrationSettings = (new RegistrationRepository())->getSettings();
+
         if ($this->ecommerceDto->isEnabled() && empty($this->ecommerceDto->getShopId())) {
             $this->errors[] = Translate::getAdminTranslation('You need to select store');
 
             return;
         }
 
-        if ($this->ecommerceDto->isEnabled() && !$this->ecommerceService->isSubscribeViaRegistrationActive()) {
+        if ($this->ecommerceDto->isEnabled() && !$registrationSettings->isActive()) {
             $this->errors[] = Translate::getAdminTranslation(
                 'You need to enable adding contacts during registrations to enable ecommerce'
             );

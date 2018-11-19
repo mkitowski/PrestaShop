@@ -48,7 +48,7 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     public function shouldThrowExceptionForDefaultCustomFieldMapping()
     {
         $this->expectException(CustomFieldMappingException::class);
-        $this->expectExceptionMessage('Custom field mapping with id: emailId is default and can not be modified.');
+        $this->expectExceptionMessage('Custom field mapping with id: emailId');
 
         $customFieldMapping = new CustomFieldMapping(
             'emailId',

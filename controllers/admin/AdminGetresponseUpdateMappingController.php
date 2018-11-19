@@ -11,8 +11,6 @@ use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 {
-    public $name = 'GRUpdateMapping';
-
     /** @var CustomFieldsMappingService */
     private $mappingService;
 
@@ -21,6 +19,7 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
+        $this->name = 'GRUpdateMapping';
 
         $this->mappingService = CustomFieldMappingServiceFactory::create();
     }

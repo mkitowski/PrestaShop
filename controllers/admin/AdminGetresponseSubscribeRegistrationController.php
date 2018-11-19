@@ -1,19 +1,20 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
-use GetResponse\ContactList\SubscribeViaRegistrationValidator;
 use GetResponse\Helper\FlashMessages;
+use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationSettings;
+use GetResponse\Settings\Registration\RegistrationSettingsValidator;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
 use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
-    public $name = 'GRSubscribeRegistration';
-
     /** @var ContactListService */
     private $contactListService;
 
@@ -27,6 +28,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
 
+        $this->name = 'GRSubscribeRegistration';
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
@@ -34,17 +36,20 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             __PS_BASE_URI__
         ));
 
-        $this->display = 'view';
         $this->contactListService = ContactListServiceFactory::create();
     }
 
     public function initContent()
     {
+        $this->display = 'view';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
         parent::initContent();
     }
 
+    /**
+     * @throws PrestaShopException
+     */
     public function initPageHeaderToolbar()
     {
         $this->page_header_toolbar_btn['add_campaign'] = [
@@ -56,49 +61,45 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         parent::initPageHeaderToolbar();
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws PrestaShopException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('saveSubscribeForm')) {
 
-            $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
-                Tools::getValue('subscriptionSwitch'),
-                Tools::getValue('newsletter', 0),
-                Tools::getValue('campaign'),
-                Tools::getValue('addToCycle', 0),
-                Tools::getValue('cycledays'),
-                Tools::getValue('contactInfo', 0)
-            );
-
-            $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
+            $registrationSettings = RegistrationSettings::createFromPost(Tools::getAllValues());
+            $validator = new RegistrationSettingsValidator($registrationSettings);
 
             if (!$validator->isValid()) {
-
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
-            $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
+            $registrationRepository = new RegistrationRepository();
+            $registrationRepository->updateSettings($registrationSettings);
+
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
         }
-
-        parent::postProcess();
     }
 
     /**
      * render main view
      * @return mixed
      * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws SmartyException
+     * @throws PrestaShopException
      */
     public function renderView()
     {
-        $settings = $this->repository->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
+        $accountSettings = AccountServiceFactory::create()->getAccountSettings();
+        $registrationSettings = (new RegistrationRepository())->getSettings();
 
         $this->context->smarty->assign(array(
-            'is_connected' => $isConnected,
-            'active_tracking' => $settings['active_tracking']
+            'is_connected' => $accountSettings->isConnectedWithGetResponse()
         ));
 
         $this->context->smarty->assign([
@@ -106,11 +107,11 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'token' => $this->getToken(),
             'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
                 $this->getCampaignsOptions(),
-                $this->contactListService->getSettings()->getCycleDay()
+                $registrationSettings->getCycleDay()
             ),
             'subscribe_via_registration_list' => $this->renderCustomList(),
             'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
-            'cycle_day' => $this->contactListService->getSettings()->getCycleDay(),
+            'cycle_day' => $registrationSettings->getCycleDay(),
         ]);
 
 
@@ -131,6 +132,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      * @param array $campaigns
      * @param null|int $addToCycle
      * @return mixed
+     * @throws SmartyException
      */
     public function renderSubscribeRegistrationForm($campaigns = array(), $addToCycle = null)
     {
@@ -273,6 +275,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     /**
      * Renders custom list
      * @return mixed
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderList()
     {
@@ -286,14 +290,13 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function getFieldsValue($obj)
     {
-        $settings = $this->contactListService->getSettings();
-
+        $settings = (new RegistrationRepository())->getSettings();
         return [
-            'subscriptionSwitch' => $settings->isSubscriptionActive() ? 1 : 0,
-            'campaign' => $settings->getContactListId(),
+            'subscriptionSwitch' => $settings->isActive() ? 1 : 0,
+            'campaign' => $settings->getListId(),
             'cycledays' => $settings->getCycleDay(),
             'contactInfo' => $settings->isUpdateContactEnabled() ? 1 : 0,
-            'newsletter' => $settings->isNewsletterSubscriptionOn() ? 1 : 0
+            'newsletter' => $settings->isNewsletterActive() ? 1 : 0
         ];
     }
 }

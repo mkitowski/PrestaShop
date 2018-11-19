@@ -35,7 +35,7 @@ class ExportServiceFactory
 
         $getresponseApiClient = new GetresponseApiClient(
             ApiFactory::createFromSettings(
-                (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+                (new AccountSettingsRepository())->getSettings()
             ),
             $getResponseRepository
         );

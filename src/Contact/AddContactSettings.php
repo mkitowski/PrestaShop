@@ -1,8 +1,8 @@
 <?php
 namespace GetResponse\Contact;
 
-use GetResponse\Account\AccountSettings;
 use GetResponse\Export\ExportSettings;
+use GetResponse\Settings\Registration\RegistrationSettings;
 
 /**
  * Class AddContactSettings
@@ -32,19 +32,6 @@ class AddContactSettings
     }
 
     /**
-     * @param AccountSettings $settings
-     * @return AddContactSettings
-     */
-    public static function createFromAccountSettings(AccountSettings $settings)
-    {
-       return new self(
-           $settings->getContactListId(),
-           $settings->getCycleDay(),
-           $settings->isUpdateContactEnabled()
-       );
-    }
-
-    /**
      * @param ExportSettings $settings
      * @return AddContactSettings
      */
@@ -55,6 +42,19 @@ class AddContactSettings
            $settings->getCycleDay(),
            $settings->isUpdateContactInfo()
        );
+    }
+
+    /**
+     * @param RegistrationSettings $settings
+     * @return AddContactSettings
+     */
+    public static function createFromConfiguration(RegistrationSettings $settings)
+    {
+        return new self(
+            $settings->getListId(),
+            $settings->getCycleDay(),
+            $settings->isUpdateContactEnabled()
+        );
     }
 
     /**

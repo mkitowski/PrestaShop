@@ -3,9 +3,9 @@ namespace GetResponse\Tests\Unit\WebTracking;
 
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebTracking\WebTracking;
-use GetResponse\WebTracking\WebTrackingDto;
 use GetResponse\WebTracking\WebTrackingRepository;
 use GetResponse\WebTracking\WebTrackingService;
+use GrShareCode\TrackingCode\TrackingCode;
 use GrShareCode\TrackingCode\TrackingCodeService as GrTrackingCodeService;
 use PHPUnit_Framework_MockObject_MockObject;
 
@@ -30,6 +30,7 @@ class WebTrackingServiceTest extends BaseTestCase
      */
     public function shouldUpdateTrackingAsEnabled()
     {
+        $status = 'active';
         $trackingCodeSnippet = 'snippet';
 
         $this->grTrackingCodeService
@@ -37,15 +38,13 @@ class WebTrackingServiceTest extends BaseTestCase
             ->method('getTrackingCode')
             ->willReturn(new WebTracking('status', $trackingCodeSnippet));
 
-        $webTrackingDto = new WebTrackingDto('1');
-
         $this->repository
             ->expects(self::once())
-            ->method('updateTracking')
-            ->with($webTrackingDto->toSettings(), $trackingCodeSnippet);
+            ->method('saveTracking')
+            ->with(new WebTracking($status, $trackingCodeSnippet));
 
 
-        $this->sut->updateTracking($webTrackingDto);
+        $this->sut->saveTracking($status);
     }
 
     /**
@@ -53,21 +52,22 @@ class WebTrackingServiceTest extends BaseTestCase
      */
     public function shouldUpdateTrackingAsDisabled()
     {
+        $status = 'inactive';
         $trackingCodeSnippet = 'snippet';
 
         $this->grTrackingCodeService
             ->expects(self::once())
             ->method('getTrackingCode')
-            ->willReturn(new WebTracking('status', $trackingCodeSnippet));
+            ->willReturn(new TrackingCode('0', $trackingCodeSnippet));
 
-        $webTrackingDto = new WebTrackingDto('0');
+        $webTracking = new WebTracking($status, $trackingCodeSnippet);
 
         $this->repository
             ->expects(self::once())
-            ->method('updateTracking')
-            ->with($webTrackingDto->toSettings(), '');
+            ->method('saveTracking')
+            ->with($webTracking);
 
-        $this->sut->updateTracking($webTrackingDto);
+        $this->sut->saveTracking($status);
     }
 
     /**

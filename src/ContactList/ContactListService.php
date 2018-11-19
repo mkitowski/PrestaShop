@@ -96,36 +96,6 @@ class ContactListService
     }
 
     /**
-     * @param SubscribeViaRegistrationDto $subscribeViaRegistrationDto
-     */
-    public function updateSubscribeViaRegistration(SubscribeViaRegistrationDto $subscribeViaRegistrationDto)
-    {
-        $subscription = $subscribeViaRegistrationDto->isSubscriptionEnabled()
-            ? AccountSettings::SUBSCRIPTION_ACTIVE_YES
-            : AccountSettings::SUBSCRIPTION_ACTIVE_NO;
-
-        $updateContact = $subscribeViaRegistrationDto->isUpdateContactEnabled()
-            ? AccountSettings::UPDATE_ADDRESS_YES
-            : AccountSettings::UPDATE_ADDRESS_NO;
-
-        $cycleDay = $subscribeViaRegistrationDto->isAddToCycleEnabled()
-            ? $subscribeViaRegistrationDto->getCycleDay()
-            : null;
-
-        $newsletterSubscribers = $subscribeViaRegistrationDto->isNewsletterEnabled()
-            ? AccountSettings::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES
-            : AccountSettings::NEWSLETTER_SUBSCRIPTION_ACTIVE_NO;
-
-        $this->repository->updateSettings(
-            $subscription,
-            $subscribeViaRegistrationDto->getContactList(),
-            $updateContact,
-            $cycleDay,
-            $newsletterSubscribers
-        );
-    }
-
-    /**
      * @param AddContactListDto $addContactListDto
      * @param string $languageCode
      * @throws GrApiException

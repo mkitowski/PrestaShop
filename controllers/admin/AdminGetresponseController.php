@@ -26,6 +26,9 @@ use GrShareCode\ContactList\AutorespondersCollection;
 
 class AdminGetresponseController extends ModuleAdminController
 {
+    /** @var string */
+    protected $name;
+
     /** @var GetResponseRepository */
     public $repository;
 
@@ -128,6 +131,7 @@ class AdminGetresponseController extends ModuleAdminController
      * Renders custom list
      * @return string
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderCustomList()
     {
@@ -171,7 +175,6 @@ class AdminGetresponseController extends ModuleAdminController
     /**
      * Returns custom list
      * @return array
-     * @throws PrestaShopDatabaseException
      */
     public function getCustomList()
     {

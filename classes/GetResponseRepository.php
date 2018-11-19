@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
@@ -178,64 +179,12 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($sql);
     }
 
-
     /**
      * @return array
-     * @throws PrestaShopDatabaseException
-     */
-    public function getSettings()
-    {
-        $sql = '
-        SELECT
-            `id`,
-            `id_shop`,
-            `api_key`,
-            `active_subscription`,
-            `active_newsletter_subscription`,
-            `active_tracking`,
-            `tracking_snippet`,
-            `update_address`,
-            `campaign_id`,
-            `cycle_day`,
-            `account_type`,
-            `crypto`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        if ($results = $this->db->executeS($sql, true, false)) {
-            return $results[0];
-        }
-
-        return array();
-    }
-
-    /**
-     * @return array
-     * @throws PrestaShopDatabaseException
      */
     public function getCustoms()
     {
-        $sql = '
-        SELECT
-            `id_custom`,
-            `id_shop`,
-            `custom_field`,
-            `custom_value`,
-            `custom_name`,
-            `default`,
-            `active_custom`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_customs
-        WHERE
-            id_shop = ' . (int) $this->idShop;
-
-        if ($results = $this->db->executeS($sql, true, false)) {
-            return $results;
-        }
-
-        return array();
+        return json_decode(Configuration::get(ConfigurationSettings::CUSTOM_FIELDS), true);
     }
 
     /**
@@ -243,26 +192,26 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function updateCustom(CustomFieldMapping $custom)
     {
-        $sql = '
-                UPDATE
-                    ' . _DB_PREFIX_ . 'getresponse_customs
-                SET
-                    `custom_name` = "' . pSQL($custom->getName()) . '",
-                    `active_custom` = "' . pSQL($custom->getActive()) . '"
-                WHERE
-                    `id_shop` = ' . (int) $this->idShop . '
-                    AND `id_custom` = "' . pSQL($custom->getId()) . '"';
+        $customs = $this->getCustoms();
 
-        $this->db->execute($sql);
+        foreach ($customs as &$_custom) {
+            if ($_custom['id_custom'] === (int) $custom->getId()) {
+                $_custom['custom_name'] = $custom->getName();
+                $_custom['active_custom'] = $custom->getActive();
+            }
+        }
+
+        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($customs));
     }
 
     public function clearDatabase()
     {
-        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_settings`;');
-        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_customs`;');
-        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_webform`;');
+        Configuration::updateValue(ConfigurationSettings::ACCOUNT, NULL);
+        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, NULL);
+        Configuration::updateValue(ConfigurationSettings::ECOMMERCE, NULL);
+        Configuration::updateValue(ConfigurationSettings::WEB_FORM, NULL);
+
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
-        $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_subscribers`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_jobs`;');
@@ -273,52 +222,6 @@ class GetResponseRepository implements DbRepositoryInterface
     public function prepareDatabase()
     {
         $sql = array();
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_settings` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` char(32) NOT NULL,
-			`api_key` char(32) NOT NULL,
-			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_newsletter_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_tracking` enum(\'yes\',\'no\', \'disabled\') NOT NULL DEFAULT \'disabled\',
-			`tracking_snippet` text,
-			`update_address` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`campaign_id` char(5) NOT NULL,
-			`cycle_day` char(5) NOT NULL,
-            `account_type` enum(\'smb\',\'mx_us\',\'mx_pl\') NOT NULL DEFAULT \'smb\',
-			`crypto` char(32) NULL,
-			`invalid_request_date` DATETIME NULL,
-			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_customs` (
-			`id_custom` int(11) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`custom_field` char(32) NOT NULL,
-			`custom_value` char(32) NOT NULL,
-			`custom_name` char(32) NOT NULL,
-			`default` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`active_custom` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			PRIMARY KEY (`id_custom`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_webform` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`id_shop` int(6) NOT NULL,
-			`webform_id` char(32) NOT NULL,
-			`active_subscription` enum(\'yes\',\'no\') NOT NULL DEFAULT \'no\',
-			`sidebar` enum(\'left\',\'right\',\'header\',\'top\',\'footer\',\'home\') NOT NULL DEFAULT \'home\',
-			`style` enum(\'webform\',\'prestashop\') NOT NULL DEFAULT \'webform\',
-			`url` varchar(255) DEFAULT NULL,
-			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
-
-        $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_ecommerce` (
-            `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-            `id_shop` int(11) DEFAULT NULL,
-            `gr_id_shop` varchar(16) DEFAULT NULL,
-			PRIMARY KEY (`id`)
-			) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
         $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'getresponse_products` (
               `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -376,15 +279,11 @@ class GetResponseRepository implements DbRepositoryInterface
                     if (empty($shop['id_shop'])) {
                         continue;
                     }
-                    $sql[] = $this->sqlMainSetting($shop['id_shop']);
-                    $sql[] = $this->sqlWebformSetting($shop['id_shop']);
-                    $sql[] = $this->sqlCustomsSetting($shop['id_shop']);
+                    $sql[] = $this->setDefaultCustomFields($shop['id_shop']);
                 }
             }
         } else {
-            $sql[] = $this->sqlMainSetting('1');
-            $sql[] = $this->sqlWebformSetting('1');
-            $sql[] = $this->sqlCustomsSetting('1');
+            $sql[] = $this->setDefaultCustomFields('1');
         }
 
         //Install SQL
@@ -396,82 +295,18 @@ class GetResponseRepository implements DbRepositoryInterface
         }
     }
 
-
     /**
      * @param int $storeId
-     *
-     * @return string
      */
-    private function sqlMainSetting($storeId)
+    private function setDefaultCustomFields($storeId)
     {
-        return '
-        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_settings` (
-            `id_shop` ,
-            `api_key` ,
-            `active_subscription` ,
-            `active_newsletter_subscription` ,
-            `active_tracking` ,
-            `tracking_snippet`,
-            `update_address` ,
-            `campaign_id` ,
-            `cycle_day` ,
-            `account_type` ,
-            `crypto`
-        )
-        VALUES (
-            ' . (int) $storeId . ', \'\', \'no\', \'no\', \'no\', \'\', \'no\', \'0\', \' \', \'smb\', \'\'
-        )
-        ON DUPLICATE KEY UPDATE `id` = `id`;';
-    }
+        $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
 
-    /**
-     * @param int $storeId
-     * @return string
-     */
-    private function sqlWebformSetting($storeId)
-    {
-        return '
-        INSERT INTO  `' . _DB_PREFIX_ . 'getresponse_webform` (
-            `id_shop` ,
-            `webform_id` ,
-            `active_subscription` ,
-            `sidebar`,
-            `style`
-        )
-        VALUES (
-            ' . (int) $storeId . ',  \'\',  \'no\',  \'left\',  \'webform\'
-        )
-        ON DUPLICATE KEY UPDATE `id` = `id`;';
-    }
+        foreach ($customFields as $field) {
+            $field['id_shop'] = $storeId;
+        }
 
-    /**
-     * @param int $storeId
-     *
-     * @return string
-     */
-    private function sqlCustomsSetting($storeId)
-    {
-        return '
-        INSERT INTO `' . _DB_PREFIX_ . 'getresponse_customs` (
-            `id_shop` ,
-            `custom_field`,
-            `custom_value`,
-            `custom_name`,
-            `default`,
-            `active_custom`
-        )
-        VALUES
-            (' . (int) $storeId . ', \'firstname\', \'firstname\', \'\', \'yes\', \'no\'),
-            (' . (int) $storeId . ', \'lastname\', \'lastname\', \'\', \'yes\', \'no\'),
-            (' . (int) $storeId . ', \'email\', \'email\', \'\', \'yes\', \'yes\'),
-            (' . (int) $storeId . ', \'address\', \'address1\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'postal\', \'postcode\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'city\', \'city\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'phone\', \'phone\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'country\', \'country\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'birthday\', \'birthday\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'company\', \'company\', \'\', \'no\', \'no\'),
-            (' . (int) $storeId . ', \'category\', \'category\', \'\', \'no\', \'no\');';
+        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($customFields));
     }
 
     /**
@@ -518,15 +353,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsInvalid($accountId)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `invalid_request_date` = NOW()
-   
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
+        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, time());
     }
 
     /**
@@ -534,15 +361,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsValid($accountId)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `invalid_request_date` = NULL
-   
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
+        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST,NULL);
     }
 
     /**
@@ -551,15 +370,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getInvalidAccountFirstOccurrenceDate($accountId)
     {
-        $query = '
-        SELECT
-            `invalid_request_date`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        return $this->db->getValue($query, false);
+        return Configuration::get(ConfigurationSettings::INVALID_REQUEST);
     }
 
     /**
@@ -567,17 +378,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function disconnectAccount($accountId)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = "",
-            `account_type` = "",
-            `crypto` = ""
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(ConfigurationSettings::ACCOUNT,NULL);
     }
 
     /**
@@ -585,8 +386,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getOriginCustomFieldId()
     {
-        $query = "SELECT `origin_custom_id` FROM " . _DB_PREFIX_ . "getresponse_settings WHERE `id_shop` = " . (int) $this->idShop;
-        return $this->db->getValue($query, false);
+        Configuration::get(ConfigurationSettings::ORIGIN_CUSTOM_FIELD);
     }
 
     /**
@@ -594,8 +394,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function setOriginCustomFieldId($id)
     {
-        $query = "UPDATE " .  _DB_PREFIX_ . "getresponse_settings SET origin_custom_id = '" . pSQL($id) . "' WHERE `id_shop` = " . (int) $this->idShop;
-        $this->db->execute($query);
+        Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, $id);
     }
 
     public function clearOriginCustomField()

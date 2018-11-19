@@ -7,8 +7,8 @@ namespace GetResponse\WebTracking;
  */
 class WebTracking
 {
-    const TRACKING_ACTIVE = 'yes';
-    const TRACKING_INACTIVE = 'no';
+    const TRACKING_ACTIVE = 'active';
+    const TRACKING_INACTIVE = 'inactive';
     const TRACKING_DISABLED = 'disabled';
 
     /** @var string */
@@ -59,5 +59,11 @@ class WebTracking
         return $this->getStatus() === self::TRACKING_ACTIVE;
     }
 
-
+    /**
+     * @return WebTracking
+     */
+    public static function createEmptyInstance()
+    {
+        return new self(self::TRACKING_INACTIVE, '');
+    }
 }

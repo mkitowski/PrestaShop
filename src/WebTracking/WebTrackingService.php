@@ -3,7 +3,6 @@ namespace GetResponse\WebTracking;
 
 use GrShareCode\TrackingCode\TrackingCodeService;
 use GrShareCode\Api\Exception\GetresponseApiException;
-use PrestaShopDatabaseException;
 
 /**
  * Class WebTrackingService
@@ -28,26 +27,20 @@ class WebTrackingService
     }
 
     /**
-     * @param WebTrackingDto $webTracking
+     * @param string $status
      * @throws GetresponseApiException
      */
-    public function updateTracking(WebTrackingDto $webTracking)
+    public function saveTracking($status)
     {
         $trackingCode = $this->trackingCodeService->getTrackingCode();
-
-        $this->repository->updateTracking(
-            $webTracking->toSettings(),
-            $webTracking->isEnabled() ? $trackingCode->getSnippet() : ''
-        );
+        $this->repository->saveTracking(new WebTracking($status, $trackingCode->getSnippet()));
     }
 
     /**
-     * @return WebTracking|null
-     * @throws PrestaShopDatabaseException
+     * @return WebTracking
      */
     public function getWebTracking()
     {
         return $this->repository->getWebTracking();
     }
-
 }

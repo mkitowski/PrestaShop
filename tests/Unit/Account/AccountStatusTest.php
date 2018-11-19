@@ -25,22 +25,7 @@ class AccountStatusTest extends BaseTestCase
      */
     public function shouldReturnFalseIfNotConnectedToGetResponse()
     {
-        $apiKey = '';
-
-        $settings = new AccountSettings(
-            'id',
-            'shopId',
-            $apiKey,
-            'yes',
-            'yes',
-            'yes',
-            'trackingCodeSnippet',
-            'yes',
-            'contactListId',
-            '3',
-            'smb',
-            ''
-        );
+        $settings = new AccountSettings('', 'smb', '');
 
         $this->repository
             ->expects(self::exactly(2))
@@ -56,22 +41,7 @@ class AccountStatusTest extends BaseTestCase
      */
     public function shouldReturnTrueIfConnectedToGetResponse()
     {
-        $apiKey = 'apiKey';
-
-        $settings = new AccountSettings(
-            'id',
-            'shopId',
-            $apiKey,
-            'yes',
-            'yes',
-            'yes',
-            'trackingCodeSnippet',
-            'yes',
-            'contactListId',
-            '3',
-            'smb',
-            ''
-        );
+        $settings = new AccountSettings('apiKey', 'smb', '');
 
         $this->repository
             ->expects(self::once())

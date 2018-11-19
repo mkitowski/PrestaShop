@@ -118,4 +118,12 @@ class WebForm
         return self::STYLE_PRESTASHOP === $this->style;
     }
 
+    /**
+     * @return WebForm
+     */
+    public static function createEmptyInstance()
+    {
+        return new self('', self::STATUS_INACTIVE, '', '', '');
+    }
+
 }

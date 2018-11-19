@@ -43,7 +43,7 @@ class OrderServiceFactory
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient(
             ApiFactory::createFromSettings(
-                (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+                (new AccountSettingsRepository())->getSettings()
             ),
             $repository
         );

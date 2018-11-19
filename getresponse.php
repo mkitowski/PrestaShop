@@ -8,6 +8,13 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
+use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Hook\FormDisplay;
+use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\WebForm\WebFormServiceFactory;
+use GetResponse\WebTracking\WebTrackingServiceFactory;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Validation\Assert\InvalidArgumentException;
 
 if (!defined('_PS_VERSION_')) {
@@ -18,20 +25,15 @@ include_once _PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedException.php';
+include_once _PS_MODULE_DIR_ . '/getresponse/classes/ConfigurationSettings.php';
 
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.3.4';
+    const VERSION = '16.3.5';
 
     /** @var GetResponseRepository */
     private $repository;
-
-    /** @var GetResponse\Account\AccountSettings */
-    private $settings;
-
-    /** @var bool */
-    private $isConnectedToGetResponse = true;
 
     public function __construct()
     {
@@ -195,10 +197,8 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
-
-            $accountSettings = $this->getSettings();
             $cartHook = new GetResponse\Hook\NewCart();
-            $cartHook->sendCart($params['cart'], $accountSettings);
+            $cartHook->sendCart($params['cart'], AccountServiceFactory::create()->getAccountSettings());
 
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
@@ -220,31 +220,6 @@ class Getresponse extends Module
     }
 
     /**
-     * @return GetResponse\Account\AccountSettings|null
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
-     * @throws GetResponseNotConnectedException
-     * @throws PrestaShopDatabaseException
-     */
-    private function getSettings()
-    {
-        if (!$this->isConnectedToGetResponse) {
-            throw new GetResponseNotConnectedException('GetResponse account is not connected.');
-        }
-
-        if (!$this->settings) {
-
-            if (!GetResponse\Account\AccountStatusFactory::create()->isConnectedToGetResponse()) {
-                $this->isConnectedToGetResponse = false;
-                throw new GetResponseNotConnectedException('GetResponse account is not connected.');
-            }
-
-            $this->settings = GetResponse\Account\AccountServiceFactory::create()->getSettings();
-        }
-
-        return $this->settings;
-    }
-
-    /**
      * @param $params
      * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
@@ -260,9 +235,8 @@ class Getresponse extends Module
     private function sendOrderToGr(Order $order)
     {
         try {
-            $accountSettings = $this->getSettings();
             $orderHook = new GetResponse\Hook\NewOrder();
-            $orderHook->sendOrder($order, $accountSettings);
+            $orderHook->sendOrder($order, AccountServiceFactory::create()->getAccountSettings());
         } catch (GetResponseNotConnectedException $e) {
         } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
             $errorMessage = 'GetResponse error: HookOrder: ApiException: ' . $e->getMessage();
@@ -318,15 +292,15 @@ class Getresponse extends Module
     public function createSubscriber($contact, $fromNewsletter = false)
     {
         try {
-            $accountSettings = $this->getSettings();
+            $settings = (new RegistrationRepository())->getSettings();
 
-            if (!$this->getSettings()->canSubscriberBeSend() || 1 != $contact->newsletter) {
+            if (!$settings->isNewsletterActive() || 1 != $contact->newsletter) {
                 return;
             }
 
-            $addContactSettings = GetResponse\Contact\AddContactSettings::createFromAccountSettings($accountSettings);
+            $addContactSettings = GetResponse\Contact\AddContactSettings::createFromConfiguration($settings);
 
-            $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings($accountSettings);
+            $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings();
             $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
 
         } catch (GetResponseNotConnectedException $e) {
@@ -361,20 +335,16 @@ class Getresponse extends Module
     /**
      * @param string $position
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
     private function displayWebForm($position)
     {
-        try {
-            $formDisplay = new GetResponse\Hook\FormDisplay(
-                GetResponse\WebForm\WebFormServiceFactory::createFromSettings($this->getSettings())
-            );
+        $formDisplay = new FormDisplay(
+            WebFormServiceFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings())
+        );
 
-            $assignData = $formDisplay->displayWebForm($position);
-
-        } catch (GetResponseNotConnectedException $e) {
-        }
-
+        $assignData = $formDisplay->displayWebForm($position);
 
         if (!empty($assignData)) {
             $this->smarty->assign($assignData);
@@ -400,20 +370,15 @@ class Getresponse extends Module
      */
     public function hookDisplayHeader()
     {
-        try {
-            $settings = $this->getSettings();
+        $trackingService = WebTrackingServiceFactory::create();
+        $webTracking = $trackingService->getWebTracking();
 
-            if ($settings->isTrackingActive()) {
-
-                $this->smarty->assign(['gr_tracking_snippet' => $settings->getTrackingSnippet()]);
-
-                return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
-            }
-
-        } catch (GetResponseNotConnectedException $e) {
+        if (null === $webTracking || !$webTracking->isTrackingActive()) {
+            return '';
         }
 
-        return '';
+        $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
+        return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
     }
 
     /**
@@ -427,24 +392,26 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws GetResponseNotConnectedException
+     * @throws PrestaShopDatabaseException
+     * @throws ApiTypeException
      */
     public function hookDisplayFooter()
     {
-        try {
-            $settings = $this->getSettings();
-        } catch (GetResponseNotConnectedException $e) {
+        $this->createNewsletterSubscriber();
+
+        $trackingService = WebTrackingServiceFactory::create();
+        $webTracking = $trackingService->getWebTracking();
+
+        if (null === $webTracking) {
             return '';
         }
 
         $email = false;
 
-        $this->createNewsletterSubscriber();
-
         if (isset($this->context->customer)
             && !empty($this->context->customer->email)
-            && $settings->isTrackingActive()
+            && $webTracking->isTrackingActive()
         ) {
             $email = $this->context->customer->email;
         }
@@ -462,8 +429,13 @@ class Getresponse extends Module
         if (Tools::isSubmit('submitNewsletter')
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
-            && $this->getSettings()->isNewsletterSubscriptionOn()
         ) {
+
+            $settings = (new RegistrationRepository())->getSettings();
+
+            if (!$settings->isNewsletterActive()) {
+                return;
+            }
 
             $contact = new \Customer();
             $contact->newsletter = 1;

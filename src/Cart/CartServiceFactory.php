@@ -45,7 +45,7 @@ class CartServiceFactory
     public static function create()
     {
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId());;
+        $accountSettingsRepository = new AccountSettingsRepository();
 
         return self::createCartService(
             new GetresponseApiClient(ApiFactory::createFromSettings($accountSettingsRepository->getSettings()), $repository),

@@ -1,8 +1,9 @@
 <?php
+
 namespace GetResponse\WebTracking;
 
-use Db;
-use PrestaShopDatabaseException;
+use Configuration;
+use ConfigurationSettings;
 
 /**
  * Class WebTrackingRepository
@@ -10,63 +11,32 @@ use PrestaShopDatabaseException;
  */
 class WebTrackingRepository
 {
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
-
-    /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
-
     /**
      * @return WebTracking|null
-     * @throws PrestaShopDatabaseException
      */
     public function getWebTracking()
     {
-        $sql = '
-        SELECT 
-            `active_tracking`,
-            `tracking_snippet` 
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
+        $status = json_decode(Configuration::get(ConfigurationSettings::WEB_TRACKING), true);
 
-        if ($results = $this->db->ExecuteS($sql)) {
-            return new WebTracking(
-                $results[0]['active_tracking'],
-                $results[0]['tracking_snippet']
-            );
+        if (empty($status)) {
+            return WebTracking::createEmptyInstance();
         }
 
-        return null;
+        return new WebTracking($status['status'], Configuration::get(ConfigurationSettings::TRACKING_CODE));
     }
 
     /**
-     * @param string $trackingStatus
-     * @param string $snippet
+     * @param WebTracking $webTracking
      */
-    public function updateTracking($trackingStatus, $snippet)
+    public function saveTracking(WebTracking $webTracking)
     {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        SET
-            `active_tracking` = "' . pSQL($trackingStatus) . '",
-            `tracking_snippet` = "' . pSQL($snippet, true) . '"
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
+        Configuration::updateValue(
+            ConfigurationSettings::WEB_TRACKING,
+            json_encode(['status' => $webTracking->getStatus()]),
+            true
+        );
 
-        $this->db->execute($query);
+        Configuration::updateValue(ConfigurationSettings::TRACKING_CODE, $webTracking->getSnippet(), true);
     }
 
 }

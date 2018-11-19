@@ -1,33 +1,32 @@
 <?php
-namespace GetResponse\CustomFields;
+namespace GetResponse\WebTracking;
 
 use Db;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
-use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
-use GrShareCode\CustomField\CustomFieldService as GrCustomFieldService;
 use GrShareCode\Api\GetresponseApiClient;
+use GrShareCode\TrackingCode\TrackingCodeService;
+use GetResponse\Helper\Shop as GrShop;
 
 /**
- * Class CustomFieldsServiceFactory
+ * Class TrackingCodeServiceFactory
+ * @package GetResponse\WebTracking
  */
-class CustomFieldsServiceFactory
+class TrackingCodeServiceFactory
 {
     /**
-     * @return CustomFieldService
+     * @return TrackingCodeService
      * @throws ApiTypeException
      */
     public static function create()
     {
         $accountSettingsRepository = new AccountSettingsRepository();
         $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
-        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
+        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
-        return new CustomFieldService(
-            new GrCustomFieldService($apiClient)
-        );
+        return new TrackingCodeService($apiClient);
     }
 }

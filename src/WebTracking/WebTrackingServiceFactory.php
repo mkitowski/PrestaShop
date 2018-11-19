@@ -9,7 +9,6 @@ use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\TrackingCode\TrackingCodeService;
 use GetResponse\Helper\Shop as GrShop;
-use PrestaShopDatabaseException;
 
 /**
  * Class WebTrackingServiceFactory
@@ -19,18 +18,17 @@ class WebTrackingServiceFactory
 {
     /**
      * @return WebTrackingService
-     * @throws PrestaShopDatabaseException
      * @throws ApiTypeException
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $accountSettingsRepository = new AccountSettingsRepository();
         $api = ApiFactory::createFromSettings($accountSettingsRepository->getSettings());
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
         return new WebTrackingService(
-            new WebTrackingRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new WebTrackingRepository(),
             new TrackingCodeService($apiClient)
         );
     }

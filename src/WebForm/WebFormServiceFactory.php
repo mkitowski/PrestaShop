@@ -28,7 +28,7 @@ class WebFormServiceFactory
         $apiClient = new GetresponseApiClient($api, $repository);
 
         return new WebFormService(
-            new WebFormRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new WebFormRepository(),
             new GrWebFormService($apiClient)
         );
     }
@@ -39,14 +39,14 @@ class WebFormServiceFactory
      */
     public static function create()
     {
-        $accountSettingsRepository = new AccountSettingsRepository(Db::getInstance(), GrShop::getUserShopId());
+        $accountSettingsRepository = new AccountSettingsRepository();
         $settings = $accountSettingsRepository->getSettings();
         $api = ApiFactory::createFromSettings($settings);
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
         return new WebFormService(
-            new WebFormRepository(Db::getInstance(), GrShop::getUserShopId()),
+            new WebFormRepository(),
             new GrWebFormService($apiClient)
         );
     }

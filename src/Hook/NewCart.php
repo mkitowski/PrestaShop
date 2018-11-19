@@ -2,14 +2,12 @@
 namespace GetResponse\Hook;
 
 use Cart;
-use Currency;
-use Customer;
+use Configuration;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Cart\CartServiceFactory;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
-use PrestaShopException;
 
 /**
  * Class NewCart
@@ -34,11 +32,12 @@ class NewCart
             return;
         }
 
-        $grShopId = $ecommerceService->getEcommerceSettings()->getGetResponseShopId();
-        $contactListId = $accountSettings->getContactListId();
+        // @TODO move this code to repository and use service in this place.
+        $registrationSettings = json_decode(Configuration::get(\ConfigurationSettings::REGISTRATION), true);
 
+        $grShopId = $ecommerceService->getEcommerceSettings()->getGetResponseShopId();
         $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
-        $cartService->sendCart($cart, $contactListId, $grShopId);
+        $cartService->sendCart($cart, $registrationSettings['campaign_id'], $grShopId);
     }
 
 }

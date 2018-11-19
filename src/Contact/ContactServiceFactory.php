@@ -2,12 +2,13 @@
 namespace GetResponse\Contact;
 
 use Db;
-use GetResponse\Account\AccountSettings;
+use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Contact\ContactServiceFactory as ShareCodeContactServiceFactory;
 use GrShareCode\Api\GetresponseApiClient;
 
@@ -18,15 +19,15 @@ use GrShareCode\Api\GetresponseApiClient;
 class ContactServiceFactory
 {
     /**
-     * @param AccountSettings $accountSettings
      * @return ContactService
      * @throws ApiTypeException
+     * @throws GetresponseApiException
      */
-    public static function createFromSettings(AccountSettings $accountSettings)
+    public static function createFromSettings()
     {
         return self::inject(
             new GetresponseApiClient(
-                ApiFactory::createFromSettings($accountSettings),
+                ApiFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings()),
                 new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
             )
         );
@@ -42,7 +43,7 @@ class ContactServiceFactory
         return self::inject(
             new GetresponseApiClient(
                 ApiFactory::createFromSettings(
-                    (new AccountSettingsRepository(Db::getInstance(), Shop::getUserShopId()))->getSettings()
+                    (new AccountSettingsRepository())->getSettings()
                 ),
                 new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
             )

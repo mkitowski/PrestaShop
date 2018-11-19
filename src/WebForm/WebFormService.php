@@ -4,7 +4,6 @@ namespace GetResponse\WebForm;
 use GrShareCode\WebForm\WebFormCollection;
 use GrShareCode\WebForm\WebFormService as GrWebFormService;
 use GrShareCode\WebForm\FormNotFoundException;
-use PrestaShopDatabaseException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 
 /**
@@ -50,20 +49,11 @@ class WebFormService
     }
 
     /**
-     * @return WebForm|null
-     * @throws PrestaShopDatabaseException
+     * @return WebForm
      */
     public function getWebForm()
     {
         return $this->repository->getWebForm();
-    }
-
-    /**
-     * @param string $subscription
-     */
-    public function updateWebFormSubscription($subscription)
-    {
-        $this->repository->updateWebFormSubscription($subscription);
     }
 
     /**
