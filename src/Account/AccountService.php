@@ -4,7 +4,6 @@ namespace GetResponse\Account;
 use GrShareCode\Account\Account;
 use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\Api\Exception\GetresponseApiException;
-use GrShareCode\TrackingCode\TrackingCodeService;
 
 /**
  * Class AccountService
@@ -18,22 +17,16 @@ class AccountService
     /** @var AccountSettingsRepository */
     private $repository;
 
-    /** @var TrackingCodeService */
-    private $trackingCodeService;
-
     /**
      * @param GrAccountService $grAccountService
      * @param AccountSettingsRepository $accountSettingsRepository
-     * @param TrackingCodeService $trackingCodeService
      */
     public function __construct(
         GrAccountService $grAccountService,
-        AccountSettingsRepository $accountSettingsRepository,
-        TrackingCodeService $trackingCodeService
+        AccountSettingsRepository $accountSettingsRepository
     ) {
         $this->grAccountService = $grAccountService;
         $this->repository = $accountSettingsRepository;
-        $this->trackingCodeService = $trackingCodeService;
     }
 
     /**
@@ -77,7 +70,7 @@ class AccountService
     }
 
     /**
-     * @return AccountSettings|null
+     * @return AccountSettings
      */
     public function getAccountSettings()
     {

@@ -1,5 +1,5 @@
 <?php
-namespace GetResponse\Tests\UnitWebForm;
+namespace GetResponse\Tests\Unit\WebForm;
 
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;

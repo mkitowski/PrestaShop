@@ -8,7 +8,6 @@ use GrShareCode\Account\AccountService as GrAccountService;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Api\GetresponseApiClient;
-use GrShareCode\TrackingCode\TrackingCodeService;
 use GetResponse\Helper\Shop as GrShop;
 
 /**
@@ -30,8 +29,7 @@ class AccountServiceFactory
 
         return new AccountService(
             new GrAccountService($apiClient),
-            new AccountSettingsRepository(),
-            new TrackingCodeService($apiClient)
+            new AccountSettingsRepository()
         );
     }
 
@@ -49,8 +47,7 @@ class AccountServiceFactory
 
         return new AccountService(
             new GrAccountService($apiClient),
-            $accountSettingsRepository,
-            new TrackingCodeService($apiClient)
+            $accountSettingsRepository
         );
     }
 
@@ -67,8 +64,7 @@ class AccountServiceFactory
 
         return new AccountService(
             new GrAccountService($apiClient),
-            new AccountSettingsRepository(),
-            new TrackingCodeService($apiClient)
+            new AccountSettingsRepository()
         );
     }
 }

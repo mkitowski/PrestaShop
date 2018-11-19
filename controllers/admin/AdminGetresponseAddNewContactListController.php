@@ -64,7 +64,6 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
             $validator = new AddContactListValidator($addContactListDto);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 

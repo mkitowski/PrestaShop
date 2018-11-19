@@ -18,13 +18,6 @@ use GrShareCode\Api\Exception\GetresponseApiException;
  */
 class ContactListService
 {
-    const SUBSCRIPTION_ACTIVE_YES = 'yes';
-    const SUBSCRIPTION_ACTIVE_NO = 'no';
-    const NEWSLETTER_SUBSCRIPTION_ACTIVE_YES = 'yes';
-    const NEWSLETTER_SUBSCRIPTION_ACTIVE_NO = 'no';
-    const UPDATE_ADDRESS_YES = 'yes';
-    const UPDATE_ADDRESS_NO = 'no';
-
     /** @var GrContactListService */
     private $grContactListService;
 
@@ -100,36 +93,6 @@ class ContactListService
     public function getSettings()
     {
         return $this->settings;
-    }
-
-    /**
-     * @param SubscribeViaRegistrationDto $subscribeViaRegistrationDto
-     */
-    public function updateSubscribeViaRegistration(SubscribeViaRegistrationDto $subscribeViaRegistrationDto)
-    {
-        $subscription = $subscribeViaRegistrationDto->isSubscriptionEnabled()
-            ? self::SUBSCRIPTION_ACTIVE_YES
-            : self::SUBSCRIPTION_ACTIVE_NO;
-
-        $updateContact = $subscribeViaRegistrationDto->isUpdateContactEnabled()
-            ? self::UPDATE_ADDRESS_YES
-            : self::UPDATE_ADDRESS_NO;
-
-        $cycleDay = $subscribeViaRegistrationDto->isAddToCycleEnabled()
-            ? $subscribeViaRegistrationDto->getCycleDay()
-            : null;
-
-        $newsletterSubscribers = $subscribeViaRegistrationDto->isNewsletterEnabled()
-            ? self::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES
-            : self::NEWSLETTER_SUBSCRIPTION_ACTIVE_NO;
-
-        $this->repository->updateSettings(
-            $subscription,
-            $subscribeViaRegistrationDto->getContactList(),
-            $updateContact,
-            $cycleDay,
-            $newsletterSubscribers
-        );
     }
 
     /**

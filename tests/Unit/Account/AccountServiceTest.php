@@ -6,7 +6,6 @@ use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Account\AccountService as GrAccountService;
-use GrShareCode\TrackingCode\TrackingCodeService;
 use PHPUnit_Framework_MockObject_MockObject;
 
 /**
@@ -15,12 +14,8 @@ use PHPUnit_Framework_MockObject_MockObject;
  */
 class AccountServiceTest extends BaseTestCase
 {
-
     /** @var AccountService */
     private $sut;
-
-    /** @var TrackingCodeService | PHPUnit_Framework_MockObject_MockObject */
-    private $trackingCodeService;
 
     /** @var AccountSettingsRepository | PHPUnit_Framework_MockObject_MockObject */
     private $accountSettingsRepository;
@@ -76,12 +71,10 @@ class AccountServiceTest extends BaseTestCase
     {
         $this->grAccountService = $this->getMockWithoutConstructing(GrAccountService::class);
         $this->accountSettingsRepository = $this->getMockWithoutConstructing(AccountSettingsRepository::class);
-        $this->trackingCodeService = $this->getMockWithoutConstructing(TrackingCodeService::class);
 
         $this->sut = new AccountService(
             $this->grAccountService,
-            $this->accountSettingsRepository,
-            $this->trackingCodeService
+            $this->accountSettingsRepository
         );
     }
 }

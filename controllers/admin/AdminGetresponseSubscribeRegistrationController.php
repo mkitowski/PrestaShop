@@ -5,9 +5,10 @@ use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
-use GetResponse\ContactList\SubscribeViaRegistrationValidator;
 use GetResponse\Helper\FlashMessages;
 use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationSettings;
+use GetResponse\Settings\Registration\RegistrationSettingsValidator;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
 use GrShareCode\Api\Exception\GetresponseApiException;
@@ -35,12 +36,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             __PS_BASE_URI__
         ));
 
-        $this->display = 'view';
         $this->contactListService = ContactListServiceFactory::create();
     }
 
     public function initContent()
     {
+        $this->display = 'view';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
         parent::initContent();
@@ -68,30 +69,20 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     {
         if (Tools::isSubmit('saveSubscribeForm')) {
 
-            $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
-                Tools::getValue('subscriptionSwitch'),
-                Tools::getValue('newsletter', 0),
-                Tools::getValue('campaign'),
-                Tools::getValue('addToCycle', 0),
-                Tools::getValue('cycledays'),
-                Tools::getValue('contactInfo', 0)
-            );
-
-            $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
+            $registrationSettings = RegistrationSettings::createFromPost(Tools::getAllValues());
+            $validator = new RegistrationSettingsValidator($registrationSettings);
 
             if (!$validator->isValid()) {
-
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
-            $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
+            $registrationRepository = new RegistrationRepository();
+            $registrationRepository->updateSettings($registrationSettings);
+
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
         }
-
-        parent::postProcess();
     }
 
     /**
@@ -100,6 +91,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      * @throws GetresponseApiException
      * @throws PrestaShopDatabaseException
      * @throws SmartyException
+     * @throws PrestaShopException
      */
     public function renderView()
     {
@@ -284,6 +276,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      * Renders custom list
      * @return mixed
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderList()
     {
@@ -302,7 +295,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'subscriptionSwitch' => $settings->isActive() ? 1 : 0,
             'campaign' => $settings->getListId(),
             'cycledays' => $settings->getCycleDay(),
-            'contactInfo' => $settings->isAddressUpdated() ? 1 : 0,
+            'contactInfo' => $settings->isUpdateContactEnabled() ? 1 : 0,
             'newsletter' => $settings->isNewsletterActive() ? 1 : 0
         ];
     }

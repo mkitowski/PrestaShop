@@ -118,7 +118,6 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             }
         } catch (GetresponseApiException $e) {
             $this->errors[] = $e->getMessage();
-        } catch (\GetResponse\WebTracking\WebTrackingException $e) {
         }
     }
 

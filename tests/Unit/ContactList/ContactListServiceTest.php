@@ -5,7 +5,6 @@ use GetResponse\Account\AccountSettings;
 use GetResponse\ContactList\AddContactListDto;
 use GetResponse\ContactList\ContactListRepository;
 use GetResponse\ContactList\ContactListService;
-use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrApiException;
 use GrShareCode\ContactList\Command\AddContactListCommand;
@@ -39,54 +38,6 @@ class ContactListServiceTest extends BaseTestCase
             $this->grContactListService,
             $this->accountSettings
         );
-    }
-
-    /**
-     * @test
-     */
-    public function shouldUpdateSubscribeViaRegistrationWithEnabledOptions()
-    {
-        $contactListId = 'contactListId';
-
-        $subscribeViaRegistrationDto = new SubscribeViaRegistrationDto(
-            '1',
-            '1',
-            $contactListId,
-            '1',
-            '0',
-            '1'
-        );
-
-        $this->repository
-            ->expects(self::once())
-            ->method('updateSettings')
-            ->with('yes', $contactListId, 'yes', '0', 'yes');
-
-        $this->sut->updateSubscribeViaRegistration($subscribeViaRegistrationDto);
-    }
-
-    /**
-     * @test
-     */
-    public function shouldUpdateSubscribeViaRegistrationWithDisabledOptions()
-    {
-        $contactListId = 'contactListId';
-
-        $subscribeViaRegistrationDto = new SubscribeViaRegistrationDto(
-            '0',
-            '0',
-            $contactListId,
-            '0',
-            null,
-            '0'
-        );
-
-        $this->repository
-            ->expects(self::once())
-            ->method('updateSettings')
-            ->with('no', $contactListId, 'no', null, 'no');
-
-        $this->sut->updateSubscribeViaRegistration($subscribeViaRegistrationDto);
     }
 
     /**

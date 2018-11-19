@@ -53,7 +53,7 @@ class AddContactSettings
         return new self(
             $settings->getListId(),
             $settings->getCycleDay(),
-            $settings->isAddressUpdated()
+            $settings->isUpdateContactEnabled()
         );
     }
 

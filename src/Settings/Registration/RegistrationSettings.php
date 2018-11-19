@@ -24,22 +24,57 @@ class RegistrationSettings
     private $cycleDay;
 
     /** @var bool */
-    private $isAddressUpdated;
+    private $isUpdateContactEnabled;
 
     /**
      * @param bool $isActive
      * @param bool $isNewsletterActive
      * @param string $listId
      * @param int $cycleDay
-     * @param bool $isAddressUpdated
+     * @param bool $isUpdateContactEnabled
      */
-    public function __construct($isActive, $isNewsletterActive, $listId, $cycleDay, $isAddressUpdated)
+    public function __construct($isActive, $isNewsletterActive, $listId, $cycleDay, $isUpdateContactEnabled)
     {
         $this->isActive = $isActive;
         $this->isNewsletterActive = $isNewsletterActive;
         $this->listId = $listId;
         $this->cycleDay = $cycleDay;
-        $this->isAddressUpdated = $isAddressUpdated;
+        $this->isUpdateContactEnabled = $isUpdateContactEnabled;
+    }
+
+    /**
+     * @param array $params
+     * @return RegistrationSettings
+     */
+    public static function createFromPost($params)
+    {
+        $subscription = $params['subscriptionSwitch'] ? self::YES : self::NO;
+        $updateContact = $params['contactInfo'] ? self::YES : self::NO;
+        $cycleDay = $params['addToCycle'] ? $params['cycledays'] : null;
+        $newsletterSubscribers = $params['newsletter'] ? self::YES : self::NO;
+
+        return new self(
+            $subscription,
+            $newsletterSubscribers,
+            $params['campaign'],
+            $cycleDay,
+            $updateContact
+        );
+    }
+
+    /**
+     * @param array $params
+     * @return RegistrationSettings
+     */
+    public static function createFromOldDbTable($params)
+    {
+        return new self(
+            $params['active_subscription'],
+            $params['active_newsletter_subscription'],
+            $params['campaign_id'],
+            $params['cycle_day'],
+            $params['update_address']
+        );
     }
 
     /**
@@ -77,9 +112,9 @@ class RegistrationSettings
     /**
      * @return bool
      */
-    public function isAddressUpdated()
+    public function isUpdateContactEnabled()
     {
-        return $this->isAddressUpdated;
+        return $this->isUpdateContactEnabled;
     }
 
     /**
