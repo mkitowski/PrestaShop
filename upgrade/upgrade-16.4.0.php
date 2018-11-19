@@ -65,10 +65,6 @@ function upgradeSettingsTable() {
         if (isset($result['invalid_request_date'])) {
             Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, $result['invalid_request_date']);
         }
-
-        if (isset($result['origin_custom_id'])) {
-            Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, $result['origin_custom_id']);
-        }
     }
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_settings";
