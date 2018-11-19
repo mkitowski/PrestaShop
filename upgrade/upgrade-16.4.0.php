@@ -15,7 +15,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-function upgrade_module_16_3_5($object) {
+function upgrade_module_16_4_0($object) {
 
     upgradeCustomsTable();
     upgradeEcommerceTable();

@@ -38,14 +38,4 @@ class Ecommerce
     {
         return $this->getResponseShopId;
     }
-
-    /**
-     * @param array $result
-     * @return Ecommerce
-     */
-    public static function fromDb(array $result)
-    {
-        return new self($result['id_shop'], $result['gr_id_shop']);
-    }
-
 }
