@@ -27,8 +27,8 @@ function upgrade_module_16_4_0($object) {
 }
 
 function upgradeCustomsTable($idShop) {
-    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_customs";
-    $result = Db::getInstance()->getRow($sql);
+    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_customs WHERE id_shop = " . $idShop;
+    $result = Db::getInstance()->executeS($sql);
 
     Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($result));
 
@@ -89,7 +89,7 @@ function upgradeWebFormsTable($idShop) {
         $repository = new WebFormRepository();
         $repository->update(new WebForm(
             $result['webform_id'],
-            $result['active_subsciption'],
+            $result['active_subscription'],
             $result['sidebar'],
             $result['style'],
             $result['url']
