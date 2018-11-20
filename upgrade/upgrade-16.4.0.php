@@ -42,7 +42,6 @@ function upgradeEcommerceTable($idShop) {
 
     if (!empty($result)) {
 
-        print PHP_EOL.'update ecommerce';
         $repository = new EcommerceRepository();
         $repository->updateEcommerceSubscription(
             new EcommerceDto(
@@ -61,7 +60,6 @@ function upgradeSettingsTable($idShop) {
     $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['api_key'])) {
-        print PHP_EOL.'update settings';
         $accountRepository = new AccountSettingsRepository();
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
@@ -85,7 +83,6 @@ function upgradeWebFormsTable($idShop) {
     $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['webform_id'])) {
-        print PHP_EOL.'update webform';
         $repository = new WebFormRepository();
         $repository->update(new WebForm(
             $result['webform_id'],
