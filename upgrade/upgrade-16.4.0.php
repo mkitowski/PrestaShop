@@ -17,17 +17,18 @@ if (!defined('_PS_VERSION_')) {
 
 function upgrade_module_16_4_0($object) {
 
-    upgradeCustomsTable();
-    upgradeEcommerceTable();
-    upgradeSettingsTable();
-    upgradeWebFormsTable();
+    $idShop = Context::getContext()->shop->id;
+    upgradeCustomsTable($idShop);
+    upgradeEcommerceTable($idShop);
+    upgradeSettingsTable($idShop);
+    upgradeWebFormsTable($idShop);
 
     return true;
 }
 
-function upgradeCustomsTable() {
+function upgradeCustomsTable($idShop) {
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_customs";
-    $result = Db::getInstance()->executeS($sql);
+    $result = Db::getInstance()->getRow($sql);
 
     Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($result));
 
@@ -35,11 +36,13 @@ function upgradeCustomsTable() {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeEcommerceTable() {
-    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_ecommerce";
-    $result = Db::getInstance()->executeS($sql);
+function upgradeEcommerceTable($idShop) {
+    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_ecommerce WHERE id_shop = " . $idShop;
+    $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result)) {
+
+        print PHP_EOL.'update ecommerce';
         $repository = new EcommerceRepository();
         $repository->updateEcommerceSubscription(
             new EcommerceDto(
@@ -53,11 +56,12 @@ function upgradeEcommerceTable() {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeSettingsTable() {
-    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_settings";
-    $result = Db::getInstance()->executeS($sql);
+function upgradeSettingsTable($idShop) {
+    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_settings WHERE id_shop = " . $idShop;
+    $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['api_key'])) {
+        print PHP_EOL.'update settings';
         $accountRepository = new AccountSettingsRepository();
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
@@ -76,11 +80,12 @@ function upgradeSettingsTable() {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeWebFormsTable() {
-    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_webform";
-    $result = Db::getInstance()->executeS($sql);
+function upgradeWebFormsTable($idShop) {
+    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_webform WHERE id_shop = " . $idShop;
+    $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['webform_id'])) {
+        print PHP_EOL.'update webform';
         $repository = new WebFormRepository();
         $repository->update(new WebForm(
             $result['webform_id'],
@@ -94,4 +99,3 @@ function upgradeWebFormsTable() {
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_webform";
     DB::getInstance()->execute($sql);
 }
-
