@@ -10,17 +10,17 @@ use ConfigurationSettings;
 class EcommerceRepository
 {
     /**
-     * @return Ecommerce|null
+     * @return Ecommerce
      */
     public function getEcommerceSettings()
     {
         $result = json_decode(Configuration::get(ConfigurationSettings::ECOMMERCE), true);
 
         if (empty($result)) {
-            return null;
+            return new Ecommerce(null);
         }
 
-        return new Ecommerce($this->idShop, $result['shop_id']);
+        return new Ecommerce($result['shop_id']);
     }
 
     /**

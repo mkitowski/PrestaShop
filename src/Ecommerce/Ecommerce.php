@@ -7,35 +7,22 @@ namespace GetResponse\Ecommerce;
  */
 class Ecommerce
 {
-    /** @var int */
-    private $prestashopShopId;
-
     /** @var string */
-    private $getResponseShopId;
+    private $shopId;
 
     /**
-     * @param int $prestashopShopId
-     * @param string $getResponseShopId
+     * @param string $shopId
      */
-    public function __construct($prestashopShopId, $getResponseShopId)
+    public function __construct($shopId)
     {
-        $this->prestashopShopId = $prestashopShopId;
-        $this->getResponseShopId = $getResponseShopId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPrestashopShopId()
-    {
-        return $this->prestashopShopId;
+        $this->shopId = $shopId;
     }
 
     /**
      * @return string
      */
-    public function getGetResponseShopId()
+    public function getShopId()
     {
-        return $this->getResponseShopId;
+        return $this->shopId;
     }
 }

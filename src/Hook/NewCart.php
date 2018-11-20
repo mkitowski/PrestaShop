@@ -35,7 +35,7 @@ class NewCart
         // @TODO move this code to repository and use service in this place.
         $registrationSettings = json_decode(Configuration::get(\ConfigurationSettings::REGISTRATION), true);
 
-        $grShopId = $ecommerceService->getEcommerceSettings()->getGetResponseShopId();
+        $grShopId = $ecommerceService->getEcommerceSettings()->getShopId();
         $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
         $cartService->sendCart($cart, $registrationSettings['campaign_id'], $grShopId);
     }

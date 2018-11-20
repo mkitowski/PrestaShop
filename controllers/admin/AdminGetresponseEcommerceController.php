@@ -220,10 +220,10 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $settings = $this->ecommerceService->getEcommerceSettings();
         $activity = Activity::createFromRequest(Tools::getValue('ecommerce'));
 
-        if ($settings !== null) {
+        if ($settings->getShopId() !== null) {
             $helper->fields_value = [
                 'ecommerce' => 1,
-                'shop' => $settings->getGetResponseShopId()
+                'shop' => $settings->getShopId()
             ];
         } elseif (Tools::isSubmit('submit' . $this->name) && $activity->isEnabled()) {
             $helper->fields_value = [

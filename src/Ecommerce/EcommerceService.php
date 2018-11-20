@@ -36,7 +36,7 @@ class EcommerceService
     }
 
     /**
-     * @return Ecommerce|null
+     * @return Ecommerce
      */
     public function getEcommerceSettings()
     {
@@ -76,7 +76,7 @@ class EcommerceService
      */
     public function isEcommerceEnabled()
     {
-        return $this->getEcommerceSettings() !== null;
+        return $this->getEcommerceSettings()->getShopId() !== null;
     }
 
     /**

@@ -67,7 +67,12 @@ function upgradeSettingsTable($idShop) {
         $registrationRepository->updateSettings(RegistrationSettings::createFromOldDbTable($result));
 
         $webTrackingRepository = new WebTrackingRepository();
-        $webTrackingRepository->saveTracking(new WebTracking($result['active_tracking'], $result['tracking_snippet']));
+        $webTrackingRepository->saveTracking(
+            new WebTracking(
+            $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE,
+            $result['tracking_snippet']
+            )
+        );
 
         if (isset($result['invalid_request_date'])) {
             Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, $result['invalid_request_date']);

@@ -42,7 +42,7 @@ class NewOrder
         $orderService->sendOrder(
             $order,
             $registrationSettings['campaign_id'],
-            $ecommerceService->getEcommerceSettings()->getGetResponseShopId()
+            $ecommerceService->getEcommerceSettings()->getShopId()
         );
     }
 }
