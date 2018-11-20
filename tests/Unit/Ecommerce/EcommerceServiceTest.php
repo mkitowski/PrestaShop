@@ -75,7 +75,7 @@ class EcommerceServiceTest extends BaseTestCase
         $this->repository
             ->expects(self::exactly(2))
             ->method('getEcommerceSettings')
-            ->willReturnOnConsecutiveCalls(null, new Ecommerce('prestaShopId', 'getResponseShopId'));
+            ->willReturnOnConsecutiveCalls(new Ecommerce(null), new Ecommerce('getResponseShopId'));
 
         $this->assertFalse($this->sut->isEcommerceEnabled());
         $this->assertTrue($this->sut->isEcommerceEnabled());

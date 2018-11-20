@@ -10,6 +10,8 @@ class WebTracking
     const TRACKING_ACTIVE = 'active';
     const TRACKING_INACTIVE = 'inactive';
     const TRACKING_DISABLED = 'disabled';
+    const TRACKING_ON = '1';
+    const TRACKING_OFF = '0';
 
     /** @var string */
     private $status;

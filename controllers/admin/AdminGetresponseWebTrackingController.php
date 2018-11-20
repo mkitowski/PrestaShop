@@ -1,8 +1,6 @@
 <?php
 
 use GetResponse\WebTracking\WebTracking;
-use GetResponse\WebTracking\WebTrackingDto;
-use GetResponse\WebTracking\WebTrackingException;
 use GetResponse\WebTracking\WebTrackingService;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
@@ -38,7 +36,6 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
     /**
      * @return bool|ObjectModel|void
      * @throws GetresponseApiException
-     * @throws WebTrackingException
      */
     public function postProcess()
     {
@@ -103,8 +100,8 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
                         'class' => 't',
                         'is_bool' => true,
                         'values' => [
-                            ['id' => 'active_on', 'value' => WebTrackingDto::TRACKING_ON, 'label' => $this->l('Yes')],
-                            ['id' => 'active_off', 'value' => WebTrackingDto::TRACKING_OFF, 'label' => $this->l('No')]
+                            ['id' => 'active_on', 'value' => WebTracking::TRACKING_ON, 'label' => $this->l('Yes')],
+                            ['id' => 'active_off', 'value' => WebTracking::TRACKING_OFF, 'label' => $this->l('No')]
                         ],
                     ]
                 ],

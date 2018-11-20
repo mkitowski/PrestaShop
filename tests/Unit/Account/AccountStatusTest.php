@@ -13,12 +13,17 @@ use PHPUnit_Framework_MockObject_MockObject;
  */
 class AccountStatusTest extends BaseTestCase
 {
-
     /** @var AccountSettingsRepository | PHPUnit_Framework_MockObject_MockObject */
     private $repository;
 
     /** @var AccountStatus */
     private $sut;
+
+    protected function setUp()
+    {
+        $this->repository = $this->getMockWithoutConstructing(AccountSettingsRepository::class);
+        $this->sut = new AccountStatus($this->repository);
+    }
 
     /**
      * @test
@@ -50,11 +55,4 @@ class AccountStatusTest extends BaseTestCase
 
         $this->assertTrue($this->sut->isConnectedToGetResponse());
     }
-
-    protected function setUp()
-    {
-        $this->repository = $this->getMockWithoutConstructing(AccountSettingsRepository::class);
-        $this->sut = new AccountStatus($this->repository);
-    }
-
 }

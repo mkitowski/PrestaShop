@@ -16,24 +16,24 @@ class EcommerceValidator
     /** @var EcommerceDto */
     private $ecommerceDto;
 
-    /** @var EcommerceService */
-    private $ecommerceService;
+    /** @var RegistrationRepository */
+    private $registrationRepository;
 
     /**
      * @param EcommerceDto $ecommerceDto
-     * @param EcommerceService $ecommerceService
+     * @param RegistrationRepository $registrationRepository
      */
-    public function __construct(EcommerceDto $ecommerceDto, EcommerceService $ecommerceService)
+    public function __construct(EcommerceDto $ecommerceDto, RegistrationRepository $registrationRepository)
     {
         $this->ecommerceDto = $ecommerceDto;
-        $this->ecommerceService = $ecommerceService;
+        $this->registrationRepository = $registrationRepository;
         $this->errors = [];
         $this->validate();
     }
 
     private function validate()
     {
-        $registrationSettings = (new RegistrationRepository())->getSettings();
+        $registrationSettings = $this->registrationRepository->getSettings();
 
         if ($this->ecommerceDto->isEnabled() && empty($this->ecommerceDto->getShopId())) {
             $this->errors[] = Translate::getAdminTranslation('You need to select store');

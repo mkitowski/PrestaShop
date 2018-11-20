@@ -23,6 +23,17 @@ class AccountServiceTest extends BaseTestCase
     /** @var GrAccountService | PHPUnit_Framework_MockObject_MockObject */
     private $grAccountService;
 
+    protected function setUp()
+    {
+        $this->grAccountService = $this->getMockWithoutConstructing(GrAccountService::class);
+        $this->accountSettingsRepository = $this->getMockWithoutConstructing(AccountSettingsRepository::class);
+
+        $this->sut = new AccountService(
+            $this->grAccountService,
+            $this->accountSettingsRepository
+        );
+    }
+
     /**
      * @test
      */
@@ -65,16 +76,5 @@ class AccountServiceTest extends BaseTestCase
             ->willReturn($settings);
 
         $this->assertFalse($this->sut->isConnectedToGetResponse());
-    }
-
-    protected function setUp()
-    {
-        $this->grAccountService = $this->getMockWithoutConstructing(GrAccountService::class);
-        $this->accountSettingsRepository = $this->getMockWithoutConstructing(AccountSettingsRepository::class);
-
-        $this->sut = new AccountService(
-            $this->grAccountService,
-            $this->accountSettingsRepository
-        );
     }
 }
