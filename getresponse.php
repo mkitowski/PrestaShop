@@ -13,6 +13,7 @@ use GetResponse\Hook\FormDisplay;
 use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Validation\Assert\InvalidArgumentException;
 
@@ -300,19 +301,22 @@ class Getresponse extends Module
     private function displayWebForm($position)
     {
 
-        $formDisplay = new FormDisplay(
-            WebFormServiceFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings())
-        );
+        try {
+            $formDisplay = new FormDisplay(
+                WebFormServiceFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings())
+            );
+            $assignData = $formDisplay->displayWebForm($position);
 
-        $assignData = $formDisplay->displayWebForm($position);
+            if (!empty($assignData)) {
+                $this->smarty->assign($assignData);
 
-        if (!empty($assignData)) {
-            $this->smarty->assign($assignData);
+                return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
+            }
 
-            return $this->display(__FILE__, 'views/templates/admin/common/webform.tpl');
+            return '';
+        } catch (Exception $e) {
+            return '';
         }
-
-        return '';
     }
 
     /**
@@ -328,15 +332,20 @@ class Getresponse extends Module
      */
     public function hookDisplayHeader()
     {
-        $trackingService = WebTrackingServiceFactory::create();
-        $webTracking = $trackingService->getWebTracking();
+        try {
+            $trackingService = WebTrackingServiceFactory::create();
+            $webTracking = $trackingService->getWebTracking();
 
-        if (null === $webTracking || !$webTracking->isTrackingActive()) {
+            if (null === $webTracking || !$webTracking->isTrackingActive()) {
+                return '';
+            }
+
+            $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
+            return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
+        } catch (ApiTypeException $e) {
+            $this->handleHookException($e, 'hookDisplayHeader');
             return '';
         }
-
-        $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
-        return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
     }
 
     /**
@@ -349,30 +358,33 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GetResponseNotConnectedException
-     * @throws PrestaShopDatabaseException
      */
     public function hookDisplayFooter()
     {
-        $this->createNewsletterSubscriber();
+        try {
+            $this->createNewsletterSubscriber();
 
-        $trackingService = WebTrackingServiceFactory::create();
-        $webTracking = $trackingService->getWebTracking();
+            $trackingService = WebTrackingServiceFactory::create();
+            $webTracking = $trackingService->getWebTracking();
 
-        if (null === $webTracking) {
+            if (null === $webTracking) {
+                return '';
+            }
+
+            $email = false;
+
+            if (isset($this->context->customer)
+                && !empty($this->context->customer->email)
+                && $webTracking->isTrackingActive()
+            ) {
+                $email = $this->context->customer->email;
+            }
+
+            return $this->displayWebForm('footer') . $this->displayMailTracker($email);
+        } catch (Exception $e) {
+            $this->handleHookException($e, 'hookDisplayFooter');
             return '';
         }
-
-        $email = false;
-
-        if (isset($this->context->customer)
-            && !empty($this->context->customer->email)
-            && $webTracking->isTrackingActive()
-        ) {
-            $email = $this->context->customer->email;
-        }
-
-        return $this->displayWebForm('footer') . $this->displayMailTracker($email);
     }
 
     /**
