@@ -41,7 +41,12 @@ function upgradeEcommerceTable() {
 
     if (!empty($result)) {
         $repository = new EcommerceRepository();
-        $repository->updateEcommerceSubscription(new EcommerceDto($result['gr_id_shop'], EcommerceDto::STATUS_ACTIVE));
+        $repository->updateEcommerceSubscription(
+            new EcommerceDto(
+                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null,
+                EcommerceDto::STATUS_ACTIVE
+            )
+        );
     }
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_ecommerce";
@@ -52,7 +57,7 @@ function upgradeSettingsTable() {
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_settings";
     $result = Db::getInstance()->executeS($sql);
 
-    if (!empty($result)) {
+    if (!empty($result['api_key'])) {
         $accountRepository = new AccountSettingsRepository();
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
@@ -75,7 +80,7 @@ function upgradeWebFormsTable() {
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_webform";
     $result = Db::getInstance()->executeS($sql);
 
-    if (!empty($result)) {
+    if (!empty($result['webform_id'])) {
         $repository = new WebFormRepository();
         $repository->update(new WebForm(
             $result['webform_id'],
