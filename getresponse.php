@@ -13,7 +13,6 @@ use GetResponse\Hook\FormDisplay;
 use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
-use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Validation\Assert\InvalidArgumentException;
 
@@ -77,6 +76,8 @@ class Getresponse extends Module
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function install()
     {
@@ -102,6 +103,8 @@ class Getresponse extends Module
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function installTab()
     {
@@ -123,6 +126,8 @@ class Getresponse extends Module
     /**
      * @param int $tabId
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function createSubTabs($tabId)
     {
@@ -142,6 +147,9 @@ class Getresponse extends Module
         return true;
     }
 
+    /**
+     * @throws PrestaShopException
+     */
     public function getContent()
     {
         Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
@@ -149,6 +157,8 @@ class Getresponse extends Module
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function uninstall()
     {
@@ -173,6 +183,8 @@ class Getresponse extends Module
 
     /**
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function uninstallTab()
     {
@@ -191,37 +203,19 @@ class Getresponse extends Module
 
     /**
      * @param $params
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
-     * @throws PrestaShopDatabaseException
      */
     public function hookCart($params)
     {
         try {
             $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart($params['cart'], AccountServiceFactory::create()->getAccountSettings());
-
-        } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
-            $errorMessage = 'GetResponse error: HookCart: ApiException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (InvalidArgumentException $e) {
-            $errorMessage = 'GetResponse error: HookCart: ShareCodeAssertionException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopDatabaseException $e) {
-            $errorMessage = 'GetResponse error: HookCart: PrestaShopDatabaseException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopException $e) {
-            $errorMessage = 'GetResponse error: HookCart: PrestaShopException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (Exception $e) {
-            $errorMessage = 'GetResponse error: HookCart: GlobalException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+            $this->handleHookException($e, 'createCart');
         }
     }
 
     /**
      * @param $params
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookNewOrder($params)
     {
@@ -230,35 +224,19 @@ class Getresponse extends Module
 
     /**
      * @param Order $order
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     private function sendOrderToGr(Order $order)
     {
         try {
             $orderHook = new GetResponse\Hook\NewOrder();
             $orderHook->sendOrder($order, AccountServiceFactory::create()->getAccountSettings());
-        } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
-            $errorMessage = 'GetResponse error: HookOrder: ApiException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (InvalidArgumentException $e) {
-            $errorMessage = 'GetResponse error: HookOrder: ShareCodeAssertionException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopDatabaseException $e) {
-            $errorMessage = 'GetResponse error: HookOrder: PrestaShopDatabaseException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopException $e) {
-            $errorMessage = 'GetResponse error: HookOrder: PrestaShopException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (Exception $e) {
-            $errorMessage = 'GetResponse error: HookOrder: GlobalException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+            $this->handleHookException($e, 'createOrder');
         }
     }
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookHookOrderConfirmation($params)
     {
@@ -267,7 +245,6 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookPostUpdateOrderStatus($params)
     {
@@ -278,7 +255,6 @@ class Getresponse extends Module
 
     /**
      * @param array $params
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookCreateAccount($params)
     {
@@ -303,29 +279,14 @@ class Getresponse extends Module
             $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings();
             $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
 
-        } catch (GetResponseNotConnectedException $e) {
-        } catch (GrShareCode\Api\Exception\GetresponseApiException $e) {
-            $errorMessage = 'GetResponse error: CreateSubscriber: ApiException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (InvalidArgumentException $e) {
-            $errorMessage = 'GetResponse error: CreateSubscriber: ShareCodeAssertionException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopDatabaseException $e) {
-            $errorMessage = 'GetResponse error: CreateSubscriber: PrestaShopDatabaseException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
-        } catch (PrestaShopException $e) {
-            $errorMessage = 'GetResponse error: CreateSubscriber: PrestaShopException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
         } catch (Exception $e) {
-            $errorMessage = 'GetResponse error: CreateSubscriber: GlobalException: ' . $e->getMessage();
-            PrestaShopLoggerCore::addLog($errorMessage, 2, null, 'GetResponse', 'GetResponse');
+            $this->handleHookException($e, 'createSubscriber');
         }
 
     }
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayRightColumn()
     {
@@ -335,11 +296,10 @@ class Getresponse extends Module
     /**
      * @param string $position
      * @return string
-     * @throws ApiTypeException
-     * @throws GetresponseApiException
      */
     private function displayWebForm($position)
     {
+
         $formDisplay = new FormDisplay(
             WebFormServiceFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings())
         );
@@ -357,7 +317,6 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayLeftColumn()
     {
@@ -366,7 +325,6 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayHeader()
     {
@@ -383,7 +341,6 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayTop()
     {
@@ -394,7 +351,6 @@ class Getresponse extends Module
      * @return string
      * @throws GetResponseNotConnectedException
      * @throws PrestaShopDatabaseException
-     * @throws ApiTypeException
      */
     public function hookDisplayFooter()
     {
@@ -420,7 +376,6 @@ class Getresponse extends Module
     }
 
     /**
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      * @throws GetResponseNotConnectedException
      * @throws PrestaShopDatabaseException
      */
@@ -432,7 +387,6 @@ class Getresponse extends Module
         ) {
 
             $settings = (new RegistrationRepository())->getSettings();
-
             if (!$settings->isNewsletterActive()) {
                 return;
             }
@@ -464,11 +418,59 @@ class Getresponse extends Module
 
     /**
      * @return string
-     * @throws GrShareCode\Api\Authorization\ApiTypeException
      */
     public function hookDisplayHome()
     {
         return $this->displayWebForm('home');
+    }
+
+    /**
+     * @param string $message
+     */
+    private function logGetResponseError($message)
+    {
+        PrestaShopLoggerCore::addLog($message, 2, null, 'GetResponse', 'GetResponse');
+    }
+
+    /**
+     * @param Exception $exception
+     * @param string $hookName
+     */
+    private function handleHookException(Exception $exception, $hookName)
+    {
+        if ($exception instanceof GetResponseNotConnectedException) {
+            return;
+        }
+
+        if ($exception instanceof GetresponseApiException) {
+            $errorMessage = sprintf('GetResponse error: %s: GetresponseApiException: %s', $hookName, $exception->getMessage());
+            $this->logGetResponseError($errorMessage);
+            return;
+        }
+
+        if ($exception instanceof InvalidArgumentException) {
+            $errorMessage = sprintf('GetResponse error: %s: InvalidArgumentException: %s', $hookName, $exception->getMessage());
+            $this->logGetResponseError($errorMessage);
+            return;
+        }
+
+        if ($exception instanceof PrestaShopDatabaseException) {
+            $errorMessage = sprintf('GetResponse error: %s: PrestaShopDatabaseException: %s', $hookName, $exception->getMessage());
+            $this->logGetResponseError($errorMessage);
+            return;
+        }
+
+        if ($exception instanceof PrestaShopException) {
+            $errorMessage = sprintf('GetResponse error: %s: PrestaShopException: %s', $hookName, $exception->getMessage());
+            $this->logGetResponseError($errorMessage);
+            return;
+        }
+
+        if ($exception instanceof Exception) {
+            $errorMessage = sprintf('GetResponse error: %s: Exception: %s', $hookName, $exception->getMessage());
+            $this->logGetResponseError($errorMessage);
+            return;
+        }
     }
 
 }
