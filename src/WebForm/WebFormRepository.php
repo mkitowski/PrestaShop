@@ -18,8 +18,8 @@ class WebFormRepository
         Configuration::updateValue(
             ConfigurationSettings::WEB_FORM,
             json_encode([
+                'status' => $webForm->getStatus(),
                 'webform_id' => $webForm->getId(),
-                'is_active' => $webForm->getStatus(),
                 'sidebar' => $webForm->getSidebar(),
                 'style' => $webForm->getStyle(),
                 'url' => $webForm->getUrl()
@@ -39,8 +39,8 @@ class WebFormRepository
         }
 
         return new WebForm(
+            $result['status'],
             $result['webform_id'],
-            $result['is_active'],
             $result['sidebar'],
             $result['style'],
             $result['url']

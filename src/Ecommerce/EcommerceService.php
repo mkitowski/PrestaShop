@@ -80,10 +80,10 @@ class EcommerceService
     }
 
     /**
-     * @param EcommerceDto $ecommerceDto
+     * @param Ecommerce $ecommerce
      */
-    public function updateEcommerceDetails(EcommerceDto $ecommerceDto)
+    public function updateEcommerceDetails(Ecommerce $ecommerce)
     {
-        $this->repository->updateEcommerceSubscription($ecommerceDto);
+        $this->repository->updateEcommerceSubscription($ecommerce);
     }
 }

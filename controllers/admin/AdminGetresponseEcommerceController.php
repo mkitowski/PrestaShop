@@ -1,7 +1,7 @@
 <?php
 
 use GetResponse\Ecommerce\Activity;
-use GetResponse\Ecommerce\EcommerceDto;
+use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
@@ -72,12 +72,9 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
 
-            $ecommerceDto = new EcommerceDto(
-                Tools::getValue('shop'),
-                Tools::getValue('ecommerce')
-            );
+            $ecommerce = Ecommerce::createFromPost(Tools::getAllValues());
 
-            $validator = new EcommerceValidator($ecommerceDto, new RegistrationRepository());
+            $validator = new EcommerceValidator($ecommerce, new RegistrationRepository());
 
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
@@ -85,7 +82,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                 return;
             }
 
-            $this->ecommerceService->updateEcommerceDetails($ecommerceDto);
+            $this->ecommerceService->updateEcommerceDetails($ecommerce);
             $this->confirmations[] = $this->l('Ecommerce settings saved');
         }
 
@@ -219,17 +216,16 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->title = $this->l('Enable GetResponse Ecommerce');
         $helper->fields_value = ['ecommerce' => 0, 'shop' => ''];
         $settings = $this->ecommerceService->getEcommerceSettings();
-        $activity = Activity::createFromRequest(Tools::getValue('ecommerce'));
 
-        if ($settings->getShopId() !== null) {
+        if ($settings->isEnabled()) {
             $helper->fields_value = [
                 'ecommerce' => 1,
                 'shop' => $settings->getShopId()
             ];
-        } elseif (Tools::isSubmit('submit' . $this->name) && $activity->isEnabled()) {
+        } else {
             $helper->fields_value = [
-                'ecommerce' => 1,
-                'shop' => Tools::getValue('shop')
+                'ecommerce' => 0,
+                'shop' => null
             ];
         }
 

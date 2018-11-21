@@ -7,8 +7,11 @@ namespace GetResponse\WebForm;
  */
 class WebFormDto
 {
-    const SUBSCRIPTION_ACTIVE = '1';
-    const SUBSCRIPTION_INACTIVE = '0';
+    const ACTIVE = 'active';
+    const INACTIVE = 'inactive';
+
+    /** @var string */
+    private $status;
 
     /** @var string */
     private $formId;
@@ -19,21 +22,41 @@ class WebFormDto
     /** @var string */
     private $style;
 
-    /** @var string */
-    private $subscriptionStatus;
-
     /**
+     * @param string $status
      * @param string $formId
      * @param string $position
      * @param string $style
-     * @param string $subscriptionStatus
      */
-    public function __construct($formId, $position, $style, $subscriptionStatus)
+    public function __construct($status, $formId, $position, $style)
     {
+        $this->status = $status;
         $this->formId = $formId;
         $this->position = $position;
         $this->style = $style;
-        $this->subscriptionStatus = $subscriptionStatus;
+    }
+
+    /**
+     * @param array $params
+     * @return WebFormDto
+     */
+    public static function createFromPost($params)
+    {
+        if ($params['subscription']) {
+            return new self(
+                self::ACTIVE,
+                $params['form'],
+                $params['position'],
+                $params['style']
+            );
+        } else {
+            return new self(
+                self::INACTIVE,
+                null,
+                null,
+                null
+            );
+        }
     }
 
     /**
@@ -63,9 +86,9 @@ class WebFormDto
     /**
      * @return string
      */
-    public function getSubscriptionStatus()
+    public function getStatus()
     {
-        return $this->subscriptionStatus;
+        return $this->status;
     }
 
     /**
@@ -73,6 +96,6 @@ class WebFormDto
      */
     public function isEnabled()
     {
-        return $this->getSubscriptionStatus() === self::SUBSCRIPTION_ACTIVE;
+        return $this->getStatus() === self::ACTIVE;
     }
 }

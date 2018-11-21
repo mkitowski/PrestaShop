@@ -48,11 +48,18 @@ class RegistrationSettings
      */
     public static function createFromPost($params)
     {
-        $subscription = $params['subscriptionSwitch'] ? self::YES : self::NO;
-        $updateContact = $params['contactInfo'] ? self::YES : self::NO;
-        $cycleDay = $params['addToCycle'] ? $params['cycledays'] : null;
-        $newsletterSubscribers = $params['newsletter'] ? self::YES : self::NO;
-
+        if ($params['subscriptionSwitch']) {
+            $subscription = (bool) $params['subscriptionSwitch'];
+            $updateContact = (bool) $params['contactInfo'];
+            $cycleDay = isset($params['addToCycle']) ? $params['cycledays'] : null;
+            $newsletterSubscribers = (bool) $params['newsletter'];
+        } else {
+            $subscription = false;
+            $updateContact = false;
+            $cycleDay = null;
+            $params['campaign'] = null;
+            $newsletterSubscribers = false;
+        }
         return new self(
             $subscription,
             $newsletterSubscribers,
@@ -124,11 +131,11 @@ class RegistrationSettings
     public static function createFromConfiguration($configuration)
     {
         return new self(
-            $configuration['active_subscription'] === self::YES,
-            $configuration['active_newsletter_subscription'] === self::YES,
+            $configuration['active_subscription'],
+            $configuration['active_newsletter_subscription'],
             $configuration['campaign_id'],
             $configuration['cycle_day'],
-            $configuration['update_address'] === self::YES
+            $configuration['update_address']
         );
     }
 

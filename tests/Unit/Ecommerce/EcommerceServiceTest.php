@@ -3,7 +3,6 @@ namespace GetResponse\Tests\Unit\Ecommerce;
 
 use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\Ecommerce;
-use GetResponse\Ecommerce\EcommerceDto;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Tests\Unit\BaseTestCase;
@@ -40,14 +39,14 @@ class EcommerceServiceTest extends BaseTestCase
     {
         $shopId = 'shopId';
 
-        $ecommerceDto = new EcommerceDto($shopId, '1');
+        $ecommerce = new Ecommerce('active', $shopId);
 
         $this->repository
             ->expects(self::once())
             ->method('updateEcommerceSubscription')
-            ->with($ecommerceDto);
+            ->with($ecommerce);
 
-        $this->sut->updateEcommerceDetails($ecommerceDto);
+        $this->sut->updateEcommerceDetails($ecommerce);
     }
 
     /**
@@ -57,14 +56,14 @@ class EcommerceServiceTest extends BaseTestCase
     {
         $shopId = 'shopId';
 
-        $ecommerceDto = new EcommerceDto($shopId, '0');
+        $ecommerce = new Ecommerce('inactive', $shopId);
 
         $this->repository
             ->expects(self::once())
             ->method('updateEcommerceSubscription')
-            ->with($ecommerceDto);
+            ->with($ecommerce);
 
-        $this->sut->updateEcommerceDetails($ecommerceDto);
+        $this->sut->updateEcommerceDetails($ecommerce);
     }
 
     /**
@@ -75,7 +74,7 @@ class EcommerceServiceTest extends BaseTestCase
         $this->repository
             ->expects(self::exactly(2))
             ->method('getEcommerceSettings')
-            ->willReturnOnConsecutiveCalls(new Ecommerce(null), new Ecommerce('getResponseShopId'));
+            ->willReturnOnConsecutiveCalls(new Ecommerce(Ecommerce::STATUS_INACTIVE, null), new Ecommerce(Ecommerce::STATUS_ACTIVE, 'getResponseShopId'));
 
         $this->assertFalse($this->sut->isEcommerceEnabled());
         $this->assertTrue($this->sut->isEcommerceEnabled());

@@ -61,12 +61,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
 
-            $webFormDto = new WebFormDto(
-                Tools::getValue('form', null),
-                Tools::getValue('position', null),
-                Tools::getValue('style', null),
-                Tools::getValue('subscription', null)
-            );
+            $webFormDto = WebFormDto::createFromPost(Tools::getAllValues());
 
             $validator = new WebFormValidator($webFormDto);
             if (!$validator->isValid()) {

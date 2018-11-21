@@ -2,7 +2,7 @@
 
 
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Ecommerce\EcommerceDto;
+use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\Settings\Registration\RegistrationSettings;
@@ -44,9 +44,9 @@ function upgradeEcommerceTable($idShop) {
 
         $repository = new EcommerceRepository();
         $repository->updateEcommerceSubscription(
-            new EcommerceDto(
-                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null,
-                EcommerceDto::STATUS_ACTIVE
+            new Ecommerce(
+                Ecommerce::STATUS_ACTIVE,
+                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null
             )
         );
     }
