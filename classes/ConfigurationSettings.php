@@ -12,7 +12,7 @@ class ConfigurationSettings
     const WEB_FORM = 'getresponse_forms';
     const WEB_TRACKING = 'getresponse_web_tracking';
     const TRACKING_CODE = 'getresponse_tracking_code';
-    const INVALID_REQUEST = 'invalid_request_date';
-    const ORIGIN_CUSTOM_FIELD = 'origin_custom_field';
+    const INVALID_REQUEST = 'getresponse_invalid_request_date';
+    const ORIGIN_CUSTOM_FIELD = 'getresponse_origin_custom_field';
 
 }

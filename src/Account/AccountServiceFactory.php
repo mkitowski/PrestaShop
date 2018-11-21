@@ -35,7 +35,6 @@ class AccountServiceFactory
 
     /**
      * @return AccountService
-     * @throws ApiTypeException
      * @throws GetresponseApiException
      */
     public static function create()
