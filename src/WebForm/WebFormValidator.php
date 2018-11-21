@@ -12,26 +12,24 @@ class WebFormValidator
     /** @var array */
     private $errors;
 
-    /** @var WebFormDto */
-    private $webFormDto;
+    /** @var WebForm */
+    private $webForm;
 
     /**
-     * @param WebFormDto $webFormDto
+     * @param WebForm $webForm
      */
-    public function __construct(WebFormDto $webFormDto)
+    public function __construct(WebForm $webForm)
     {
-        $this->webFormDto = $webFormDto;
+        $this->webForm = $webForm;
         $this->errors = [];
         $this->validate();
     }
 
     private function validate()
     {
-        if ($this->webFormDto->isEnabled()) {
-            if (empty($this->webFormDto->getFormId()) || empty($this->webFormDto->getPosition())) {
+        if ($this->webForm->isActive()) {
+            if (empty($this->webForm->getId()) || empty($this->webForm->getSidebar())) {
                 $this->errors[] = Translate::getAdminTranslation('You need to select a form and its placement');
-
-                return;
             }
         }
     }

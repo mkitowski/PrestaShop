@@ -3,7 +3,6 @@ namespace GetResponse\Tests\Unit\WebForm;
 
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormRepository;
 use GetResponse\WebForm\WebFormService;
 use GrShareCode\WebForm\WebForm as GrWebForm;
@@ -26,12 +25,19 @@ class WebFormServiceTest extends BaseTestCase
     /** @var WebFormService */
     private $sut;
 
+    protected function setUp()
+    {
+        $this->repository = $this->getMockWithoutConstructing(WebFormRepository::class);
+        $this->grWebFormService = $this->getMockWithoutConstructing(GrWebFormService::class);
+        $this->sut = new WebFormService($this->repository, $this->grWebFormService);
+    }
+
     /**
      * @test
      */
     public function shouldUpdateWebForm()
     {
-        $webFormDto = new WebFormDto(WebFormDto::ACTIVE, 'webFormId1', 'top', 'myStyle');
+        $webForm = new WebForm(WebForm::ACTIVE, 'webFormId1', 'top', 'myStyle');
 
         $webFormCollection = new WebFormCollection();
         $webFormCollection->add(
@@ -58,14 +64,14 @@ class WebFormServiceTest extends BaseTestCase
             ->method('getAllWebForms')
             ->willReturn($webFormCollection);
 
-        $webFrom = new WebForm('webFormId1', WebFormDto::ACTIVE, 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
+        $expectedWebFrom = new WebForm(WebForm::ACTIVE, 'webFormId1', 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
 
         $this->repository
             ->expects(self::once())
             ->method('update')
-            ->with($webFrom);
+            ->with($expectedWebFrom);
 
-        $this->sut->updateWebForm($webFormDto);
+        $this->sut->updateWebForm($webForm);
     }
 
     /**
@@ -73,42 +79,18 @@ class WebFormServiceTest extends BaseTestCase
      */
     public function shouldUpdateWebFormWithDefaultValues()
     {
-        $webFormDto = new WebFormDto(WebFormDto::INACTIVE, 'webFormId2', '', '');
+        $status = WebForm::INACTIVE;
+        $webFromId = 'X3d93';
+        $sidebar = 'home';
 
-        $webFormCollection = new WebFormCollection();
-        $webFormCollection->add(
-            new GrWebForm(
-                'webFormId1',
-                'webFormName2',
-                'http://getresponse.com/webform/webFormId1',
-                'contactListId1',
-                'enabled',
-                GrWebForm::VERSION_V1
-            ));
-        $webFormCollection->add(
-            new GrWebForm(
-                'webFormId2',
-                'webFormName2',
-                'http://getresponse.com/webform/webFormId2',
-                'contactListId2',
-                'disabled',
-                GrWebForm::VERSION_V1
-            ));
-
-        $webFrom = new WebForm('webFormId2', WebFormDto::INACTIVE, 'home', 'webform', '');
+        $webForm = new WebForm($status, $webFromId, $sidebar);
+        $expectedWebFrom = new WebForm($status, $webFromId, $sidebar, WebForm::STYLE_DEFAULT, '');
 
         $this->repository
             ->expects(self::once())
             ->method('update')
-            ->with($webFrom);
+            ->with($expectedWebFrom);
 
-        $this->sut->updateWebForm($webFormDto);
-    }
-
-    protected function setUp()
-    {
-        $this->repository = $this->getMockWithoutConstructing(WebFormRepository::class);
-        $this->grWebFormService = $this->getMockWithoutConstructing(GrWebFormService::class);
-        $this->sut = new WebFormService($this->repository, $this->grWebFormService);
+        $this->sut->updateWebForm($webForm);
     }
 }

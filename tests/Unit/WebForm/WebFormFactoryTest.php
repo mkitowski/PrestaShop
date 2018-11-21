@@ -17,22 +17,20 @@ class WebFormFactoryTest extends BaseTestCase
     public function shouldCreateWebFormFromRequest()
     {
         $request = [
-            'formId' => 'webFormId',
-            'status' => 'no',
-            'sidebar' => 'left',
-            'style' => 'myStyle',
-            'url' => 'http://getresponse.com/webform/webFormId',
+            'form' => 'webFormId',
+            'subscription' => '1',
+            'position' => 'left',
+            'style' => 'myStyle'
         ];
 
-        $webForm = WebFormFactory::fromRequest($request);
+        $webForm = WebForm::createFromPost($request);
 
         $this->assertEquals(
             new WebForm(
-                $request['formId'],
-                $request['status'],
-                $request['sidebar'],
-                $request['style'],
-                $request['url']
+                WebForm::ACTIVE,
+                $request['form'],
+                $request['position'],
+                $request['style']
             ), $webForm
         );
     }
@@ -43,22 +41,20 @@ class WebFormFactoryTest extends BaseTestCase
     public function shouldCreateWebFormFromRequestWithDefaultValues()
     {
         $request = [
-            'formId' => 'webFormId',
-            'status' => '',
-            'sidebar' => '',
+            'form' => '',
+            'subscription' => '0',
+            'position' => '',
             'style' => '',
-            'url' => 'http://getresponse.com/webform/webFormId',
         ];
 
-        $webForm = WebFormFactory::fromRequest($request);
+        $webForm = WebForm::createFromPost($request);
 
         $this->assertEquals(
             new WebForm(
-                $request['formId'],
-                'no',
-                'home',
-                'webform',
-                $request['url']
+                WebForm::INACTIVE,
+                null,
+                '',
+                ''
             ), $webForm
         );
     }

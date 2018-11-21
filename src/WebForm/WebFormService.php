@@ -28,23 +28,16 @@ class WebFormService
     }
 
     /**
-     * @param WebFormDto $webFormDto
+     * @param WebForm $webForm
      * @throws FormNotFoundException
      * @throws GetresponseApiException
      */
-    public function updateWebForm(WebFormDto $webFormDto)
+    public function updateWebForm(WebForm $webForm)
     {
-        $webFormUrl = $webFormDto->isEnabled()
-            ? $this->getGetResponseFormCollection()->findOneById($webFormDto->getFormId())->getScriptUrl()
-            : '';
+        if ($webForm->isActive()) {
+            $webForm->setUrl($this->getGetResponseFormCollection()->findOneById($webForm->getId())->getScriptUrl());
+        }
 
-        $webForm = new WebForm(
-            $webFormDto->getFormId(),
-            $webFormDto->getStatus(),
-            empty($webFormDto->getPosition()) ? WebForm::SIDEBAR_DEFAULT : $webFormDto->getPosition(),
-            empty($webFormDto->getStyle()) ? WebForm::STYLE_DEFAULT : $webFormDto->getStyle(),
-            $webFormUrl
-        );
         $this->repository->update($webForm);
     }
 

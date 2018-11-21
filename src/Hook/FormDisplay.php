@@ -33,7 +33,7 @@ class FormDisplay
         $webForm = $this->webFormService->getWebForm();
 
         if (!$webForm
-            || !$webForm->isStatusActive()
+            || !$webForm->isActive()
             || !$webForm->hasSamePosition($position)) {
 
             return [];

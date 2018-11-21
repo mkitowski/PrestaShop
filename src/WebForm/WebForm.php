@@ -7,26 +7,19 @@ namespace GetResponse\WebForm;
  */
 class WebForm
 {
-    const STATUS_ACTIVE = 'yes';
-    const STATUS_INACTIVE = 'no';
+    const ACTIVE = 'active';
+    const INACTIVE = 'inactive';
 
-    const SIDEBAR_LEFT = 'left';
-    const SIDEBAR_RIGHT = 'right';
-    const SIDEBAR_HEADER = 'header';
-    const SIDEBAR_TOP = 'top';
-    const SIDEBAR_FOOTER = 'footer';
-    const SIDEBAR_HOME = 'home';
-    const SIDEBAR_DEFAULT = self::SIDEBAR_HOME;
+    const SIDEBAR_DEFAULT = 'home';
 
-    const STYLE_WEBFORM = 'webform';
     const STYLE_PRESTASHOP = 'prestashop';
-    const STYLE_DEFAULT = self::STYLE_WEBFORM;
-
-    /** @var string */
-    private $id;
+    const STYLE_DEFAULT = 'webform';
 
     /** @var string */
     private $status;
+
+    /** @var string */
+    private $id;
 
     /** @var string */
     private $sidebar;
@@ -38,16 +31,16 @@ class WebForm
     private $url;
 
     /**
-     * @param string $id
      * @param string $status
+     * @param string $id
      * @param string $sidebar
      * @param string $style
      * @param string $url
      */
-    public function __construct($id, $status, $sidebar, $style, $url)
+    public function __construct($status, $id, $sidebar, $style = self::STYLE_DEFAULT, $url = '')
     {
-        $this->id = $id;
         $this->status = $status;
+        $this->id = $id;
         $this->sidebar = $sidebar;
         $this->style = $style;
         $this->url = $url;
@@ -94,11 +87,19 @@ class WebForm
     }
 
     /**
+     * @param string $url
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+    }
+
+    /**
      * @return bool
      */
-    public function isStatusActive()
+    public function isActive()
     {
-        return self::STATUS_ACTIVE === $this->status;
+        return self::ACTIVE === $this->status;
     }
 
     /**
@@ -123,7 +124,29 @@ class WebForm
      */
     public static function createEmptyInstance()
     {
-        return new self('', self::STATUS_INACTIVE, '', '', '');
+        return new self(self::INACTIVE, '', '', '', '');
     }
 
+    /**
+     * @param array $params
+     * @return WebForm
+     */
+    public static function createFromPost($params)
+    {
+        if ($params['subscription']) {
+            return new self(
+                self::ACTIVE,
+                $params['form'],
+                $params['position'],
+                $params['style']
+            );
+        } else {
+            return new self(
+                self::INACTIVE,
+                null,
+                null,
+                null
+            );
+        }
+    }
 }

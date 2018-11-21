@@ -1,7 +1,6 @@
 <?php
 
 use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebForm\WebFormValidator;
 use GrShareCode\Api\Authorization\ApiTypeException;
@@ -61,18 +60,18 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
 
-            $webFormDto = WebFormDto::createFromPost(Tools::getAllValues());
+            $webForm = WebForm::createFromPost(Tools::getAllValues());
 
-            $validator = new WebFormValidator($webFormDto);
+            $validator = new WebFormValidator($webForm);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
 
                 return;
             }
 
-            $this->webFormService->updateWebForm($webFormDto);
+            $this->webFormService->updateWebForm($webForm);
 
-            $this->confirmations[] = $webFormDto->isEnabled()
+            $this->confirmations[] = $webForm->isActive()
                 ? $this->l('Form published')
                 : $this->l('Form unpublished');
 
@@ -107,7 +106,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'style' => Tools::getValue('style', $webForm->getStyle()),
             'subscription' => Tools::getValue(
                 'subscription',
-                $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
+                $webForm->getStatus() === WebForm::ACTIVE ? 1 : 0
             )
         ];
     }
