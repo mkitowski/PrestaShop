@@ -31,7 +31,7 @@ class WebFormServiceTest extends BaseTestCase
      */
     public function shouldUpdateWebForm()
     {
-        $webFormDto = new WebFormDto('webFormId1', 'top', 'myStyle', '1');
+        $webFormDto = new WebFormDto(WebFormDto::ACTIVE, 'webFormId1', 'top', 'myStyle');
 
         $webFormCollection = new WebFormCollection();
         $webFormCollection->add(
@@ -58,7 +58,7 @@ class WebFormServiceTest extends BaseTestCase
             ->method('getAllWebForms')
             ->willReturn($webFormCollection);
 
-        $webFrom = new WebForm('webFormId1', 'yes', 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
+        $webFrom = new WebForm('webFormId1', WebFormDto::ACTIVE, 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
 
         $this->repository
             ->expects(self::once())
@@ -73,7 +73,7 @@ class WebFormServiceTest extends BaseTestCase
      */
     public function shouldUpdateWebFormWithDefaultValues()
     {
-        $webFormDto = new WebFormDto('webFormId2', '', '', '0');
+        $webFormDto = new WebFormDto(WebFormDto::INACTIVE, 'webFormId2', '', '');
 
         $webFormCollection = new WebFormCollection();
         $webFormCollection->add(
@@ -95,7 +95,7 @@ class WebFormServiceTest extends BaseTestCase
                 GrWebForm::VERSION_V1
             ));
 
-        $webFrom = new WebForm('webFormId2', 'no', 'home', 'webform', '');
+        $webFrom = new WebForm('webFormId2', WebFormDto::INACTIVE, 'home', 'webform', '');
 
         $this->repository
             ->expects(self::once())
