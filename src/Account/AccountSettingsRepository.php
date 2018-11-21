@@ -48,6 +48,7 @@ class AccountSettingsRepository
         Configuration::updateValue(ConfigurationSettings::WEB_FORM, NULL);
         Configuration::updateValue(ConfigurationSettings::WEB_TRACKING, NULL);
         Configuration::updateValue(ConfigurationSettings::TRACKING_CODE, NULL);
+        Configuration::updateValue(ConfigurationSettings::ECOMMERCE, NULL);
         Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, NULL);
         Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, NULL);
     }
