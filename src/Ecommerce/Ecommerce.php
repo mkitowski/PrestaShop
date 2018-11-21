@@ -11,35 +11,53 @@ class Ecommerce
     const STATUS_INACTIVE = 'inactive';
 
     /** @var string */
+    private $status;
+
+    /** @var string */
     private $shopId;
 
     /** @var string */
-    private $status;
+    private $listId;
 
     /**
      * @param string $status
      * @param string $shopId
+     * @param string $listId
      */
-    public function __construct($status, $shopId)
+    public function __construct($status, $shopId, $listId)
     {
         $this->status = $status;
         $this->shopId = $shopId;
+        $this->listId = $listId;
     }
 
+    /**
+     * @param array $params
+     * @return Ecommerce
+     */
     public static function createFromPost($params)
     {
         if ($params['ecommerce']) {
             return new self(
                 self::STATUS_ACTIVE,
-                $params['shop']
+                $params['shop'],
+                $params['list']
             );
         } else {
             return new self(
                 self::STATUS_INACTIVE,
+                null,
                 null
             );
         }
+    }
 
+    /**
+     * @return string
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 
     /**
@@ -53,9 +71,9 @@ class Ecommerce
     /**
      * @return string
      */
-    public function getStatus()
+    public function getListId()
     {
-        return $this->status;
+        return $this->listId;
     }
 
     /**

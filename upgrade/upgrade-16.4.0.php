@@ -40,13 +40,16 @@ function upgradeEcommerceTable($idShop) {
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_ecommerce WHERE id_shop = " . $idShop;
     $result = Db::getInstance()->getRow($sql);
 
-    if (!empty($result)) {
+    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_settings WHERE id_shop = " . $idShop;
+    $settings = Db::getInstance()->getRow($sql);
 
+    if (!empty($result)) {
         $repository = new EcommerceRepository();
         $repository->updateEcommerceSubscription(
             new Ecommerce(
                 Ecommerce::STATUS_ACTIVE,
-                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null
+                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null,
+                isset($settings['campaign_id']) ? $settings['campaign_id'] : null
             )
         );
     }

@@ -1,6 +1,5 @@
 <?php
 
-use GetResponse\Ecommerce\Activity;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
@@ -97,7 +96,6 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
                 if (empty($shopName)) {
                     $this->errors[] = $this->l('Store name can not be empty');
-
                     return;
                 }
 
@@ -138,6 +136,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
      */
     private function generateForm()
     {
+        $settings = $this->ecommerceService->getEcommerceSettings();
         $shops[] = ['shopId' => '', 'name' => $this->l('Select a store')];
 
         /** @var Shop $shop */
@@ -151,7 +150,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $fieldsForm = [
             'form' => [
                 'legend' => [
-                    'title' => $this->l((!$this->ecommerceService->isEcommerceEnabled() ? 'Enable ' : '') . 'GetResponse Ecommerce')
+                    'title' => $this->l((!$settings->isEnabled() ? 'Enable ' : '') . 'GetResponse Ecommerce')
                 ],
                 'description' =>
                     $this->l(
@@ -200,6 +199,18 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                             'name' => 'name'
                         ]
                     ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Target list'),
+                        'class' => 'gr-select',
+                        'name' => 'list',
+                        'required' => true,
+                        'options' => [
+                            'query' => $this->getCampaignsOptions(),
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ]
+                    ],
                 ],
                 'submit' => [
                     'title' => $this->l('Save'),
@@ -214,18 +225,19 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
         $helper->title = $this->l('Enable GetResponse Ecommerce');
-        $helper->fields_value = ['ecommerce' => 0, 'shop' => ''];
-        $settings = $this->ecommerceService->getEcommerceSettings();
+        $helper->fields_value = ['ecommerce' => 0, 'shop' => '', 'listId' => ''];
 
         if ($settings->isEnabled()) {
             $helper->fields_value = [
                 'ecommerce' => 1,
-                'shop' => $settings->getShopId()
+                'shop' => $settings->getShopId(),
+                'list' => $settings->getListId()
             ];
         } else {
             $helper->fields_value = [
                 'ecommerce' => 0,
-                'shop' => null
+                'shop' => null,
+                'list' => null
             ];
         }
 

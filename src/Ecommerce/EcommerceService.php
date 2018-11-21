@@ -72,14 +72,6 @@ class EcommerceService
     }
 
     /**
-     * @return bool
-     */
-    public function isEcommerceEnabled()
-    {
-        return $this->getEcommerceSettings()->getShopId() !== null;
-    }
-
-    /**
      * @param Ecommerce $ecommerce
      */
     public function updateEcommerceDetails(Ecommerce $ecommerce)

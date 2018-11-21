@@ -41,6 +41,12 @@ class EcommerceValidator
             return;
         }
 
+        if ($this->ecommerce->isEnabled() && empty($this->ecommerce->getListId())) {
+            $this->errors[] = Translate::getAdminTranslation('You need to select list');
+
+            return;
+        }
+
         if ($this->ecommerce->isEnabled() && !$registrationSettings->isActive()) {
             $this->errors[] = Translate::getAdminTranslation(
                 'You need to enable adding contacts during registrations to enable ecommerce'

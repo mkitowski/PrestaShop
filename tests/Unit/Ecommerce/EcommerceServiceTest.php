@@ -37,9 +37,7 @@ class EcommerceServiceTest extends BaseTestCase
      */
     public function shouldUpdateEcommerceDetails()
     {
-        $shopId = 'shopId';
-
-        $ecommerce = new Ecommerce('active', $shopId);
+        $ecommerce = new Ecommerce('active', 'shopId', 'grListId');
 
         $this->repository
             ->expects(self::once())
@@ -54,9 +52,7 @@ class EcommerceServiceTest extends BaseTestCase
      */
     public function shouldUpdateEcommerceDetailsWithoutShopId()
     {
-        $shopId = 'shopId';
-
-        $ecommerce = new Ecommerce('inactive', $shopId);
+        $ecommerce = new Ecommerce('inactive', 'shopId', 'grListId');
 
         $this->repository
             ->expects(self::once())
@@ -74,10 +70,10 @@ class EcommerceServiceTest extends BaseTestCase
         $this->repository
             ->expects(self::exactly(2))
             ->method('getEcommerceSettings')
-            ->willReturnOnConsecutiveCalls(new Ecommerce(Ecommerce::STATUS_INACTIVE, null), new Ecommerce(Ecommerce::STATUS_ACTIVE, 'getResponseShopId'));
+            ->willReturnOnConsecutiveCalls(new Ecommerce(Ecommerce::STATUS_INACTIVE, null, null), new Ecommerce(Ecommerce::STATUS_ACTIVE, 'getResponseShopId', 'grListId'));
 
-        $this->assertFalse($this->sut->isEcommerceEnabled());
-        $this->assertTrue($this->sut->isEcommerceEnabled());
+        $this->assertFalse($this->sut->getEcommerceSettings()->isEnabled());
+        $this->assertTrue($this->sut->getEcommerceSettings()->isEnabled());
     }
 
 }

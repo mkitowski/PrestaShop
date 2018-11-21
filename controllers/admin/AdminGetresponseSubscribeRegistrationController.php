@@ -2,7 +2,6 @@
 require_once 'AdminGetresponseController.php';
 
 use GetResponse\Account\AccountServiceFactory;
-use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\Helper\FlashMessages;
@@ -10,14 +9,10 @@ use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\Settings\Registration\RegistrationSettings;
 use GetResponse\Settings\Registration\RegistrationSettingsValidator;
 use GrShareCode\Api\Authorization\ApiTypeException;
-use GrShareCode\ContactList\ContactList;
 use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
-    /** @var ContactListService */
-    private $contactListService;
-
     /**
      * @throws PrestaShopException
      * @throws ApiTypeException
@@ -35,8 +30,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'base_url',
             __PS_BASE_URI__
         ));
-
-        $this->contactListService = ContactListServiceFactory::create();
     }
 
     public function initContent()
@@ -246,30 +239,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         ];
 
         return parent::renderForm();
-    }
-
-    /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    private function getCampaignsOptions()
-    {
-        $campaigns = [
-            [
-                'id_option' => 0,
-                'name' => $this->l('Select a list')
-            ]
-        ];
-
-        /** @var ContactList $contactList */
-        foreach ($this->contactListService->getContactLists() as $contactList) {
-            $campaigns[] = [
-                'id_option' => $contactList->getId(),
-                'name' => $contactList->getName()
-            ];
-        }
-
-        return $campaigns;
     }
 
     /**

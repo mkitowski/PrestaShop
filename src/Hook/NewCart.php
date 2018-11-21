@@ -27,17 +27,14 @@ class NewCart
             return;
         }
 
-        $ecommerceService = EcommerceServiceFactory::createFromSettings($accountSettings);
-        if (!$ecommerceService->isEcommerceEnabled()) {
+        $ecommerce = EcommerceServiceFactory::create()->getEcommerceSettings();
+
+        if (!$ecommerce->isEnabled()) {
             return;
         }
 
-        // @TODO move this code to repository and use service in this place.
-        $registrationSettings = json_decode(Configuration::get(\ConfigurationSettings::REGISTRATION), true);
-
-        $grShopId = $ecommerceService->getEcommerceSettings()->getShopId();
         $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
-        $cartService->sendCart($cart, $registrationSettings['campaign_id'], $grShopId);
+        $cartService->sendCart($cart, $ecommerce->getListId(), $ecommerce->getShopId());
     }
 
 }

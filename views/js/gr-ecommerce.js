@@ -2,9 +2,11 @@ function ecommerceDisplay()
 {
     if ($('#ecommerce_on').is(':checked')) {
         $('#shop').parent().parent().show();
+        $('#list').parent().parent().show();
         $('#form-GREcommerce').show();
     } else {
         $('#shop').parent().parent().hide();
+        $('#list').parent().parent().hide();
         $('#form-GREcommerce').hide();
     }
 }
