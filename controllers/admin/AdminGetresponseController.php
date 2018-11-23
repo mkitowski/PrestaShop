@@ -20,7 +20,6 @@
 
 
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Account\AccountStatusFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
@@ -29,7 +28,6 @@ use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactList;
-use GetResponse\ContactList\ContactListService;
 use GrShareCode\CustomField\CustomField;
 
 class AdminGetresponseController extends ModuleAdminController
@@ -63,7 +61,6 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $this->contactListService = ContactListServiceFactory::create();
         $accountSettings = (new AccountSettingsRepository())->getSettings();
 
         if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountSettings->isConnectedWithGetResponse()) {
