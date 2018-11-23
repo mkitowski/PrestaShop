@@ -93,6 +93,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     {
         $accountSettings = AccountServiceFactory::create()->getAccountSettings();
         $registrationSettings = (new RegistrationRepository())->getSettings();
+        $contactListService = $contactListService = ContactListServiceFactory::create();
 
         $this->context->smarty->assign(array(
             'is_connected' => $accountSettings->isConnectedWithGetResponse()
@@ -106,7 +107,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                 $registrationSettings->getCycleDay()
             ),
             'subscribe_via_registration_list' => $this->renderCustomList(),
-            'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
+            'campaign_days' => json_encode($this->getCampaignDays($contactListService->getAutoresponders())),
             'cycle_day' => $registrationSettings->getCycleDay(),
         ]);
 

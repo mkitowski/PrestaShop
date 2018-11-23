@@ -42,9 +42,6 @@ class AdminGetresponseController extends ModuleAdminController
     /** @var GetResponseRepository */
     public $repository;
 
-    /** @var ContactListService */
-    protected $contactListService;
-
     public function __construct()
     {
         parent::__construct();
@@ -232,6 +229,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     protected function getCampaignsOptions()
     {
+        $contactListService = ContactListServiceFactory::create();
+
         $campaigns = [
             [
                 'id_option' => 0,
@@ -240,7 +239,7 @@ class AdminGetresponseController extends ModuleAdminController
         ];
 
         /** @var ContactList $contactList */
-        foreach ($this->contactListService->getContactLists() as $contactList) {
+        foreach ($contactListService->getContactLists() as $contactList) {
             $campaigns[] = [
                 'id_option' => $contactList->getId(),
                 'name' => $contactList->getName()
