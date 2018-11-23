@@ -376,7 +376,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsInvalid($accountId)
     {
-        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, time());
+        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, (new DateTime('now'))->format('Y-m-d H:i:s'));
     }
 
     /**
