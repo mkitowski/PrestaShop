@@ -1,13 +1,11 @@
 <?php
 namespace GetResponse\Contact;
 
+use GetResponse\Customer\Customer;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GrShareCode\Contact\ContactCustomField\ContactCustomField;
 use GrShareCode\Contact\ContactCustomField\ContactCustomFieldsCollection;
-use GrShareCode\CustomField\CustomField;
-use GrShareCode\CustomField\CustomFieldCollection;
-use stdClass;
 
 /**
  * Class ContactCustomFieldCollectionFactory
@@ -16,16 +14,14 @@ use stdClass;
 class ContactCustomFieldCollectionFactory
 {
     /**
-     * @param stdClass|\CustomerCore $contact
+     * @param Customer $customer
      * @param CustomFieldMappingCollection $customFieldMappingCollection
-     * @param CustomFieldCollection $grCustomFieldCollection
      * @param bool $updateContactInfoEnabled
      * @return ContactCustomFieldsCollection
      */
     public function createFromContactAndCustomFieldMapping(
-        $contact,
+        $customer,
         CustomFieldMappingCollection $customFieldMappingCollection,
-        CustomFieldCollection $grCustomFieldCollection,
         $updateContactInfoEnabled
     ) {
         $contactCustomFieldsCollection = new ContactCustomFieldsCollection();
@@ -34,8 +30,6 @@ class ContactCustomFieldCollectionFactory
             return $contactCustomFieldsCollection;
         }
 
-        $grCustomFields = $this->transformCustomFieldToArray($grCustomFieldCollection);
-
         /** @var CustomFieldMapping $customFieldMapping */
         foreach ($customFieldMappingCollection as $customFieldMapping) {
 
@@ -43,40 +37,23 @@ class ContactCustomFieldCollectionFactory
                 continue;
             }
 
-            $propertyKey = $customFieldMapping->getValue();
-            if (!property_exists($contact, $propertyKey) || empty($contact->$propertyKey)) {
+            if (empty($customer->getValueByPropertyName(
+                $customFieldMapping->getCustomerPropertyName()
+            ))) {
                 continue;
             }
-
-            if (!isset($grCustomFields[$customFieldMapping->getName()])) {
-                continue;
-            }
-
-            $customFieldValue = $contact->$propertyKey;
-            $grCustomFieldId = $grCustomFields[$customFieldMapping->getName()];
 
             $contactCustomFieldsCollection->add(
-                new ContactCustomField($grCustomFieldId, $customFieldValue)
+                new ContactCustomField(
+                    $customFieldMapping->getGrCustomId(),
+                    [$customer->getValueByPropertyName(
+                        $customFieldMapping->getCustomerPropertyName()
+                    )]
+                )
             );
         }
 
         return $contactCustomFieldsCollection;
 
-    }
-
-    /**
-     * @param CustomFieldCollection $grCustomFieldCollection
-     * @return array
-     */
-    private function transformCustomFieldToArray(CustomFieldCollection $grCustomFieldCollection)
-    {
-        $customFields = [];
-
-        /** @var CustomField $grCustomField */
-        foreach ($grCustomFieldCollection as $grCustomField) {
-            $customFields[$grCustomField->getName()] = $grCustomField->getId();
-        }
-
-        return $customFields;
     }
 }

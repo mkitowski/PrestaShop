@@ -1,6 +1,7 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
@@ -8,6 +9,7 @@ use GetResponse\CustomFieldsMapping\CustomFieldMappingValidator;
 use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
 use GetResponse\Helper\FlashMessages;
 use GrShareCode\Api\Exception\GetresponseApiException;
+use GrShareCode\CustomField\CustomField;
 
 class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 {
@@ -40,23 +42,27 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
     {
         if (Tools::isSubmit('saveMappingForm')) {
 
+            $customFieldMapping = $this->mappingService->getCustomFieldMappingById(Tools::getValue('id'));
+
+            $values = Tools::getAllValues();
+
             $custom = [
-                'id' => Tools::getValue('id'),
-                'value' => Tools::getValue('customer_detail'),
-                'name' => Tools::getValue('gr_custom'),
-                'active' => Tools::getValue('mapping_on'),
-                'default' => Tools::getValue('default')
+                'id' => (int) Tools::getValue('id'),
+                'custom_name' => $customFieldMapping->getCustomName(),
+                'customer_property_name' => $customFieldMapping->getCustomerPropertyName(),
+                'gr_custom_id' => Tools::getValue('gr_custom'),
+                'is_active' => (bool) Tools::getValue('mapping_on'),
+                'is_default' => (bool) Tools::getValue('default')
             ];
 
             $validator = new CustomFieldMappingValidator($custom);
 
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
-            $this->mappingService->updateCustomFieldMapping(CustomFieldMapping::createFromRequest($custom));
+            $this->mappingService->updateCustomFieldMapping(CustomFieldMapping::createFromArray($custom));
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Custom sucessfuly edited'));
             Tools::redirectAdmin($this->context->link->getAdminLink(Tools::getValue('referer')));
         }
@@ -83,14 +89,17 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
                         'disabled' => true
                     ],
                     'gr_custom' => [
+                        'type' => 'select',
                         'label' => $this->l('Getresponse custom field name'),
                         'required' => true,
-                        'desc' => $this->l('
-                        You can use lowercase English alphabet characters, numbers, 
-                        and underscore ("_"). Maximum 32 characters.
-                    '),
-                        'type' => 'text',
-                        'name' => 'gr_custom'
+                        'class' => 'gr-select',
+                        'desc' => $this->l('You can use lowercase English alphabet characters, numbers, and underscore ("_"). Maximum 32 characters.'),
+                        'name' => 'gr_custom',
+                        'options' => [
+                            'query' => $this->getCustomFieldsToSelect(),
+                            'id' => 'grCustomFieldId',
+                            'name' => 'name'
+                        ]
                     ],
                     'default' => [
                         'required' => true,
@@ -129,14 +138,38 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         if ($customFieldMapping) {
             $helper->fields_value = [
                 'id' => $customFieldMapping->getId(),
-                'customer_detail' => $customFieldMapping->getField(),
-                'gr_custom' => $customFieldMapping->getName(),
-                'default' => $customFieldMapping->isDefault() ? 1 : 0,
-                'mapping_on' => $customFieldMapping->isActive() ? 1 : 0
+                'customer_detail' => $customFieldMapping->getCustomerPropertyName(),
+                'gr_custom' => $customFieldMapping->getGrCustomId(),
+                'default' => (int) $customFieldMapping->isDefault(),
+                'mapping_on' => (int) $customFieldMapping->isActive()
             ];
         }
 
         return $helper->generateForm([$fieldsForm]);
+    }
+
+    /**
+     * @return array
+     * @throws GetresponseApiException
+     * @throws \GrShareCode\Api\Authorization\ApiTypeException
+     */
+    private function getCustomFieldsToSelect()
+    {
+        $customFieldsForSelect = [];
+        $customFieldService = CustomFieldsServiceFactory::create();
+
+        $grCustomFields = $customFieldService->getCustomFieldsFromGetResponse();
+
+        /** @var CustomField $customField */
+        foreach ($grCustomFields as $customField) {
+            $customFieldsForSelect[] = [
+                'grCustomFieldId' => $customField->getId(),
+                'name' => $customField->getName()
+            ];
+        }
+
+        return $customFieldsForSelect;
+
     }
 
 }

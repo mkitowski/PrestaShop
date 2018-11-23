@@ -1,10 +1,10 @@
 <?php
+
 namespace GetResponse\Contact;
 
-use Customer;
+use GetResponse\Customer\Customer;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GrShareCode\Contact\Command\AddContactCommand;
-use GrShareCode\CustomField\CustomFieldCollection;
 
 /**
  * Class AddContactCommandFactory
@@ -15,45 +15,38 @@ class AddContactCommandFactory
     /** @var CustomFieldMappingCollection */
     private $customFieldMappingCollection;
 
-    /** @var CustomFieldCollection */
-    private $grCustomFieldCollection;
-
     /**
-     * @param CustomFieldMappingCollection $customFieldMappingCollection
-     * @param CustomFieldCollection $customFieldCollection
+     * @param CustomFieldMappingCollection $collection
      */
-    public function __construct(
-        CustomFieldMappingCollection $customFieldMappingCollection,
-        CustomFieldCollection $customFieldCollection
-    ) {
-        $this->customFieldMappingCollection = $customFieldMappingCollection;
-        $this->grCustomFieldCollection = $customFieldCollection;
+    public function __construct(CustomFieldMappingCollection $collection)
+    {
+        $this->customFieldMappingCollection = $collection;
     }
 
     /**
-     * @param Customer $contact
+     * @param Customer $customer
      * @param string $contactListId
      * @param int $dayOfCycle
      * @param bool $updateContactInfoEnabled
      * @return AddContactCommand
      */
-    public function createFromContactAndSettings(Customer $contact, $contactListId, $dayOfCycle, $updateContactInfoEnabled)
-    {
+    public function createFromContactAndSettings(
+        Customer $customer,
+        $contactListId,
+        $dayOfCycle,
+        $updateContactInfoEnabled
+    ) {
         $contactCustomFieldCollectionFactory = new ContactCustomFieldCollectionFactory();
         $contactCustomFieldCollection = $contactCustomFieldCollectionFactory
             ->createFromContactAndCustomFieldMapping(
-                $contact,
+                $customer,
                 $this->customFieldMappingCollection,
-                $this->grCustomFieldCollection,
                 $updateContactInfoEnabled
             );
 
-        $email = $contact->email;
-        $name = trim($contact->firstname . ' ' . $contact->lastname);
-
         return new AddContactCommand(
-            $email,
-            $name,
+            $customer->getEmail(),
+            $customer->getName(),
             $contactListId,
             $dayOfCycle !== '' ? $dayOfCycle : null,
             $contactCustomFieldCollection

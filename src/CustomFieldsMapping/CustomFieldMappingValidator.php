@@ -27,11 +27,11 @@ class CustomFieldMappingValidator
 
     private function validate()
     {
-        if (preg_match('/^[\w\-]+$/', $this->requestData['name']) == false) {
+        if (preg_match('/^[A-Za-z0-9]+$/', $this->requestData['gr_custom_id']) == false) {
             $this->errors[] = Translate::getAdminTranslation('Custom field contains invalid characters!');
         }
 
-        if ($this->requestData['default'] == 1) {
+        if ($this->requestData['is_default']) {
             $this->errors[] = Translate::getAdminTranslation('Default mappings cannot be changed!');
 
             return;

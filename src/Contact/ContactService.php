@@ -1,15 +1,11 @@
 <?php
 namespace GetResponse\Contact;
 
-use Customer;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GrShareCode\Api\Authorization\ApiTypeException;
+use GetResponse\Customer\Customer;
 use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\CustomField\CustomFieldCollection;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
-use PrestaShopDatabaseException;
 
 /**
  * Class ContactService
@@ -29,37 +25,24 @@ class ContactService
     }
 
     /**
-     * @param Customer $contact
+     * @param Customer $customer
      * @param AddContactSettings $addContactSettings
      * @param bool $isNewsletterContact
      * @throws GetresponseApiException
-     * @throws ApiTypeException
-     * @throws PrestaShopDatabaseException
      */
-    public function addContact(Customer $contact, AddContactSettings $addContactSettings, $isNewsletterContact = false)
+    public function addContact(Customer $customer, AddContactSettings $addContactSettings, $isNewsletterContact = false)
     {
         if ($addContactSettings->isUpdateContactCustomFields() && !$isNewsletterContact) {
-
             $customFieldMappingService = CustomFieldMappingServiceFactory::create();
             $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
-
-            $customFieldsService = CustomFieldsServiceFactory::create();
-            $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
-
-            $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
-
         } else {
             $customFieldMappingCollection = new CustomFieldMappingCollection();
-            $grCustomFieldCollection = new CustomFieldCollection();
         }
 
-        $addContactCommandFactory = new AddContactCommandFactory(
-            $customFieldMappingCollection,
-            $grCustomFieldCollection
-        );
+        $addContactCommandFactory = new AddContactCommandFactory($customFieldMappingCollection);
 
         $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
-            $contact,
+            $customer,
             $addContactSettings->getContactListId(),
             $addContactSettings->getDayOfCycle(),
             $addContactSettings->isUpdateContactCustomFields()

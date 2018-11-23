@@ -19,17 +19,23 @@
  */
 
 
+use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\Helper\Shop as GrShop;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactList;
 use GetResponse\ContactList\ContactListService;
+use GrShareCode\CustomField\CustomField;
 
 class AdminGetresponseController extends ModuleAdminController
 {
+    const DEFAULT_CUSTOMS = ['firstname', 'lastname', 'email'];
+
     /** @var string */
     protected $name;
 
@@ -61,10 +67,9 @@ class AdminGetresponseController extends ModuleAdminController
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
         $this->contactListService = ContactListServiceFactory::create();
+        $accountSettings = (new AccountSettingsRepository())->getSettings();
 
-        $accountStatus = AccountStatusFactory::create();
-
-        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountStatus->isConnectedToGetResponse()) {
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountSettings->isConnectedWithGetResponse()) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
         }
     }
@@ -187,15 +192,34 @@ class AdminGetresponseController extends ModuleAdminController
      */
     public function getCustomList()
     {
-        $customs = $this->repository->getCustoms();
+        $grCustoms = [];
+        $customFieldsService = CustomFieldsServiceFactory::create();
+        $grCustomsCollection = $customFieldsService->getCustomFieldsFromGetResponse();
+
+        /** @var CustomField $custom */
+        foreach ($grCustomsCollection as $custom) {
+            $grCustoms[$custom->getId()] = $custom->getName();
+        }
+
+        $customs = $this->repository->getCustomFieldsMapping();
         $result = [];
+        /** @var CustomFieldMapping $custom */
         foreach ($customs as $custom) {
+
+            if (in_array($custom->getCustomName(), self::DEFAULT_CUSTOMS)) {
+                $customName = $custom->getCustomName();
+            } else if (!empty($custom->getGrCustomId())) {
+                $customName = $grCustoms[$custom->getGrCustomId()];
+            } else {
+                $customName = '';
+            }
+
             $result[] = [
-                'id' => $custom['id_custom'],
-                'customer_detail' => $custom['custom_field'],
-                'gr_custom' => $custom['custom_name'],
-                'default' => 0,
-                'on' => $custom['active_custom'] == 'yes' ? 1 : 0
+                'id' => $custom->getId(),
+                'customer_detail' => $custom->getCustomName(),
+                'gr_custom' => $customName,
+                'default' => (int) $custom->isDefault(),
+                'on' => (int) $custom->isActive()
             ];
         }
 

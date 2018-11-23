@@ -12,7 +12,6 @@ use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\Order\OrderServiceFactory as ShareCodeOrderServiceFactory;
-use PrestaShopDatabaseException;
 
 /**
  * Class OrderServiceFactory
@@ -29,24 +28,6 @@ class OrderServiceFactory
     {
         $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
         $apiClient = new GetresponseApiClient(ApiFactory::createFromSettings($accountSettings), $repository);
-
-        return self::createOrderService($apiClient, $repository);
-    }
-
-    /**
-     * @return OrderService
-     * @throws ApiTypeException
-     * @throws PrestaShopDatabaseException
-     */
-    public static function create()
-    {
-        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $apiClient = new GetresponseApiClient(
-            ApiFactory::createFromSettings(
-                (new AccountSettingsRepository())->getSettings()
-            ),
-            $repository
-        );
 
         return self::createOrderService($apiClient, $repository);
     }

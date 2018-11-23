@@ -1,9 +1,7 @@
 <?php
 namespace GetResponse\Tests\Unit\ContactList;
 
-use GetResponse\Account\AccountSettings;
 use GetResponse\ContactList\AddContactListDto;
-use GetResponse\ContactList\ContactListRepository;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrApiException;
@@ -18,26 +16,14 @@ class ContactListServiceTest extends BaseTestCase
     /** @var ContactListService */
     private $sut;
 
-    /** @var ContactListRepository | PHPUnit_Framework_MockObject_MockObject */
-    private $repository;
-
     /** @var GrContactListService | PHPUnit_Framework_MockObject_MockObject*/
     private $grContactListService;
 
-    /** @var AccountSettings | PHPUnit_Framework_MockObject_MockObject */
-    private $accountSettings;
-
     protected function setUp()
     {
-        $this->repository = $this->getMockWithoutConstructing(ContactListRepository::class);
         $this->grContactListService = $this->getMockWithoutConstructing(GrContactListService::class);
-        $this->accountSettings = $this->getMockWithoutConstructing(AccountSettings::class);
 
-        $this->sut = new ContactListService(
-            $this->repository,
-            $this->grContactListService,
-            $this->accountSettings
-        );
+        $this->sut = new ContactListService($this->grContactListService);
     }
 
     /**

@@ -8,7 +8,6 @@ use GrShareCode\Order\Command\AddOrderCommand as GrAddOrderCommand;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductsCollection;
 use Order;
-use PrestaShopException;
 use Product;
 
 /**
@@ -37,7 +36,6 @@ class OrderService
      * @param string $contactListId
      * @param string $grShopId
      * @throws GetresponseApiException
-     * @throws PrestaShopException
      */
     public function sendOrder(Order $order, $contactListId, $grShopId)
     {
@@ -60,7 +58,6 @@ class OrderService
     /**
      * @param $products
      * @return ProductsCollection
-     * @throws PrestaShopException
      */
     private function getOrderProductsCollection($products)
     {

@@ -10,85 +10,75 @@ class DefaultCustomFields
 {
     const DEFAULT_CUSTOM_FIELDS = [
         [
-            "id_custom" => 1,
-            "id_shop" => 1,
-            "custom_field" => "firstname",
-            "custom_value" => "firstname",
-            "custom_name" => "",
-            "default" => "yes",
-            "active_custom" => "yes"
+            "id" => 1,
+            "custom_name" => "firstname",
+            "customer_property_name" => "firstName",
+            "gr_custom_id" => "",
+            "is_active" => true,
+            "is_default" => true
         ],[
-            "id_custom" => 2,
-            "id_shop" => 1,
-            "custom_field" => "lastname",
-            "custom_value" => "lastname",
-            "custom_name" => "",
-            "default" => "yes",
-            "active_custom" => "yes"
+            "id" => 2,
+            "custom_name" => "lastname",
+            "customer_property_name" => "lastName",
+            "gr_custom_id" => "",
+            "is_active" => true,
+            "is_default" => true
         ],[
-            "id_custom" => 3,
-            "id_shop" => 1,
-            "custom_field" => "email",
-            "custom_value" => "email",
-            "custom_name" => "",
-            "default" => "yes",
-            "active_custom" => "yes"
+            "id" => 3,
+            "custom_name" => "email",
+            "customer_property_name" => "email",
+            "gr_custom_id" => "",
+            "is_active" => true,
+            "is_default" => true
         ],[
-            "id_custom" => 4,
-            "id_shop" => 1,
-            "custom_field" => "address",
-            "custom_value" => "address1",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 4,
+            "custom_name" => "address",
+            "customer_property_name" => "address",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 5,
-            "id_shop" => 1,
-            "custom_field" => "postal",
-            "custom_value" => "postcode",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 5,
+            "custom_name" => "postal",
+            "customer_property_name" => "postalCode",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 6,
-            "id_shop" => 1,
-            "custom_field" => "city",
-            "custom_value" => "city",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 6,
+            "custom_name" => "city",
+            "customer_property_name" => "city",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 7,
-            "id_shop" => 1,
-            "custom_field" => "phone",
-            "custom_value" => "phone",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 7,
+            "custom_name" => "phone",
+            "customer_property_name" => "phone",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 8,
-            "id_shop" => 1,
-            "custom_field" => "country",
-            "custom_value" => "country",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 8,
+            "custom_name" => "country",
+            "customer_property_name" => "country",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 9,
-            "id_shop" => 1,
-            "custom_field" => "birthday",
-            "custom_value" => "birthday",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 9,
+            "custom_name" => "birthday",
+            "customer_property_name" => "birthDate",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ],[
-            "id_custom" => 10,
-            "id_shop" => 1,
-            "custom_field" => "company",
-            "custom_value" => "company",
-            "custom_name" => "",
-            "default" => "no",
-            "active_custom" => "no"
+            "id" => 10,
+            "custom_name" => "company",
+            "customer_property_name" => "company",
+            "gr_custom_id" => "",
+            "is_active" => false,
+            "is_default" => false
         ]
     ];
 }

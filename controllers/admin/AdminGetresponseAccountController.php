@@ -3,6 +3,7 @@
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
+use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
 use GetResponse\WebTracking\TrackingCodeServiceFactory;
@@ -35,8 +36,8 @@ class AdminGetresponseAccountController extends AdminGetresponseController
      */
     public function initContent()
     {
-        $accountStatus = AccountStatusFactory::create();
-        $this->display = $accountStatus->isConnectedToGetResponse() ? 'view' : 'edit';
+        $accountSettings = (new AccountSettingsRepository())->getSettings();
+        $this->display = $accountSettings->isConnectedWithGetResponse() ? 'view' : 'edit';
         $this->show_form_cancel_button = false;
 
         parent::initContent();

@@ -36,22 +36,4 @@ class EcommerceServiceFactory
             $accountSettings
         );
     }
-
-    /**
-     * @param AccountSettings $accountSettings
-     * @return EcommerceService
-     * @throws ApiTypeException
-     */
-    public static function createFromSettings(AccountSettings $accountSettings)
-    {
-        $api = ApiFactory::createFromSettings($accountSettings);
-        $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
-        $apiClient = new GetresponseApiClient($api, $repository);
-
-        return new EcommerceService(
-            new EcommerceRepository(),
-            new ShopService($apiClient),
-            $accountSettings
-        );
-    }
 }

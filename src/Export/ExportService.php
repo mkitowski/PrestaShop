@@ -1,8 +1,8 @@
 <?php
 namespace GetResponse\Export;
 
-use Customer;
 use GetResponse\Contact\ContactCustomFieldCollectionFactory;
+use GetResponse\Customer\CustomerFactory;
 use GetResponse\CustomFields\CustomFieldService;
 use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
 use GetResponse\Order\OrderFactory;
@@ -11,7 +11,6 @@ use GrShareCode\Export\Command\ExportContactCommand;
 use GrShareCode\Export\ExportContactService;
 use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
 use GrShareCode\Export\Settings\ExportSettings as ShareCodeExportSettings;
-use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\GrShareCodeException;
 use GrShareCode\Order\OrderCollection;
 use Order;
@@ -62,6 +61,7 @@ class ExportService
 
     /**
      * @param ExportSettings $exportSettings
+     * @throws \PrestaShopDatabaseException
      */
     public function export(ExportSettings $exportSettings)
     {
@@ -72,14 +72,7 @@ class ExportService
         }
 
         if ($exportSettings->isUpdateContactInfo()) {
-            try {
                 $customFieldMappingCollection = $this->customFieldsMappingService->getActiveCustomFieldMapping();
-                $this->customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
-                $grCustomFieldCollection = $this->customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
-            } catch (GetresponseApiException $e) {
-                // @todo log
-                return;
-            }
         }
 
         $shareCodeExportSettings = new ShareCodeExportSettings(
@@ -97,10 +90,9 @@ class ExportService
 
             if (0 == $contact['id']) {
                 // flow for newsletters subscribers
-                $customer = new Customer();
-                $customer->email = $contact['email'];
+                $customer = CustomerFactory::createFromNewsletter($contact['email']);
             } else {
-                $customer = new Customer($contact['id']);
+                $customer = CustomerFactory::createFromArray($contact);
 
                 $customerOrders = $this->exportRepository->getOrders($contact['id']);
 
@@ -116,7 +108,6 @@ class ExportService
                     ->createFromContactAndCustomFieldMapping(
                         $customer,
                         $customFieldMappingCollection,
-                        $grCustomFieldCollection,
                         $exportSettings->isUpdateContactInfo()
                     );
             } else {
@@ -126,8 +117,8 @@ class ExportService
             try {
                 $this->shareCodeExportContactService->exportContact(
                     new ExportContactCommand(
-                        $customer->email,
-                        $customer->firstname . ' ' . $customer->lastname,
+                        $customer->getEmail(),
+                        $customer->getName(),
                         $shareCodeExportSettings,
                         $contactCustomFieldCollection,
                         $shareCodeOrderCollection

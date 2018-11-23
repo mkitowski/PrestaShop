@@ -13,6 +13,9 @@ use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
+    const UPDATE_CONTACT_ENABLED = '1';
+    const UPDATE_CONTACT_DISABLED = '0';
+
     /**
      * @throws PrestaShopException
      * @throws ApiTypeException
@@ -219,12 +222,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'values' => [
                         [
                             'id' => 'contact_on',
-                            'value' => SubscribeViaRegistrationDto::UPDATE_CONTACT_ENABLED,
+                            'value' => self::UPDATE_CONTACT_ENABLED,
                             'label' => $this->l('Enabled')
                         ],
                         [
                             'id' => 'contact_off',
-                            'value' => SubscribeViaRegistrationDto::UPDATE_CONTACT_DISABLED,
+                            'value' => self::UPDATE_CONTACT_DISABLED,
                             'label' => $this->l('Disabled')
                         ]
                     ]

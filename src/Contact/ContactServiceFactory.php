@@ -3,7 +3,6 @@ namespace GetResponse\Contact;
 
 use Db;
 use GetResponse\Account\AccountServiceFactory;
-use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponseRepository;
@@ -25,36 +24,12 @@ class ContactServiceFactory
      */
     public static function createFromSettings()
     {
-        return self::inject(
-            new GetresponseApiClient(
-                ApiFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings()),
-                new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
-            )
-        );
-    }
-
-    /**
-     * @return ContactService
-     * @throws ApiTypeException
-     * @throws \PrestaShopDatabaseException
-     */
-    public static function create()
-    {
-        return self::inject(
-            new GetresponseApiClient(
-                ApiFactory::createFromSettings(
-                    (new AccountSettingsRepository())->getSettings()
-                ),
-                new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
-            )
-        );
-    }
-
-    private static function inject(GetresponseApiClient $getresponseApiClient)
-    {
         return new ContactService(
             (new ShareCodeContactServiceFactory())->create(
-                $getresponseApiClient,
+                new GetresponseApiClient(
+                    ApiFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings()),
+                    new GetResponseRepository(Db::getInstance(), Shop::getUserShopId())
+                ),
                 new GetResponseRepository(Db::getInstance(), Shop::getUserShopId()),
                 Contact::ORIGIN
             )

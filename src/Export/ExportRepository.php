@@ -45,6 +45,15 @@ class ExportRepository
         if ($newsletterGuests && $this->checkModuleStatus($newsletterModule)) {
             $ngWhere = 'UNION SELECT
                     0 as id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     n.email as email
                 FROM
                     ' . $newsletterTableName . ' n
@@ -57,6 +66,15 @@ class ExportRepository
 
         $sql = 'SELECT
                     cu.id_customer as id,
+                    cu.firstname,
+                    cu.lastname,
+                    cu.birthday,
+                    concat(ad.address1, \' \', ad.address2) as address,
+                    ad.postcode as postal,
+                    ad.company,
+                    pl.name as country,
+                    ad.city,
+                    ad.phone,
                     cu.email as email
                 FROM
                     ' . _DB_PREFIX_ . 'customer as cu
@@ -64,6 +82,8 @@ class ExportRepository
                     ' . _DB_PREFIX_ . 'address ad ON cu.id_customer = ad.id_customer
                 LEFT JOIN
                     ' . _DB_PREFIX_ . 'country co ON ad.id_country = co.id_country
+                LEFT JOIN
+                	' . _DB_PREFIX_ . 'country_lang pl on co.id_country = pl.id_country AND pl.id_lang = 1
                 WHERE
                     cu.newsletter = 1
                 AND
@@ -150,30 +170,6 @@ class ExportRepository
             return '';
         }
         return $categories[0]['category'];
-    }
-
-    /**
-     * @param $customerId
-     * @return array
-     * @throws \PrestaShopDatabaseException
-     */
-    public function getCustomerOrders($customerId)
-    {
-        $sql = '
-        SELECT
-            `id_order`,
-            `id_cart`
-        FROM
-            ' . _DB_PREFIX_ . 'orders
-        WHERE
-            `id_shop` = ' . (int) $this->idShop . ' AND
-            `id_customer` = ' . (int) $customerId;
-
-        if ($results = $this->db->executeS($sql)) {
-            return $results;
-        }
-
-        return [];
     }
 
     /**

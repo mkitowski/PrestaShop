@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\ContactList;
 
-use GetResponse\Account\AccountSettings;
 use GrApiException;
 use GrShareCode\ContactList\Command\AddContactListCommand;
 use GrShareCode\ContactList\AutorespondersCollection;
@@ -21,25 +20,11 @@ class ContactListService
     /** @var GrContactListService */
     private $grContactListService;
 
-    /** @var AccountSettings */
-    private $settings;
-
-    /** @var ContactListRepository */
-    private $repository;
-
     /**
-     * @param ContactListRepository $repository
      * @param GrContactListService $grContactListService
-     * @param AccountSettings $settings
      */
-    public function __construct(
-        ContactListRepository $repository,
-        GrContactListService $grContactListService,
-        AccountSettings $settings
-    ) {
+    public function __construct(GrContactListService $grContactListService) {
         $this->grContactListService = $grContactListService;
-        $this->settings = $settings;
-        $this->repository = $repository;
     }
 
     /**
@@ -85,14 +70,6 @@ class ContactListService
     public function getAutoresponders()
     {
         return $this->grContactListService->getAutoresponders();
-    }
-
-    /**
-     * @return AccountSettings
-     */
-    public function getSettings()
-    {
-        return $this->settings;
     }
 
     /**

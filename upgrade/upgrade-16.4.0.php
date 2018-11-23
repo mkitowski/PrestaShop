@@ -2,6 +2,7 @@
 
 
 use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationRepository;
@@ -27,10 +28,8 @@ function upgrade_module_16_4_0($object) {
 }
 
 function upgradeCustomsTable($idShop) {
-    $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_customs WHERE id_shop = " . $idShop;
-    $result = Db::getInstance()->executeS($sql);
 
-    Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($result));
+    Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode(DefaultCustomFields::DEFAULT_CUSTOM_FIELDS));
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);

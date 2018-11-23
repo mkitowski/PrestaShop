@@ -9,6 +9,9 @@
  */
 
 use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Contact\AddContactSettings;
+use GetResponse\Contact\ContactServiceFactory;
+use GetResponse\Customer\CustomerFactory;
 use GetResponse\Hook\FormDisplay;
 use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\WebForm\WebFormServiceFactory;
@@ -266,7 +269,7 @@ class Getresponse extends Module
      * @param Customer $contact
      * @param bool $fromNewsletter
      */
-    public function createSubscriber($contact, $fromNewsletter = false)
+    public function createSubscriber(Customer $contact, $fromNewsletter = false)
     {
         try {
             $settings = (new RegistrationRepository())->getSettings();
@@ -275,10 +278,14 @@ class Getresponse extends Module
                 return;
             }
 
-            $addContactSettings = GetResponse\Contact\AddContactSettings::createFromConfiguration($settings);
+            $addContactSettings = AddContactSettings::createFromConfiguration($settings);
 
-            $contactService = GetResponse\Contact\ContactServiceFactory::createFromSettings();
-            $contactService->addContact($contact, $addContactSettings, $fromNewsletter);
+            $contactService = ContactServiceFactory::createFromSettings();
+            $contactService->addContact(
+                CustomerFactory::createFromPsCustomerObject($contact),
+                $addContactSettings,
+                $fromNewsletter
+            );
 
         } catch (Exception $e) {
             $this->handleHookException($e, 'createSubscriber');
@@ -403,13 +410,13 @@ class Getresponse extends Module
                 return;
             }
 
-            $contact = new \Customer();
-            $contact->newsletter = 1;
-            $contact->firstname = 'Friend';
-            $contact->lastname = '';
-            $contact->email = Tools::getValue('email');
+            $customer = new \Customer();
+            $customer->newsletter = 1;
+            $customer->firstname = 'Friend';
+            $customer->lastname = '';
+            $customer->email = Tools::getValue('email');
 
-            $this->createSubscriber($contact, true);
+            $this->createSubscriber($customer, true);
         }
     }
 

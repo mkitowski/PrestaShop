@@ -12,8 +12,8 @@ class CustomFieldMappingValidatorTest extends BaseTestCase
     public function shouldReturnNoError()
     {
         $requestData = [
-            'name' => 'test',
-            'default' => 0,
+            'gr_custom_id' => 'test',
+            'is_default' => 0,
         ];
 
         $validator = new CustomFieldMappingValidator($requestData);
@@ -27,8 +27,8 @@ class CustomFieldMappingValidatorTest extends BaseTestCase
     public function shouldReturnError()
     {
         $requestData = [
-            'name' => 'test',
-            'default' => 1,
+            'gr_custom_id' => 'test',
+            'is_default' => 1,
         ];
 
         $validator = new CustomFieldMappingValidator($requestData);
@@ -36,8 +36,8 @@ class CustomFieldMappingValidatorTest extends BaseTestCase
         $this->assertEquals(['Default mappings cannot be changed!'], $validator->getErrors());
 
         $requestData = [
-            'name' => 'tes$#t',
-            'default' => 0,
+            'gr_custom_id' => 'tes$#t',
+            'is_default' => 0,
         ];
 
         $validator = new CustomFieldMappingValidator($requestData);

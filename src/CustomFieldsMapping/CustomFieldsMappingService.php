@@ -2,7 +2,6 @@
 namespace GetResponse\CustomFieldsMapping;
 
 use GetResponseRepository;
-use PrestaShopDatabaseException;
 
 /**
  * Class CustomFieldsMappingService
@@ -23,23 +22,22 @@ class CustomFieldsMappingService
     }
 
     /**
-     * @param CustomFieldMapping $customFieldMappingFromRequest
+     * @param CustomFieldMapping $newCustomFieldMapping
      * @throws CustomFieldMappingException
-     * @throws PrestaShopDatabaseException
      */
-    public function updateCustomFieldMapping(CustomFieldMapping $customFieldMappingFromRequest)
+    public function updateCustomFieldMapping(CustomFieldMapping $newCustomFieldMapping)
     {
-        $customFieldMapping = $this->getCustomFieldMappingById($customFieldMappingFromRequest->getId());
+        $customFieldMapping = $this->getCustomFieldMappingById($newCustomFieldMapping->getId());
 
         if (!$customFieldMapping) {
-            throw CustomFieldMappingException::createForNotFoundCustomFieldMapping($customFieldMappingFromRequest->getId());
+            throw CustomFieldMappingException::createForNotFoundCustomFieldMapping($newCustomFieldMapping->getId());
         }
 
         if ($customFieldMapping->isDefault()) {
-            throw CustomFieldMappingException::createForDefaultCustomFieldMapping($customFieldMappingFromRequest->getId());
+            throw CustomFieldMappingException::createForDefaultCustomFieldMapping($newCustomFieldMapping->getId());
         }
 
-        $this->repository->updateCustom($customFieldMappingFromRequest);
+        $this->repository->updateCustom($newCustomFieldMapping);
     }
 
     /**
@@ -49,17 +47,7 @@ class CustomFieldsMappingService
     {
         $customFieldMappingCollection = new CustomFieldMappingCollection();
 
-        foreach ($this->repository->getCustoms() as $customFields) {
-
-            $customFieldMapping = new CustomFieldMapping(
-                $customFields['id_custom'],
-                $customFields['custom_value'],
-                $customFields['custom_name'],
-                $customFields['active_custom'],
-                $customFields['custom_field'],
-                $customFields['default']
-            );
-
+        foreach ($this->repository->getCustomFieldsMapping() as $customFieldMapping) {
             if (!$customFieldMapping->isDefault() && $customFieldMapping->isActive()){
                 $customFieldMappingCollection->add($customFieldMapping);
             }
@@ -71,22 +59,12 @@ class CustomFieldsMappingService
     /**
      * @param int $customFieldMappingId
      * @return CustomFieldMapping|null
-     * @throws PrestaShopDatabaseException
      */
     public function getCustomFieldMappingById($customFieldMappingId)
     {
-        foreach ($this->repository->getCustoms() as $customFields) {
-
-            if ($customFieldMappingId == $customFields['id_custom']) {
-
-                return new CustomFieldMapping(
-                    $customFields['id_custom'],
-                    $customFields['custom_value'],
-                    $customFields['custom_name'],
-                    $customFields['active_custom'],
-                    $customFields['custom_field'],
-                    $customFields['default']
-                );
+        foreach ($this->repository->getCustomFieldsMapping() as $customFieldMapping) {
+            if ($customFieldMappingId == $customFieldMapping->getId()) {
+                return $customFieldMapping;
             }
         }
 

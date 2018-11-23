@@ -7,61 +7,40 @@ namespace GetResponse\CustomFieldsMapping;
  */
 class CustomFieldMapping
 {
-    const ACTIVE = 'yes';
-    const INACTIVE = 'no';
-
-    const DEFAULT_YES = 'yes';
-    const DEFAULT_NO = 'no';
-
     /** @var int */
     private $id;
 
     /** @var string */
-    private $value;
+    private $customName;
 
     /** @var string */
-    private $name;
+    private $customerPropertyName;
 
     /** @var string */
-    private $active;
+    private $grCustomId;
 
-    /** @var string */
-    private $field;
+    /** @var bool */
+    private $isActive;
 
-    /** @var int */
-    private $default;
+    /** @var bool */
+    private $isDefault;
 
     /**
      * @param int $id
-     * @param string $value
-     * @param string $name
-     * @param string $active
-     * @param string $field
-     * @param int $default
+     * @param string $customName
+     * @param string $customerPropertyName
+     * @param string $grCustomId
+     * @param bool $isActive
+     * @param bool $isDefault
      */
-    public function __construct($id, $value, $name, $active, $field, $default)
+    public function __construct($id, $customName, $customerPropertyName, $grCustomId, $isActive, $isDefault)
     {
         $this->id = $id;
-        $this->value = $value;
-        $this->name = $name;
-        $this->active = $active;
-        $this->field = $field;
-        $this->default = $default;
-    }
-
-    /**
-     * @param array $request
-     * @return CustomFieldMapping
-     */
-    public static function createFromRequest(array $request)
-    {
-        return new self(
-            $request['id'],
-            $request['value'],
-            $request['name'],
-            1 === (int)$request['active'] ? self::ACTIVE : self::INACTIVE,
-            '',
-            $request['default']);
+        $this->customName = $customName;
+        $this->customerPropertyName = $customerPropertyName;
+        $this->grCustomId = $grCustomId;
+        $this->isActive = $isActive;
+        $this->isDefault = $isDefault;
     }
 
     /**
@@ -69,15 +48,7 @@ class CustomFieldMapping
      */
     public function isDefault()
     {
-        return self::DEFAULT_YES === $this->default;
-    }
-
-    /**
-     * @return string
-     */
-    public function getField()
-    {
-        return $this->field;
+        return $this->isDefault;
     }
 
     /**
@@ -91,17 +62,9 @@ class CustomFieldMapping
     /**
      * @return string
      */
-    public function getValue()
+    public function getCustomerPropertyName()
     {
-        return $this->value;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
+        return $this->customerPropertyName;
     }
 
     /**
@@ -109,14 +72,53 @@ class CustomFieldMapping
      */
     public function isActive()
     {
-        return self::ACTIVE === $this->getActive();
+        return $this->isActive;
     }
 
     /**
      * @return string
      */
-    public function getActive()
+    public function getCustomName()
     {
-        return $this->active;
+        return $this->customName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGrCustomId()
+    {
+        return $this->grCustomId;
+    }
+
+    /**
+     * @param array $params
+     * @return CustomFieldMapping
+     */
+    public static function createFromArray(array $params)
+    {
+        return new self(
+            $params['id'],
+            $params['custom_name'],
+            $params['customer_property_name'],
+            $params['gr_custom_id'],
+            (bool) $params['is_active'],
+            (bool) $params['is_default']
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'custom_name' => $this->getCustomName(),
+            'customer_property_name' => $this->getCustomerPropertyName(),
+            'gr_custom_id' => $this->getGrCustomId(),
+            'is_active' => $this->isActive(),
+            'is_default' => $this->isDefault(),
+        ];
     }
 }

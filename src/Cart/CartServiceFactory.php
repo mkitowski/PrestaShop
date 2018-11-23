@@ -13,7 +13,6 @@ use GrShareCode\Cache\CacheInterface;
 use GrShareCode\Api\GetresponseApiClient;
 use GrShareCode\Cart\CartServiceFactory as ShareCodeCartServiceFactory;
 use GrShareCode\DbRepositoryInterface;
-use PrestaShopDatabaseException;
 
 /**
  * Class CartServiceFactory
@@ -35,24 +34,6 @@ class CartServiceFactory
             $repository,
             new CacheWrapper()
         );
-    }
-
-    /**
-     * @return CartService
-     * @throws ApiTypeException
-     * @throws PrestaShopDatabaseException
-     */
-    public static function create()
-    {
-        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
-        $accountSettingsRepository = new AccountSettingsRepository();
-
-        return self::createCartService(
-            new GetresponseApiClient(ApiFactory::createFromSettings($accountSettingsRepository->getSettings()), $repository),
-            $repository,
-            new CacheWrapper()
-        );
-
     }
 
     /**

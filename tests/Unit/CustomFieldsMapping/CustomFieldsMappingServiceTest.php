@@ -17,16 +17,22 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     /** @var GetResponseRepository | PHPUnit_Framework_MockObject_MockObject */
     private $repository;
 
+    protected function setUp()
+    {
+        $this->repository = $this->getMockWithoutConstructing(GetResponseRepository::class);
+        $this->sut = new CustomFieldsMappingService($this->repository);
+    }
+
     /**
      * @test
      */
     public function shouldThrowExceptionWhenCustomFieldMappingNotFound()
     {
         $this->expectException(CustomFieldMappingException::class);
-        $this->expectExceptionMessage('Custom field mapping not found with id: id.');
+        $this->expectExceptionMessage('Custom field mapping not found with id: 10.');
 
         $customFieldMapping = new CustomFieldMapping(
-            'id',
+            10,
             'value',
             'company',
             'yes',
@@ -36,7 +42,7 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
 
         $this->repository
             ->expects(self::once())
-            ->method('getCustoms')
+            ->method('getCustomFieldsMapping')
             ->willReturn([]);
 
         $this->sut->updateCustomFieldMapping($customFieldMapping);
@@ -48,10 +54,10 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     public function shouldThrowExceptionForDefaultCustomFieldMapping()
     {
         $this->expectException(CustomFieldMappingException::class);
-        $this->expectExceptionMessage('Custom field mapping with id: emailId');
+        $this->expectExceptionMessage('Custom field mapping with id: 10');
 
         $customFieldMapping = new CustomFieldMapping(
-            'emailId',
+            10,
             'value',
             'company',
             'yes',
@@ -59,21 +65,13 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
             'no'
         );
 
+        $collection = new CustomFieldMappingCollection();
+        $collection->add($customFieldMapping);
         $this->repository
             ->expects(self::once())
-            ->method('getCustoms')
-            ->willReturn(
-                [
-                    [
-                        'id_custom' => 'emailId',
-                        'custom_value' => 'email',
-                        'custom_name' => 'email',
-                        'active_custom' => 'yes',
-                        'custom_field' => 'email',
-                        'default' => 'yes'
-                    ]
-                ]
-            );
+            ->method('getCustomFieldsMapping')
+            ->willReturn($collection);
+
         $this->sut->updateCustomFieldMapping($customFieldMapping);
     }
 
@@ -83,29 +81,21 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     public function shouldUpdateCustom()
     {
         $customFieldMapping = new CustomFieldMapping(
-            'addressId',
+            10,
             'value',
             'company',
             'yes',
-            'field',
-            'no'
+            true,
+            false
         );
+
+        $collection = new CustomFieldMappingCollection();
+        $collection->add($customFieldMapping);
 
         $this->repository
             ->expects(self::once())
-            ->method('getCustoms')
-            ->willReturn(
-                [
-                    [
-                        'id_custom' => 'addressId',
-                        'custom_value' => 'address',
-                        'custom_name' => 'address',
-                        'active_custom' => 'no',
-                        'custom_field' => '',
-                        'default' => 'false'
-                    ]
-                ]
-            );
+            ->method('getCustomFieldsMapping')
+            ->willReturn($collection);
 
         $this->repository
             ->expects(self::once())
@@ -122,27 +112,8 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     {
         $this->repository
             ->expects(self::once())
-            ->method('getCustoms')
-            ->willReturn(
-                [
-                    'default_custom_field_mapping' => [
-                        'id_custom' => 'addressId',
-                        'custom_value' => 'address',
-                        'custom_name' => 'address',
-                        'active_custom' => 'yes',
-                        'custom_field' => '',
-                        'default' => 'yes'
-                    ],
-                    'inactive_custom_field_mapping' => [
-                        'id_custom' => 'addressId',
-                        'custom_value' => 'address',
-                        'custom_name' => 'address',
-                        'active_custom' => 'no',
-                        'custom_field' => '',
-                        'default' => 'false'
-                    ]
-                ]
-            );
+            ->method('getCustomFieldsMapping')
+            ->willReturn(new CustomFieldMappingCollection());
 
         $this->assertEquals(new CustomFieldMappingCollection(), $this->sut->getActiveCustomFieldMapping());
     }
@@ -153,70 +124,93 @@ class CustomFieldsMappingServiceTest extends BaseTestCase
     public function shouldReturnCustomFieldMappingCollection()
     {
         $proper_custom_field_mapping1 = [
-            'id_custom' => 'addressId',
-            'custom_value' => 'address',
+            'id' => 1,
             'custom_name' => 'address',
-            'active_custom' => 'yes',
-            'custom_field' => '',
-            'default' => 'no'
+            'customer_property_name' => 'address',
+            'gr_custom_id' => 'X3d9k',
+            'is_active' => true,
+            'is_default' => false
         ];
 
         $inactive_custom_field_mapping = [
-            'id_custom' => 'addressId',
-            'custom_value' => 'address',
+            'id' => 2,
             'custom_name' => 'address',
-            'active_custom' => 'no',
-            'custom_field' => '',
-            'default' => 'false'
+            'customer_property_name' => 'address',
+            'gr_custom_id' => 'X3d9k',
+            'is_active' => true,
+            'is_default' => true
         ];
 
         $proper_custom_field_mapping_2 = [
-            'id_custom' => 'companyId',
-            'custom_value' => 'company',
+            'id' => 3,
             'custom_name' => 'company',
-            'active_custom' => 'yes',
-            'custom_field' => '',
-            'default' => 'false'
+            'customer_property_name' => 'company',
+            'gr_custom_id' => 'X3d9k',
+            'is_active' => true,
+            'is_default' => false
         ];
-
-        $this->repository
-            ->expects(self::once())
-            ->method('getCustoms')
-            ->willReturn([
-                $proper_custom_field_mapping1,
-                $inactive_custom_field_mapping,
-                $proper_custom_field_mapping_2,
-            ]);
 
         $customFieldMappingCollection = new CustomFieldMappingCollection();
         $customFieldMappingCollection->add(
             new CustomFieldMapping(
-                $proper_custom_field_mapping1['id_custom'],
-                $proper_custom_field_mapping1['custom_value'],
+                $proper_custom_field_mapping1['id'],
                 $proper_custom_field_mapping1['custom_name'],
-                $proper_custom_field_mapping1['active_custom'],
-                $proper_custom_field_mapping1['custom_field'],
-                $proper_custom_field_mapping1['default']
+                $proper_custom_field_mapping1['customer_property_name'],
+                $proper_custom_field_mapping1['gr_custom_id'],
+                $proper_custom_field_mapping1['is_active'],
+                $proper_custom_field_mapping1['is_default']
             )
         );
+
         $customFieldMappingCollection->add(
             new CustomFieldMapping(
-                $proper_custom_field_mapping_2['id_custom'],
-                $proper_custom_field_mapping_2['custom_value'],
-                $proper_custom_field_mapping_2['custom_name'],
-                $proper_custom_field_mapping_2['active_custom'],
-                $proper_custom_field_mapping_2['custom_field'],
-                $proper_custom_field_mapping_2['default']
+                $inactive_custom_field_mapping['id'],
+                $inactive_custom_field_mapping['custom_name'],
+                $inactive_custom_field_mapping['customer_property_name'],
+                $inactive_custom_field_mapping['gr_custom_id'],
+                $inactive_custom_field_mapping['is_active'],
+                $inactive_custom_field_mapping['is_default']
             )
         );
 
-        $this->assertEquals($customFieldMappingCollection, $this->sut->getActiveCustomFieldMapping());
-    }
+        $customFieldMappingCollection->add(
+            new CustomFieldMapping(
+                $proper_custom_field_mapping_2['id'],
+                $proper_custom_field_mapping_2['custom_name'],
+                $proper_custom_field_mapping_2['customer_property_name'],
+                $proper_custom_field_mapping_2['gr_custom_id'],
+                $proper_custom_field_mapping_2['is_active'],
+                $proper_custom_field_mapping_2['is_default']
+            )
+        );
 
-    protected function setUp()
-    {
-        $this->repository = $this->getMockWithoutConstructing(GetResponseRepository::class);
-        $this->sut = new CustomFieldsMappingService($this->repository);
-    }
+        $expectedCustomFieldMappingCollection = new CustomFieldMappingCollection();
+        $expectedCustomFieldMappingCollection->add(
+            new CustomFieldMapping(
+                $proper_custom_field_mapping1['id'],
+                $proper_custom_field_mapping1['custom_name'],
+                $proper_custom_field_mapping1['customer_property_name'],
+                $proper_custom_field_mapping1['gr_custom_id'],
+                $proper_custom_field_mapping1['is_active'],
+                $proper_custom_field_mapping1['is_default']
+            )
+        );
+        $expectedCustomFieldMappingCollection->add(
+            new CustomFieldMapping(
+                $proper_custom_field_mapping_2['id'],
+                $proper_custom_field_mapping_2['custom_name'],
+                $proper_custom_field_mapping_2['customer_property_name'],
+                $proper_custom_field_mapping_2['gr_custom_id'],
+                $proper_custom_field_mapping_2['is_active'],
+                $proper_custom_field_mapping_2['is_default']
+            )
+        );
 
+        $this->repository
+            ->expects(self::once())
+            ->method('getCustomFieldsMapping')
+            ->willReturn($customFieldMappingCollection);
+
+        $this->assertEquals($expectedCustomFieldMappingCollection, $this->sut->getActiveCustomFieldMapping());
+    }
 }

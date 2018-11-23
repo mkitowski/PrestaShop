@@ -15,7 +15,6 @@ require_once __DIR__ . '/Unit/PrestashopMock/Order.php';
 require_once __DIR__ . '/Unit/PrestashopMock/OrderState.php';
 require_once __DIR__ . '/Unit/PrestashopMock/Address.php';
 require_once __DIR__ . '/Unit/PrestashopMock/Country.php';
-require_once __DIR__ . '/Unit/PrestashopMock/PrestaShopDatabaseException.php';
 require_once __DIR__ . '/../classes/GetResponseRepository.php';
 require_once __DIR__ . '/../classes/GrApiException.php';
 

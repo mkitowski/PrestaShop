@@ -2,6 +2,7 @@
 
 use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
 
@@ -180,28 +181,50 @@ class GetResponseRepository implements DbRepositoryInterface
     }
 
     /**
-     * @return array
+     * @return CustomFieldMappingCollection
      */
-    public function getCustoms()
+    public function getCustomFieldsMapping()
     {
-        return json_decode(Configuration::get(ConfigurationSettings::CUSTOM_FIELDS), true);
+        $collection = new CustomFieldMappingCollection();
+
+        $result = json_decode(Configuration::get(ConfigurationSettings::CUSTOM_FIELDS), true);
+
+        if (empty($result)) {
+            return $collection;
+        }
+
+        foreach ($result as $row) {
+            $collection->add(new CustomFieldMapping(
+                $row['id'],
+                $row['custom_name'],
+                $row['customer_property_name'],
+                $row['gr_custom_id'],
+                $row['is_active'],
+                $row['is_default']
+            ));
+        }
+
+        return $collection;
     }
 
     /**
-     * @param CustomFieldMapping $custom
+     * @param CustomFieldMapping $newCustomFieldMapping
      */
-    public function updateCustom(CustomFieldMapping $custom)
+    public function updateCustom(CustomFieldMapping $newCustomFieldMapping)
     {
-        $customs = $this->getCustoms();
+        $newMappingCollection = new CustomFieldMappingCollection();
+        $mappingCollection = $this->getCustomFieldsMapping();
 
-        foreach ($customs as &$_custom) {
-            if ($_custom['id_custom'] === (int) $custom->getId()) {
-                $_custom['custom_name'] = $custom->getName();
-                $_custom['active_custom'] = $custom->getActive();
+        foreach ($mappingCollection as $customFieldMapping) {
+            if ($customFieldMapping->getId() === $newCustomFieldMapping->getId()) {
+                $newMappingCollection->add($newCustomFieldMapping);
+            } else {
+                $newMappingCollection->add($customFieldMapping);
             }
         }
 
-        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($customs));
+        $rawMapping = $newMappingCollection->toArray();
+        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($rawMapping));
     }
 
     public function clearDatabase()

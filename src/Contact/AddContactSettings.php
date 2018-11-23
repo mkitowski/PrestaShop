@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\Contact;
 
-use GetResponse\Export\ExportSettings;
 use GetResponse\Settings\Registration\RegistrationSettings;
 
 /**
@@ -29,19 +28,6 @@ class AddContactSettings
         $this->contactListId = $contactListId;
         $this->dayOfCycle = $dayOfCycle;
         $this->updateContactCustomFields = $updateContactCustomFields;
-    }
-
-    /**
-     * @param ExportSettings $settings
-     * @return AddContactSettings
-     */
-    public static function createFromExportSettings(ExportSettings $settings)
-    {
-       return new self(
-           $settings->getContactListId(),
-           $settings->getCycleDay(),
-           $settings->isUpdateContactInfo()
-       );
     }
 
     /**

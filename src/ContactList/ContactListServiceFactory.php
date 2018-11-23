@@ -28,10 +28,6 @@ class ContactListServiceFactory
         $repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
         $apiClient = new GetresponseApiClient($api, $repository);
 
-        return new ContactListService(
-            new ContactListRepository(),
-            new GrContactListService($apiClient),
-            $settings
-        );
+        return new ContactListService(new GrContactListService($apiClient));
     }
 }

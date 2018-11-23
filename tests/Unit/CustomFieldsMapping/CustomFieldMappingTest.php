@@ -13,23 +13,23 @@ class CustomFieldMappingTest extends BaseTestCase
     {
         $request = [
             'id' => 'id',
-            'value' => 'value',
-            'name' => 'name',
-            'active' => 1,
-            'field' => 'field',
-            'default' => 'default',
+            'custom_name' => 'customName',
+            'customer_property_name' => 'customerPropName',
+            'gr_custom_id' => 'c34d',
+            'is_active' => 1,
+            'is_default' => 0,
         ];
 
         $expected = new CustomFieldMapping(
             $request['id'],
-            $request['value'],
-            $request['name'],
-            'yes',
-            '',
-            $request['default']
+            $request['custom_name'],
+            $request['customer_property_name'],
+            $request['gr_custom_id'],
+            true,
+            false
         );
 
-        $this->assertEquals($expected, CustomFieldMapping::createFromRequest($request));
+        $this->assertEquals($expected, CustomFieldMapping::createFromArray($request));
     }
 
     /**
@@ -39,22 +39,22 @@ class CustomFieldMappingTest extends BaseTestCase
     {
         $request = [
             'id' => 'id',
-            'value' => 'value',
-            'name' => 'name',
-            'active' => 0,
-            'field' => 'field',
-            'default' => 'default',
+            'custom_name' => 'customName',
+            'customer_property_name' => 'customerPropName',
+            'gr_custom_id' => 'c34d',
+            'is_active' => 0,
+            'is_default' => 0,
         ];
 
         $expected = new CustomFieldMapping(
             $request['id'],
-            $request['value'],
-            $request['name'],
-            'no',
-            '',
-            $request['default']
+            $request['custom_name'],
+            $request['customer_property_name'],
+            $request['gr_custom_id'],
+            false,
+            false
         );
 
-        $this->assertEquals($expected, CustomFieldMapping::createFromRequest($request));
+        $this->assertEquals($expected, CustomFieldMapping::createFromArray($request));
     }
 }

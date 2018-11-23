@@ -13,4 +13,17 @@ class CustomFieldMappingCollection extends TypedCollection
     {
         $this->setItemType(CustomFieldMapping::class);
     }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $result = [];
+        /** @var CustomFieldMapping $customFieldMapping */
+        foreach ($this->getIterator() as $customFieldMapping) {
+            $result[] = $customFieldMapping->toArray();
+        }
+        return $result;
+    }
 }
