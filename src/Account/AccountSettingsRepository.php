@@ -2,7 +2,7 @@
 namespace GetResponse\Account;
 
 use Configuration;
-use ConfigurationSettings;
+use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class AccountSettingsRepository
@@ -15,7 +15,7 @@ class AccountSettingsRepository
      */
     public function getSettings()
     {
-        $result = json_decode(Configuration::get(ConfigurationSettings::ACCOUNT), true);
+        $result = json_decode(Configuration::get(ConfigurationKeys::ACCOUNT), true);
 
         if (empty($result)) {
             return AccountSettings::createEmptyInstance();
@@ -32,7 +32,7 @@ class AccountSettingsRepository
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
         Configuration::updateValue(
-        ConfigurationSettings::ACCOUNT,
+        ConfigurationKeys::ACCOUNT,
             json_encode([
                 'api_key' => $apiKey,
                 'type' => $accountType,
@@ -43,14 +43,14 @@ class AccountSettingsRepository
 
     public function clearConfiguration()
     {
-        Configuration::updateValue(ConfigurationSettings::ACCOUNT, NULL);
-        Configuration::updateValue(ConfigurationSettings::REGISTRATION, NULL);
-        Configuration::updateValue(ConfigurationSettings::WEB_FORM, NULL);
-        Configuration::updateValue(ConfigurationSettings::WEB_TRACKING, NULL);
-        Configuration::updateValue(ConfigurationSettings::TRACKING_CODE, NULL);
-        Configuration::updateValue(ConfigurationSettings::ECOMMERCE, NULL);
-        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, NULL);
-        Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, NULL);
+        Configuration::updateValue(ConfigurationKeys::ACCOUNT, NULL);
+        Configuration::updateValue(ConfigurationKeys::REGISTRATION, NULL);
+        Configuration::updateValue(ConfigurationKeys::WEB_FORM, NULL);
+        Configuration::updateValue(ConfigurationKeys::WEB_TRACKING, NULL);
+        Configuration::updateValue(ConfigurationKeys::TRACKING_CODE, NULL);
+        Configuration::updateValue(ConfigurationKeys::ECOMMERCE, NULL);
+        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, NULL);
+        Configuration::updateValue(ConfigurationKeys::ORIGIN_CUSTOM_FIELD, NULL);
     }
 
 }

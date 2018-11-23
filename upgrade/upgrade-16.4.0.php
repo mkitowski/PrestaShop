@@ -2,6 +2,7 @@
 
 
 use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\Config\ConfigurationKeys;
 use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
@@ -29,7 +30,7 @@ function upgrade_module_16_4_0($object) {
 
 function upgradeCustomsTable($idShop) {
 
-    Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode(DefaultCustomFields::DEFAULT_CUSTOM_FIELDS));
+    Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode(DefaultCustomFields::DEFAULT_CUSTOM_FIELDS));
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);
@@ -77,7 +78,7 @@ function upgradeSettingsTable($idShop) {
         );
 
         if (isset($result['invalid_request_date'])) {
-            Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, $result['invalid_request_date']);
+            Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, $result['invalid_request_date']);
         }
     }
 

@@ -3,7 +3,7 @@
 namespace GetResponse\Settings\Registration;
 
 use Configuration;
-use ConfigurationSettings;
+use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class RegistrationSettings
@@ -16,7 +16,7 @@ class RegistrationRepository
      */
     public function getSettings()
     {
-        $configuration = json_decode(Configuration::get(ConfigurationSettings::REGISTRATION), true);
+        $configuration = json_decode(Configuration::get(ConfigurationKeys::REGISTRATION), true);
 
         if (empty($configuration)) {
             return RegistrationSettings::createEmptyInstance();
@@ -31,7 +31,7 @@ class RegistrationRepository
     public function updateSettings(RegistrationSettings $settings)
     {
         Configuration::updateValue(
-            ConfigurationSettings::REGISTRATION,
+            ConfigurationKeys::REGISTRATION,
             json_encode([
                 'active_subscription' => $settings->isActive(),
                 'active_newsletter_subscription' => $settings->isNewsletterActive(),

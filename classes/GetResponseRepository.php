@@ -1,5 +1,6 @@
 <?php
 
+use GetResponse\Config\ConfigurationKeys;
 use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
@@ -187,7 +188,7 @@ class GetResponseRepository implements DbRepositoryInterface
     {
         $collection = new CustomFieldMappingCollection();
 
-        $result = json_decode(Configuration::get(ConfigurationSettings::CUSTOM_FIELDS), true);
+        $result = json_decode(Configuration::get(ConfigurationKeys::CUSTOM_FIELDS), true);
 
         if (empty($result)) {
             return $collection;
@@ -224,15 +225,15 @@ class GetResponseRepository implements DbRepositoryInterface
         }
 
         $rawMapping = $newMappingCollection->toArray();
-        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($rawMapping));
+        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode($rawMapping));
     }
 
     public function clearDatabase()
     {
-        Configuration::updateValue(ConfigurationSettings::ACCOUNT, NULL);
-        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, NULL);
-        Configuration::updateValue(ConfigurationSettings::ECOMMERCE, NULL);
-        Configuration::updateValue(ConfigurationSettings::WEB_FORM, NULL);
+        Configuration::updateValue(ConfigurationKeys::ACCOUNT, NULL);
+        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, NULL);
+        Configuration::updateValue(ConfigurationKeys::ECOMMERCE, NULL);
+        Configuration::updateValue(ConfigurationKeys::WEB_FORM, NULL);
 
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
@@ -329,7 +330,7 @@ class GetResponseRepository implements DbRepositoryInterface
             $field['id_shop'] = $storeId;
         }
 
-        Configuration::updateValue(ConfigurationSettings::CUSTOM_FIELDS, json_encode($customFields));
+        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode($customFields));
     }
 
     /**
@@ -376,7 +377,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsInvalid($accountId)
     {
-        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST, (new DateTime('now'))->format('Y-m-d H:i:s'));
+        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, (new DateTime('now'))->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -384,7 +385,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsValid($accountId)
     {
-        Configuration::updateValue(ConfigurationSettings::INVALID_REQUEST,NULL);
+        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST,NULL);
     }
 
     /**
@@ -393,7 +394,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getInvalidAccountFirstOccurrenceDate($accountId)
     {
-        return Configuration::get(ConfigurationSettings::INVALID_REQUEST);
+        return Configuration::get(ConfigurationKeys::INVALID_REQUEST);
     }
 
     /**
@@ -401,7 +402,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function disconnectAccount($accountId)
     {
-        Configuration::updateValue(ConfigurationSettings::ACCOUNT,NULL);
+        Configuration::updateValue(ConfigurationKeys::ACCOUNT,NULL);
     }
 
     /**
@@ -409,7 +410,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getOriginCustomFieldId()
     {
-        Configuration::get(ConfigurationSettings::ORIGIN_CUSTOM_FIELD);
+        Configuration::get(ConfigurationKeys::ORIGIN_CUSTOM_FIELD);
     }
 
     /**
@@ -417,7 +418,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function setOriginCustomFieldId($id)
     {
-        Configuration::updateValue(ConfigurationSettings::ORIGIN_CUSTOM_FIELD, $id);
+        Configuration::updateValue(ConfigurationKeys::ORIGIN_CUSTOM_FIELD, $id);
     }
 
     public function clearOriginCustomField()

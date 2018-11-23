@@ -2,7 +2,7 @@
 namespace GetResponse\Ecommerce;
 
 use Configuration;
-use ConfigurationSettings;
+use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class EcommerceRepository
@@ -14,7 +14,7 @@ class EcommerceRepository
      */
     public function getEcommerceSettings()
     {
-        $result = json_decode(Configuration::get(ConfigurationSettings::ECOMMERCE), true);
+        $result = json_decode(Configuration::get(ConfigurationKeys::ECOMMERCE), true);
 
         if (empty($result)) {
             return new Ecommerce(Ecommerce::STATUS_INACTIVE, null, null);
@@ -29,7 +29,7 @@ class EcommerceRepository
     public function updateEcommerceSubscription(Ecommerce $settings)
     {
         Configuration::updateValue(
-            ConfigurationSettings::ECOMMERCE,
+            ConfigurationKeys::ECOMMERCE,
             json_encode(['status' => $settings->getStatus(), 'shop_id' => $settings->getShopId(), 'list_id' => $settings->getListId()])
         );
     }

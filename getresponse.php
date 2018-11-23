@@ -28,7 +28,6 @@ include_once _PS_MODULE_DIR_ . '/getresponse/vendor/autoload.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GrApiException.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseRepository.php';
 include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedException.php';
-include_once _PS_MODULE_DIR_ . '/getresponse/classes/ConfigurationSettings.php';
 
 class Getresponse extends Module
 {

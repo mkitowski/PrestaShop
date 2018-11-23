@@ -35,7 +35,7 @@ class Ecommerce
      * @param array $params
      * @return Ecommerce
      */
-    public static function createFromPost($params)
+    public static function createFromPost(array $params)
     {
         if ($params['ecommerce']) {
             return new self(

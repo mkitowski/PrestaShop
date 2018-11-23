@@ -3,7 +3,7 @@
 namespace GetResponse\WebForm;
 
 use Configuration;
-use ConfigurationSettings;
+use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class WebFormRepository
@@ -16,7 +16,7 @@ class WebFormRepository
     public function update(WebForm $webForm)
     {
         Configuration::updateValue(
-            ConfigurationSettings::WEB_FORM,
+            ConfigurationKeys::WEB_FORM,
             json_encode([
                 'status' => $webForm->getStatus(),
                 'webform_id' => $webForm->getId(),
@@ -32,7 +32,7 @@ class WebFormRepository
      */
     public function getWebForm()
     {
-        $result = json_decode(Configuration::get(ConfigurationSettings::WEB_FORM), true);
+        $result = json_decode(Configuration::get(ConfigurationKeys::WEB_FORM), true);
 
         if (empty($result)) {
             return WebForm::createEmptyInstance();

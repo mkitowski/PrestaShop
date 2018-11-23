@@ -1,9 +1,11 @@
 <?php
+namespace GetResponse\Config;
 
 /**
- * Class ConfigurationSettings
+ * Class ConfigurationKeys
+ * @package GetResponse\Config
  */
-class ConfigurationSettings
+class ConfigurationKeys
 {
     const ACCOUNT = 'getresponse_account';
     const CUSTOM_FIELDS = 'getresponse_customs';
@@ -14,5 +16,4 @@ class ConfigurationSettings
     const TRACKING_CODE = 'getresponse_tracking_code';
     const INVALID_REQUEST = 'getresponse_invalid_request_date';
     const ORIGIN_CUSTOM_FIELD = 'getresponse_origin_custom_field';
-
 }
