@@ -141,12 +141,7 @@ class WebForm
                 $params['style']
             );
         } else {
-            return new self(
-                self::INACTIVE,
-                null,
-                null,
-                null
-            );
+            return self::createEmptyInstance();
         }
     }
 }
