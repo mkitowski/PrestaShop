@@ -26,7 +26,6 @@ use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactList;
-use GetResponse\ContactList\ContactListService;
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -35,9 +34,6 @@ class AdminGetresponseController extends ModuleAdminController
 
     /** @var GetResponseRepository */
     public $repository;
-
-    /** @var ContactListService */
-    protected $contactListService;
 
     public function __construct()
     {
@@ -60,7 +56,7 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $this->contactListService = ContactListServiceFactory::create();
+
 
         $accountStatus = AccountStatusFactory::create();
 
@@ -208,6 +204,8 @@ class AdminGetresponseController extends ModuleAdminController
      */
     protected function getCampaignsOptions()
     {
+        $contactListService = ContactListServiceFactory::create();
+
         $campaigns = [
             [
                 'id_option' => 0,
@@ -216,7 +214,7 @@ class AdminGetresponseController extends ModuleAdminController
         ];
 
         /** @var ContactList $contactList */
-        foreach ($this->contactListService->getContactLists() as $contactList) {
+        foreach ($contactListService->getContactLists() as $contactList) {
             $campaigns[] = [
                 'id_option' => $contactList->getId(),
                 'name' => $contactList->getName()
