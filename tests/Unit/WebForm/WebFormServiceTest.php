@@ -77,19 +77,17 @@ class WebFormServiceTest extends BaseTestCase
     /**
      * @test
      */
-    public function shouldUpdateWebFormWithDefaultValues()
+    public function shouldClearWebForm()
     {
         $status = WebForm::STATUS_INACTIVE;
         $webFromId = 'X3d93';
         $sidebar = 'home';
 
         $webForm = new WebForm($status, $webFromId, $sidebar);
-        $expectedWebFrom = new WebForm($status, $webFromId, $sidebar, WebForm::STYLE_DEFAULT, '');
 
         $this->repository
             ->expects(self::once())
-            ->method('update')
-            ->with($expectedWebFrom);
+            ->method('clearSettings');
 
         $this->sut->updateWebForm($webForm);
     }

@@ -5,7 +5,6 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebTracking\WebTracking;
 use GetResponse\WebTracking\WebTrackingRepository;
 use GetResponse\WebTracking\WebTrackingService;
-use GrShareCode\TrackingCode\TrackingCode;
 use GrShareCode\TrackingCode\TrackingCodeService as GrTrackingCodeService;
 use PHPUnit_Framework_MockObject_MockObject;
 
@@ -40,11 +39,11 @@ class WebTrackingServiceTest extends BaseTestCase
 
         $this->repository
             ->expects(self::once())
-            ->method('saveTracking')
+            ->method('updateWebTracking')
             ->with(new WebTracking($status, $trackingCodeSnippet));
 
 
-        $this->sut->saveTracking($status);
+        $this->sut->saveTracking(new WebTracking($status));
     }
 
     /**
@@ -52,22 +51,11 @@ class WebTrackingServiceTest extends BaseTestCase
      */
     public function shouldUpdateTrackingAsDisabled()
     {
-        $status = 'inactive';
-        $trackingCodeSnippet = 'snippet';
-
-        $this->grTrackingCodeService
-            ->expects(self::once())
-            ->method('getTrackingCode')
-            ->willReturn(new TrackingCode('0', $trackingCodeSnippet));
-
-        $webTracking = new WebTracking($status, $trackingCodeSnippet);
-
         $this->repository
             ->expects(self::once())
-            ->method('saveTracking')
-            ->with($webTracking);
+            ->method('clearWebTracking');
 
-        $this->sut->saveTracking($status);
+        $this->sut->saveTracking(new WebTracking(WebTracking::TRACKING_INACTIVE));
     }
 
     /**

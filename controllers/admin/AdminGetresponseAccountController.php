@@ -102,8 +102,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     ? WebTracking::TRACKING_INACTIVE
                     : WebTracking::TRACKING_DISABLED;
 
-                $webTrackingService->saveTracking($trackingStatus);
-
+                $webTrackingService->saveTracking(new WebTracking($trackingStatus));
                 $this->confirmations[] = $this->l('GetResponse account connected');
 
             } else {

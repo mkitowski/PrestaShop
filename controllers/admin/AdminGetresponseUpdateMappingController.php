@@ -44,8 +44,6 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 
             $customFieldMapping = $this->mappingService->getCustomFieldMappingById(Tools::getValue('id'));
 
-            $values = Tools::getAllValues();
-
             $custom = [
                 'id' => (int) Tools::getValue('id'),
                 'custom_name' => $customFieldMapping->getCustomName(),

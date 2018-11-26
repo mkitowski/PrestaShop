@@ -66,10 +66,14 @@ class EcommerceService
     }
 
     /**
-     * @param Ecommerce $ecommerce
+     * @param Ecommerce $eCommerce
      */
-    public function updateEcommerceDetails(Ecommerce $ecommerce)
+    public function updateEcommerceDetails(Ecommerce $eCommerce)
     {
-        $this->repository->updateEcommerceSubscription($ecommerce);
+        if ($eCommerce->isEnabled()) {
+            $this->repository->updateEcommerceSubscription($eCommerce);
+        } else {
+            $this->repository->clearEcommerceSettings();
+        }
     }
 }

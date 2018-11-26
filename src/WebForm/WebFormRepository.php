@@ -3,20 +3,21 @@
 namespace GetResponse\WebForm;
 
 use Configuration;
-use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class WebFormRepository
  */
 class WebFormRepository
 {
+    const RESOURCE_KEY = 'getresponse_forms';
+
     /**
      * @param WebForm $webForm
      */
     public function update(WebForm $webForm)
     {
         Configuration::updateValue(
-            ConfigurationKeys::WEB_FORM,
+            self::RESOURCE_KEY,
             json_encode([
                 'status' => $webForm->getStatus(),
                 'webform_id' => $webForm->getId(),
@@ -32,7 +33,7 @@ class WebFormRepository
      */
     public function getWebForm()
     {
-        $result = json_decode(Configuration::get(ConfigurationKeys::WEB_FORM), true);
+        $result = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
         if (empty($result)) {
             return WebForm::createEmptyInstance();
@@ -45,5 +46,10 @@ class WebFormRepository
             $result['style'],
             $result['url']
         );
+    }
+
+    public function clearSettings()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, NULL);
     }
 }

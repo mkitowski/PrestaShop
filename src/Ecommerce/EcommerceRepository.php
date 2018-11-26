@@ -2,19 +2,20 @@
 namespace GetResponse\Ecommerce;
 
 use Configuration;
-use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class EcommerceRepository
  */
 class EcommerceRepository
 {
+    const RESOURCE_KEY = 'getresponse_ecommerce';
+
     /**
      * @return Ecommerce
      */
     public function getEcommerceSettings()
     {
-        $result = json_decode(Configuration::get(ConfigurationKeys::ECOMMERCE), true);
+        $result = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
         if (empty($result)) {
             return new Ecommerce(Ecommerce::STATUS_INACTIVE, null, null);
@@ -29,8 +30,13 @@ class EcommerceRepository
     public function updateEcommerceSubscription(Ecommerce $settings)
     {
         Configuration::updateValue(
-            ConfigurationKeys::ECOMMERCE,
+            self::RESOURCE_KEY,
             json_encode(['status' => $settings->getStatus(), 'shop_id' => $settings->getShopId(), 'list_id' => $settings->getListId()])
         );
+    }
+
+    public function clearEcommerceSettings()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, NULL);
     }
 }

@@ -43,11 +43,11 @@ class AdminGetresponseWebTrackingController extends AdminGetresponseController
 
             $status = (int) Tools::getValue('tracking');
 
-            $this->webTrackingService->saveTracking(
+            $this->webTrackingService->saveTracking(new WebTracking(
                 $status === 1 ?
                 WebTracking::TRACKING_ACTIVE
                 : WebTracking::TRACKING_INACTIVE
-            );
+            ));
 
             $this->confirmations[] = $status === WebTracking::TRACKING_ACTIVE
                 ? $this->l('Web event traffic tracking enabled')

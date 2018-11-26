@@ -73,8 +73,11 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                 return;
             }
 
-            $registrationRepository = new RegistrationRepository();
-            $registrationRepository->updateSettings($registrationSettings);
+            if ($registrationSettings->isActive()) {
+                (new RegistrationRepository())->updateSettings($registrationSettings);
+            } else {
+                (new RegistrationRepository())->clearSettings();
+            }
 
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));

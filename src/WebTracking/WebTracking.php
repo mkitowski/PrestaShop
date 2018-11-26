@@ -23,7 +23,7 @@ class WebTracking
      * @param string $snippet
      * @param string $status
      */
-    public function __construct($status, $snippet)
+    public function __construct($status, $snippet = '')
     {
         $this->status = $status;
         $this->snippet = $snippet;
@@ -67,5 +67,13 @@ class WebTracking
     public static function createEmptyInstance()
     {
         return new self(self::TRACKING_INACTIVE, '');
+    }
+
+    /**
+     * @param $snippet
+     */
+    public function setSnippetCode($snippet)
+    {
+        $this->snippet = $snippet;
     }
 }

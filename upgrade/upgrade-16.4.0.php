@@ -2,8 +2,10 @@
 
 
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Config\ConfigurationKeys;
+use GetResponse\CustomFields\CustomFieldsRepository;
 use GetResponse\CustomFields\DefaultCustomFields;
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationRepository;
@@ -30,7 +32,22 @@ function upgrade_module_16_4_0($object) {
 
 function upgradeCustomsTable($idShop) {
 
-    Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode(DefaultCustomFields::DEFAULT_CUSTOM_FIELDS));
+    $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
+
+    $collection = new CustomFieldMappingCollection();
+    foreach ($customFields as $field) {
+
+        $collection->add(new CustomFieldMapping(
+            $field['id'],
+            $field['custom_name'],
+            $field['customer_property_name'],
+            $field['gr_custom_id'],
+            $field['is_active'],
+            $field['is_default']
+        ));
+    }
+
+    (new CustomFieldsRepository())->updateCustomFields($collection);
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);
@@ -66,11 +83,10 @@ function upgradeSettingsTable($idShop) {
         $accountRepository = new AccountSettingsRepository();
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
-        $registrationRepository = new RegistrationRepository();
-        $registrationRepository->updateSettings(RegistrationSettings::createFromOldDbTable($result));
+        (new RegistrationRepository())->updateSettings(RegistrationSettings::createFromOldDbTable($result));
 
         $webTrackingRepository = new WebTrackingRepository();
-        $webTrackingRepository->saveTracking(
+        $webTrackingRepository->updateWebTracking(
             new WebTracking(
             $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE,
             $result['tracking_snippet']
@@ -78,7 +94,7 @@ function upgradeSettingsTable($idShop) {
         );
 
         if (isset($result['invalid_request_date'])) {
-            Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, $result['invalid_request_date']);
+            (new \GetResponse\Account\AccountRepository())->updateInvalidRequestDate($result['invalid_request_date']);
         }
     }
 

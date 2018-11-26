@@ -36,9 +36,10 @@ class WebFormService
     {
         if ($webForm->isActive()) {
             $webForm->setUrl($this->getGetResponseFormCollection()->findOneById($webForm->getId())->getScriptUrl());
+            $this->repository->update($webForm);
+        } else {
+            $this->repository->clearSettings();
         }
-
-        $this->repository->update($webForm);
     }
 
     /**

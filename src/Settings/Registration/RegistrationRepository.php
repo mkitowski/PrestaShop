@@ -3,7 +3,6 @@
 namespace GetResponse\Settings\Registration;
 
 use Configuration;
-use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class RegistrationSettings
@@ -11,12 +10,14 @@ use GetResponse\Config\ConfigurationKeys;
  */
 class RegistrationRepository
 {
+    const RESOURCE_KEY = 'getresponse_registration';
+
     /**
      * @return RegistrationSettings
      */
     public function getSettings()
     {
-        $configuration = json_decode(Configuration::get(ConfigurationKeys::REGISTRATION), true);
+        $configuration = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
         if (empty($configuration)) {
             return RegistrationSettings::createEmptyInstance();
@@ -31,7 +32,7 @@ class RegistrationRepository
     public function updateSettings(RegistrationSettings $settings)
     {
         Configuration::updateValue(
-            ConfigurationKeys::REGISTRATION,
+            self::RESOURCE_KEY,
             json_encode([
                 'active_subscription' => $settings->isActive(),
                 'active_newsletter_subscription' => $settings->isNewsletterActive(),
@@ -40,5 +41,10 @@ class RegistrationRepository
                 'cycle_day' => $settings->getCycleDay()
             ])
         );
+    }
+
+    public function clearSettings()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, NULL);
     }
 }

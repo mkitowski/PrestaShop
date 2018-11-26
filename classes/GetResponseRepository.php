@@ -1,9 +1,14 @@
 <?php
 
-use GetResponse\Config\ConfigurationKeys;
+use GetResponse\Account\AccountRepository;
+use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\CustomFields\CustomFieldsRepository;
 use GetResponse\CustomFields\DefaultCustomFields;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+use GetResponse\Ecommerce\EcommerceRepository;
+use GetResponse\WebForm\WebFormRepository;
+use GetResponse\WebTracking\WebTrackingRepository;
 use GrShareCode\DbRepositoryInterface;
 use GrShareCode\ProductMapping\ProductMapping;
 
@@ -186,26 +191,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getCustomFieldsMapping()
     {
-        $collection = new CustomFieldMappingCollection();
-
-        $result = json_decode(Configuration::get(ConfigurationKeys::CUSTOM_FIELDS), true);
-
-        if (empty($result)) {
-            return $collection;
-        }
-
-        foreach ($result as $row) {
-            $collection->add(new CustomFieldMapping(
-                $row['id'],
-                $row['custom_name'],
-                $row['customer_property_name'],
-                $row['gr_custom_id'],
-                $row['is_active'],
-                $row['is_default']
-            ));
-        }
-
-        return $collection;
+        return (new CustomFieldsRepository())->getCustomFieldsMapping();
     }
 
     /**
@@ -224,16 +210,16 @@ class GetResponseRepository implements DbRepositoryInterface
             }
         }
 
-        $rawMapping = $newMappingCollection->toArray();
-        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode($rawMapping));
+        (new CustomFieldsRepository())->updateCustomFields($newMappingCollection);
     }
 
     public function clearDatabase()
     {
-        Configuration::updateValue(ConfigurationKeys::ACCOUNT, NULL);
-        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, NULL);
-        Configuration::updateValue(ConfigurationKeys::ECOMMERCE, NULL);
-        Configuration::updateValue(ConfigurationKeys::WEB_FORM, NULL);
+        (new AccountSettingsRepository())->clearSettings();
+        (new WebFormRepository())->clearSettings();
+        (new WebTrackingRepository())->clearWebTracking();
+        (new CustomFieldsRepository())->clearCustomFields();
+        (new EcommerceRepository())->clearEcommerceSettings();
 
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');
@@ -307,7 +293,7 @@ class GetResponseRepository implements DbRepositoryInterface
                 }
             }
         } else {
-            $sql[] = $this->setDefaultCustomFields('1');
+            $sql[] = $this->setDefaultCustomFields(null);
         }
 
         //Install SQL
@@ -320,17 +306,26 @@ class GetResponseRepository implements DbRepositoryInterface
     }
 
     /**
-     * @param int $storeId
+     * @param int|null $storeId
      */
-    private function setDefaultCustomFields($storeId)
+    private function setDefaultCustomFields($storeId = null)
     {
         $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
 
+        $collection = new CustomFieldMappingCollection();
         foreach ($customFields as $field) {
-            $field['id_shop'] = $storeId;
+
+            $collection->add(new CustomFieldMapping(
+                $field['id'],
+                $field['custom_name'],
+                $field['customer_property_name'],
+                $field['gr_custom_id'],
+                $field['is_active'],
+                $field['is_default']
+            ));
         }
 
-        Configuration::updateValue(ConfigurationKeys::CUSTOM_FIELDS, json_encode($customFields));
+        (new CustomFieldsRepository())->updateCustomFields($collection, $storeId);
     }
 
     /**
@@ -377,7 +372,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsInvalid($accountId)
     {
-        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, (new DateTime('now'))->format('Y-m-d H:i:s'));
+        (new AccountRepository())->updateInvalidRequestDate((new DateTime('now'))->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -385,7 +380,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function markAccountAsValid($accountId)
     {
-        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST,NULL);
+        (new AccountRepository())->clearInvalidRequestDate();
     }
 
     /**
@@ -394,7 +389,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getInvalidAccountFirstOccurrenceDate($accountId)
     {
-        return Configuration::get(ConfigurationKeys::INVALID_REQUEST);
+        return (new AccountRepository())->getInvalidRequestDate();
     }
 
     /**
@@ -402,7 +397,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function disconnectAccount($accountId)
     {
-        Configuration::updateValue(ConfigurationKeys::ACCOUNT,NULL);
+        (new AccountSettingsRepository())->clearSettings();
     }
 
     /**
@@ -410,7 +405,7 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function getOriginCustomFieldId()
     {
-        Configuration::get(ConfigurationKeys::ORIGIN_CUSTOM_FIELD);
+        return (new AccountRepository())->getOriginCustomFieldValue();
     }
 
     /**
@@ -418,12 +413,12 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     public function setOriginCustomFieldId($id)
     {
-        Configuration::updateValue(ConfigurationKeys::ORIGIN_CUSTOM_FIELD, $id);
+        (new AccountRepository())->updateOriginCustomFieldId($id);
     }
 
     public function clearOriginCustomField()
     {
-        $this->setOriginCustomFieldId('');
+        (new AccountRepository())->clearOriginCustomFieldId();
     }
 
 

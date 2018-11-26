@@ -47,12 +47,26 @@ class EcommerceServiceTest extends BaseTestCase
      */
     public function shouldUpdateEcommerceDetailsWithoutShopId()
     {
-        $ecommerce = new Ecommerce('inactive', 'shopId', 'grListId');
+        $ecommerce = new Ecommerce(Ecommerce::STATUS_ACTIVE, 'shopId', 'grListId');
 
         $this->repository
             ->expects(self::once())
             ->method('updateEcommerceSubscription')
             ->with($ecommerce);
+
+        $this->sut->updateEcommerceDetails($ecommerce);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldClearEcommerceDetails()
+    {
+        $ecommerce = new Ecommerce(Ecommerce::STATUS_INACTIVE, 'shopId', 'grListId');
+
+        $this->repository
+            ->expects(self::once())
+            ->method('clearEcommerceSettings');
 
         $this->sut->updateEcommerceDetails($ecommerce);
     }

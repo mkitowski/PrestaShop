@@ -3,7 +3,6 @@
 namespace GetResponse\WebTracking;
 
 use Configuration;
-use GetResponse\Config\ConfigurationKeys;
 
 /**
  * Class WebTrackingRepository
@@ -11,32 +10,39 @@ use GetResponse\Config\ConfigurationKeys;
  */
 class WebTrackingRepository
 {
+    const RESOURCE_KEY = 'getresponse_web_tracking';
+
     /**
      * @return WebTracking|null
      */
     public function getWebTracking()
     {
-        $status = json_decode(Configuration::get(ConfigurationKeys::WEB_TRACKING), true);
+        $status = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
         if (empty($status)) {
             return WebTracking::createEmptyInstance();
         }
 
-        return new WebTracking($status['status'], Configuration::get(ConfigurationKeys::TRACKING_CODE));
+        return new WebTracking($status['status'], Configuration::get(self::RESOURCE_KEY));
     }
 
     /**
      * @param WebTracking $webTracking
      */
-    public function saveTracking(WebTracking $webTracking)
+    public function updateWebTracking(WebTracking $webTracking)
     {
         Configuration::updateValue(
-            ConfigurationKeys::WEB_TRACKING,
+            self::RESOURCE_KEY,
             json_encode(['status' => $webTracking->getStatus()]),
             true
         );
 
-        Configuration::updateValue(ConfigurationKeys::TRACKING_CODE, $webTracking->getSnippet(), true);
+        Configuration::updateValue(self::RESOURCE_KEY, $webTracking->getSnippet(), true);
+    }
+
+    public function clearWebTracking()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, NULL);
     }
 
 }

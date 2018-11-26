@@ -2,7 +2,10 @@
 namespace GetResponse\Account;
 
 use Configuration;
-use GetResponse\Config\ConfigurationKeys;
+use GetResponse\Ecommerce\EcommerceRepository;
+use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\WebForm\WebFormRepository;
+use GetResponse\WebTracking\WebTrackingRepository;
 
 /**
  * Class AccountSettingsRepository
@@ -10,12 +13,14 @@ use GetResponse\Config\ConfigurationKeys;
  */
 class AccountSettingsRepository
 {
+    const RESOURCE_KEY = 'getresponse_account';
+
     /**
      * @return AccountSettings
      */
     public function getSettings()
     {
-        $result = json_decode(Configuration::get(ConfigurationKeys::ACCOUNT), true);
+        $result = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
         if (empty($result)) {
             return AccountSettings::createEmptyInstance();
@@ -32,7 +37,7 @@ class AccountSettingsRepository
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
         Configuration::updateValue(
-        ConfigurationKeys::ACCOUNT,
+        self::RESOURCE_KEY,
             json_encode([
                 'api_key' => $apiKey,
                 'type' => $accountType,
@@ -43,14 +48,17 @@ class AccountSettingsRepository
 
     public function clearConfiguration()
     {
-        Configuration::updateValue(ConfigurationKeys::ACCOUNT, NULL);
-        Configuration::updateValue(ConfigurationKeys::REGISTRATION, NULL);
-        Configuration::updateValue(ConfigurationKeys::WEB_FORM, NULL);
-        Configuration::updateValue(ConfigurationKeys::WEB_TRACKING, NULL);
-        Configuration::updateValue(ConfigurationKeys::TRACKING_CODE, NULL);
-        Configuration::updateValue(ConfigurationKeys::ECOMMERCE, NULL);
-        Configuration::updateValue(ConfigurationKeys::INVALID_REQUEST, NULL);
-        Configuration::updateValue(ConfigurationKeys::ORIGIN_CUSTOM_FIELD, NULL);
+        $this->clearSettings();
+        (new RegistrationRepository())->clearSettings();
+        (new WebFormRepository())->clearSettings();
+        (new WebTrackingRepository())->clearWebTracking();
+        (new EcommerceRepository())->clearEcommerceSettings();
+        (new AccountRepository())->clearInvalidRequestDate();
+        (new AccountRepository())->clearOriginCustomFieldId();
     }
 
+    public function clearSettings()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, NULL);
+    }
 }
