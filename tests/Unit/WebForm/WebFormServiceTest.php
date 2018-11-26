@@ -37,7 +37,7 @@ class WebFormServiceTest extends BaseTestCase
      */
     public function shouldUpdateWebForm()
     {
-        $webForm = new WebForm(WebForm::ACTIVE, 'webFormId1', 'top', 'myStyle');
+        $webForm = new WebForm(WebForm::STATUS_ACTIVE, 'webFormId1', 'top', 'myStyle');
 
         $webFormCollection = new WebFormCollection();
         $webFormCollection->add(
@@ -64,7 +64,7 @@ class WebFormServiceTest extends BaseTestCase
             ->method('getAllWebForms')
             ->willReturn($webFormCollection);
 
-        $expectedWebFrom = new WebForm(WebForm::ACTIVE, 'webFormId1', 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
+        $expectedWebFrom = new WebForm(WebForm::STATUS_ACTIVE, 'webFormId1', 'top', 'myStyle', 'http://getresponse.com/webform/webFormId1');
 
         $this->repository
             ->expects(self::once())
@@ -79,7 +79,7 @@ class WebFormServiceTest extends BaseTestCase
      */
     public function shouldUpdateWebFormWithDefaultValues()
     {
-        $status = WebForm::INACTIVE;
+        $status = WebForm::STATUS_INACTIVE;
         $webFromId = 'X3d93';
         $sidebar = 'home';
 

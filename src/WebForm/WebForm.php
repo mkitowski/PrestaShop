@@ -7,8 +7,8 @@ namespace GetResponse\WebForm;
  */
 class WebForm
 {
-    const ACTIVE = 'active';
-    const INACTIVE = 'inactive';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
 
     const SIDEBAR_DEFAULT = 'home';
 
@@ -99,7 +99,7 @@ class WebForm
      */
     public function isActive()
     {
-        return self::ACTIVE === $this->status;
+        return self::STATUS_ACTIVE === $this->status;
     }
 
     /**
@@ -124,7 +124,7 @@ class WebForm
      */
     public static function createEmptyInstance()
     {
-        return new self(self::INACTIVE, '', '', '', '');
+        return new self(self::STATUS_INACTIVE, '', '', '', '');
     }
 
     /**
@@ -135,7 +135,7 @@ class WebForm
     {
         if ($params['subscription']) {
             return new self(
-                self::ACTIVE,
+                self::STATUS_ACTIVE,
                 $params['form'],
                 $params['position'],
                 $params['style']

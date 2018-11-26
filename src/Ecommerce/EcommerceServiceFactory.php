@@ -3,7 +3,6 @@ namespace GetResponse\Ecommerce;
 
 use Db;
 use GetResponse\Account\AccountServiceFactory;
-use GetResponse\Account\AccountSettings;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop as GrShop;
 use GetResponseRepository;
@@ -32,8 +31,7 @@ class EcommerceServiceFactory
 
         return new EcommerceService(
             new EcommerceRepository(),
-            new ShopService($apiClient),
-            $accountSettings
+            new ShopService($apiClient)
         );
     }
 }

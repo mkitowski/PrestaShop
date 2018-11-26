@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\Ecommerce;
 
-use GetResponse\Account\AccountSettings;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Command\AddShopCommand;
 use GrShareCode\Shop\Command\DeleteShopCommand;
@@ -20,19 +19,14 @@ class EcommerceService
     /** @var ShopService */
     private $shopService;
 
-    /** @var AccountSettings */
-    private $settings;
-
     /**
      * @param EcommerceRepository $repository
      * @param ShopService $shopService
-     * @param AccountSettings $settings
      */
-    public function __construct(EcommerceRepository $repository, ShopService $shopService, AccountSettings $settings)
+    public function __construct(EcommerceRepository $repository, ShopService $shopService)
     {
         $this->repository = $repository;
         $this->shopService = $shopService;
-        $this->settings = $settings;
     }
 
     /**

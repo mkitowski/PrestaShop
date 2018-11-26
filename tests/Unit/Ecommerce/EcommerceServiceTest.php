@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\Tests\Unit\Ecommerce;
 
-use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Ecommerce\EcommerceService;
@@ -20,16 +19,12 @@ class EcommerceServiceTest extends BaseTestCase
     /** @var ShopService | PHPUnit_Framework_MockObject_MockObject */
     private $shopService;
 
-    /** @var AccountSettings| PHPUnit_Framework_MockObject_MockObject */
-    private $accountSettings;
-
     protected function setUp()
     {
         $this->repository = $this->getMockWithoutConstructing(EcommerceRepository::class);
         $this->shopService = $this->getMockWithoutConstructing(ShopService::class);
-        $this->accountSettings = $this->getMockWithoutConstructing(AccountSettings::class);
 
-        $this->sut = new EcommerceService($this->repository, $this->shopService, $this->accountSettings);
+        $this->sut = new EcommerceService($this->repository, $this->shopService);
     }
 
     /**

@@ -106,7 +106,7 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             'style' => Tools::getValue('style', $webForm->getStyle()),
             'subscription' => Tools::getValue(
                 'subscription',
-                $webForm->getStatus() === WebForm::ACTIVE ? 1 : 0
+                $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
             )
         ];
     }

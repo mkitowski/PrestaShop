@@ -28,14 +28,14 @@ class WebFormValidatorTest extends BaseTestCase
      */
     public function shouldReturnError()
     {
-        $webForm = new WebForm(WebForm::ACTIVE, '', 'bottom', 'myStyle');
+        $webForm = new WebForm(WebForm::STATUS_ACTIVE, '', 'bottom', 'myStyle');
 
         $validator = new WebFormValidator($webForm);
         $this->assertFalse($validator->isValid());
         $this->assertEquals(['You need to select a form and its placement'], $validator->getErrors());
 
 
-        $webForm = new WebForm(WebForm::ACTIVE,'formId', '', 'myStyle');
+        $webForm = new WebForm(WebForm::STATUS_ACTIVE,'formId', '', 'myStyle');
 
         $validator = new WebFormValidator($webForm);
         $this->assertFalse($validator->isValid());

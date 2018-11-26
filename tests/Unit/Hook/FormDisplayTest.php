@@ -29,7 +29,7 @@ class FormDisplayTest extends BaseTestCase
     public function shouldNotDisplayWebFormIfNotEligible()
     {
         $webFormWithDifferentPosition = new WebForm(
-            WebForm::ACTIVE,
+            WebForm::STATUS_ACTIVE,
             'webFormId1',
             'bottom',
             'default',
@@ -37,7 +37,7 @@ class FormDisplayTest extends BaseTestCase
         );
 
         $webFormWithDisabledStatus = new WebForm(
-            WebForm::INACTIVE,
+            WebForm::STATUS_INACTIVE,
             'webFormId1',
             'top',
             'default',
@@ -45,7 +45,7 @@ class FormDisplayTest extends BaseTestCase
         );
 
         $webFormWithDefaultStyle = new WebForm(
-            WebForm::ACTIVE,
+            WebForm::STATUS_ACTIVE,
             'webFormId1',
             'top',
             'default',
@@ -53,7 +53,7 @@ class FormDisplayTest extends BaseTestCase
         );
 
         $webFormWithPrestaShopStyle = new WebForm(
-            WebForm::ACTIVE,
+            WebForm::STATUS_ACTIVE,
             'webFormId1',
             'top',
             'prestashop',

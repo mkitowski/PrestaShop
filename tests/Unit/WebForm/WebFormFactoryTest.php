@@ -3,7 +3,6 @@ namespace GetResponse\Tests\Unit\WebForm;
 
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormFactory;
 
 /**
  * Class WebFormFactoryTest
@@ -27,7 +26,7 @@ class WebFormFactoryTest extends BaseTestCase
 
         $this->assertEquals(
             new WebForm(
-                WebForm::ACTIVE,
+                WebForm::STATUS_ACTIVE,
                 $request['form'],
                 $request['position'],
                 $request['style']
@@ -51,7 +50,7 @@ class WebFormFactoryTest extends BaseTestCase
 
         $this->assertEquals(
             new WebForm(
-                WebForm::INACTIVE,
+                WebForm::STATUS_INACTIVE,
                 null,
                 '',
                 ''
