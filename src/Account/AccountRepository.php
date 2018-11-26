@@ -20,6 +20,9 @@ class AccountRepository
         return json_decode(Configuration::get(self::INVALID_REQUEST), true);
     }
 
+    /**
+     * @param string $date
+     */
     public function updateInvalidRequestDate($date)
     {
         Configuration::updateValue(self::INVALID_REQUEST, $date);
@@ -38,6 +41,9 @@ class AccountRepository
         return Configuration::get(self::ORIGIN_CUSTOM_FIELD);
     }
 
+    /**
+     * @param string $id
+     */
     public function updateOriginCustomFieldId($id)
     {
         Configuration::updateValue(self::ORIGIN_CUSTOM_FIELD, $id);

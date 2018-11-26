@@ -109,8 +109,8 @@ function upgradeWebFormsTable($idShop) {
     if (!empty($result['webform_id'])) {
         $repository = new WebFormRepository();
         $repository->update(new WebForm(
+            $result['active_subscription'] === 'yes' ? WebForm::STATUS_ACTIVE : WebForm::STATUS_INACTIVE,
             $result['webform_id'],
-            $result['active_subscription'],
             $result['sidebar'],
             $result['style'],
             $result['url']
