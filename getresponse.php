@@ -274,7 +274,7 @@ class Getresponse extends Module
             $service = RegistrationServiceFactory::createService();
             $settings = $service->getSettings();
 
-            if (!$settings->isNewsletterActive() || 1 != $contact->newsletter) {
+            if (!$settings->isActive() || 1 != $contact->newsletter) {
                 return;
             }
 
