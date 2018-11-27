@@ -2,10 +2,7 @@
 
 use GetResponse\Account\AccountRepository;
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\CustomFields\CustomFieldsRepository;
-use GetResponse\CustomFields\DefaultCustomFields;
-use GetResponse\CustomFieldsMapping\CustomFieldMapping;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\WebForm\WebFormRepository;
 use GetResponse\WebTracking\WebTrackingRepository;
@@ -186,39 +183,14 @@ class GetResponseRepository implements DbRepositoryInterface
         $this->db->execute($sql);
     }
 
-    /**
-     * @return CustomFieldMappingCollection
-     */
-    public function getCustomFieldsMapping()
-    {
-        return (new CustomFieldsRepository())->getCustomFieldsMapping();
-    }
-
-    /**
-     * @param CustomFieldMapping $newCustomFieldMapping
-     */
-    public function updateCustom(CustomFieldMapping $newCustomFieldMapping)
-    {
-        $newMappingCollection = new CustomFieldMappingCollection();
-        $mappingCollection = $this->getCustomFieldsMapping();
-
-        foreach ($mappingCollection as $customFieldMapping) {
-            if ($customFieldMapping->getId() === $newCustomFieldMapping->getId()) {
-                $newMappingCollection->add($newCustomFieldMapping);
-            } else {
-                $newMappingCollection->add($customFieldMapping);
-            }
-        }
-
-        (new CustomFieldsRepository())->updateCustomFields($newMappingCollection);
-    }
-
     public function clearDatabase()
     {
+        $customFieldsService = CustomFieldsServiceFactory::create();
+
         (new AccountSettingsRepository())->clearSettings();
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
-        (new CustomFieldsRepository())->clearCustomFields();
+        $customFieldsService->clearCustomFields();
         (new EcommerceRepository())->clearEcommerceSettings();
 
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
@@ -310,22 +282,8 @@ class GetResponseRepository implements DbRepositoryInterface
      */
     private function setDefaultCustomFields($storeId = null)
     {
-        $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
-
-        $collection = new CustomFieldMappingCollection();
-        foreach ($customFields as $field) {
-
-            $collection->add(new CustomFieldMapping(
-                $field['id'],
-                $field['custom_name'],
-                $field['customer_property_name'],
-                $field['gr_custom_id'],
-                $field['is_active'],
-                $field['is_default']
-            ));
-        }
-
-        (new CustomFieldsRepository())->updateCustomFields($collection, $storeId);
+        $service = CustomFieldsServiceFactory::create();
+        $service->setDefaultCustomFieldsMapping($storeId);
     }
 
     /**

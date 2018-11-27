@@ -7,7 +7,6 @@ use GetResponse\Api\ApiFactory;
 use GetResponse\Contact\Contact;
 use GetResponse\Contact\ContactCustomFieldCollectionFactory;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\Helper\Shop;
 use GetResponse\Order\OrderFactory;
 use GetResponse\Product\ProductFactory;
@@ -48,7 +47,6 @@ class ExportServiceFactory
                 Contact::ORIGIN
             ),
             new OrderFactory(new ProductFactory()),
-            CustomFieldMappingServiceFactory::create(),
             CustomFieldsServiceFactory::create(),
             new ContactCustomFieldCollectionFactory()
         );

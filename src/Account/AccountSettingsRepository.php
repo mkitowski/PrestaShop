@@ -2,6 +2,7 @@
 namespace GetResponse\Account;
 
 use Configuration;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\WebForm\WebFormRepository;
@@ -51,6 +52,10 @@ class AccountSettingsRepository
         $this->clearSettings();
         $registrationService = RegistrationServiceFactory::createService();
         $registrationService->clearSettings();
+
+        $customFieldsService = CustomFieldsServiceFactory::create();
+        $customFieldsService->clearCustomFields();
+
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
         (new EcommerceRepository())->clearEcommerceSettings();

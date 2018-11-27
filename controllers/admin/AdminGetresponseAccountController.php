@@ -4,6 +4,7 @@ use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Account\AccountValidator;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\WebTracking\TrackingCodeServiceFactory;
 use GetResponse\WebTracking\WebTracking;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
@@ -101,6 +102,9 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                 $trackingStatus = $trackingCode->isFeatureEnabled()
                     ? WebTracking::TRACKING_INACTIVE
                     : WebTracking::TRACKING_DISABLED;
+
+                $customFieldsService = CustomFieldsServiceFactory::create();
+                $customFieldsService->setDefaultCustomFieldsMapping();
 
                 $webTrackingService->saveTracking(new WebTracking($trackingStatus));
                 $this->confirmations[] = $this->l('GetResponse account connected');

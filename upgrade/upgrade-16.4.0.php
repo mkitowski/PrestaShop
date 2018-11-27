@@ -1,10 +1,7 @@
 <?php
 
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\CustomFields\CustomFieldsRepository;
-use GetResponse\CustomFields\DefaultCustomFields;
-use GetResponse\CustomFieldsMapping\CustomFieldMapping;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationServiceFactory;
@@ -31,22 +28,8 @@ function upgrade_module_16_4_0($object) {
 
 function upgradeCustomsTable($idShop) {
 
-    $customFields = DefaultCustomFields::DEFAULT_CUSTOM_FIELDS;
-
-    $collection = new CustomFieldMappingCollection();
-    foreach ($customFields as $field) {
-
-        $collection->add(new CustomFieldMapping(
-            $field['id'],
-            $field['custom_name'],
-            $field['customer_property_name'],
-            $field['gr_custom_id'],
-            $field['is_active'],
-            $field['is_default']
-        ));
-    }
-
-    (new CustomFieldsRepository())->updateCustomFields($collection);
+    $customFieldsService = CustomFieldsServiceFactory::create();
+    $customFieldsService->setDefaultCustomFieldsMapping();
 
     $sql = "DROP TABLE "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);

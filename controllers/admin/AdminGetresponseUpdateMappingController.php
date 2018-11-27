@@ -1,20 +1,21 @@
 <?php
 require_once 'AdminGetresponseController.php';
 
+use GetResponse\CustomFields\CustomFieldService;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFields\GrCustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingException;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingValidator;
-use GetResponse\CustomFieldsMapping\CustomFieldsMappingService;
 use GetResponse\Helper\FlashMessages;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\CustomField\CustomField;
 
 class AdminGetresponseUpdateMappingController extends AdminGetresponseController
 {
-    /** @var CustomFieldsMappingService */
-    private $mappingService;
+    /** @var CustomFieldService */
+    private $customFieldService;
 
     public function __construct()
     {
@@ -23,7 +24,7 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
         $this->name = 'GRUpdateMapping';
 
-        $this->mappingService = CustomFieldMappingServiceFactory::create();
+        $this->customFieldService = CustomFieldsServiceFactory::create();
     }
 
     public function initContent()
@@ -42,7 +43,7 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
     {
         if (Tools::isSubmit('saveMappingForm')) {
 
-            $customFieldMapping = $this->mappingService->getCustomFieldMappingById(Tools::getValue('id'));
+            $customFieldMapping = $this->customFieldService->getCustomFieldMappingById(Tools::getValue('id'));
 
             $custom = [
                 'id' => (int) Tools::getValue('id'),
@@ -60,7 +61,7 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
                 return;
             }
 
-            $this->mappingService->updateCustomFieldMapping(CustomFieldMapping::createFromArray($custom));
+            $this->customFieldService->updateCustomFieldMapping(CustomFieldMapping::createFromArray($custom));
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Custom sucessfuly edited'));
             Tools::redirectAdmin($this->context->link->getAdminLink(Tools::getValue('referer')));
         }
@@ -131,7 +132,7 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
         $helper->token = Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
         $helper->fields_value = ['mapping_on' => false, 'gr_custom' => false, 'customer_detail' => false];
 
-        $customFieldMapping = $this->mappingService->getCustomFieldMappingById(Tools::getValue('id'));
+        $customFieldMapping = $this->customFieldService->getCustomFieldMappingById(Tools::getValue('id'));
 
         if ($customFieldMapping) {
             $helper->fields_value = [
@@ -149,14 +150,14 @@ class AdminGetresponseUpdateMappingController extends AdminGetresponseController
     /**
      * @return array
      * @throws GetresponseApiException
-     * @throws \GrShareCode\Api\Authorization\ApiTypeException
+     * @throws ApiTypeException
      */
     private function getCustomFieldsToSelect()
     {
         $customFieldsForSelect = [];
-        $customFieldService = CustomFieldsServiceFactory::create();
+        $customFieldService = GrCustomFieldsServiceFactory::create();
 
-        $grCustomFields = $customFieldService->getCustomFieldsFromGetResponse();
+        $grCustomFields = $customFieldService->getAllCustomFields();
 
         /** @var CustomField $customField */
         foreach ($grCustomFields as $customField) {

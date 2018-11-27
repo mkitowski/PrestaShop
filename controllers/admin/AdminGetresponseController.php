@@ -22,6 +22,7 @@
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFields\GrCustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\Helper\Shop as GrShop;
 use GrShareCode\Api\Exception\GetresponseApiException;
@@ -29,6 +30,7 @@ use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactList;
 use GrShareCode\CustomField\CustomField;
+use GrShareCode\CustomField\CustomFieldCollection;
 
 class AdminGetresponseController extends ModuleAdminController
 {
@@ -192,15 +194,24 @@ class AdminGetresponseController extends ModuleAdminController
     public function getCustomList()
     {
         $grCustoms = [];
-        $customFieldsService = CustomFieldsServiceFactory::create();
-        $grCustomsCollection = $customFieldsService->getCustomFieldsFromGetResponse();
+        try {
+            $customFieldsService = GrCustomFieldsServiceFactory::create();
+            $grCustomsCollection = $customFieldsService->getAllCustomFields();
+        } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
+            $grCustomsCollection = new CustomFieldCollection();
+        } catch (GetresponseApiException $e) {
+            $grCustomsCollection = new CustomFieldCollection();
+        }
+
 
         /** @var CustomField $custom */
         foreach ($grCustomsCollection as $custom) {
             $grCustoms[$custom->getId()] = $custom->getName();
         }
 
-        $customs = $this->repository->getCustomFieldsMapping();
+        $service = CustomFieldsServiceFactory::create();
+        $customs = $service->getCustomFieldsMapping();
+
         $result = [];
         /** @var CustomFieldMapping $custom */
         foreach ($customs as $custom) {

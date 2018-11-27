@@ -2,10 +2,10 @@
 namespace GetResponse\Contact;
 
 use GetResponse\Customer\Customer;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
 
 /**
  * Class ContactService
@@ -33,8 +33,8 @@ class ContactService
     public function addContact(Customer $customer, AddContactSettings $addContactSettings, $isNewsletterContact = false)
     {
         if ($addContactSettings->isUpdateContactCustomFields() && !$isNewsletterContact) {
-            $customFieldMappingService = CustomFieldMappingServiceFactory::create();
-            $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
+            $customFieldService = CustomFieldsServiceFactory::create();
+            $customFieldMappingCollection = $customFieldService->getActiveCustomFieldMapping();
         } else {
             $customFieldMappingCollection = new CustomFieldMappingCollection();
         }
