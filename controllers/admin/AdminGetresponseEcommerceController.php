@@ -158,13 +158,6 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     $this->l(
                         'Use this data to create marketing automation workflows that react to 
                         purchases, abandoned carts, or the amounts of money spent.'
-                    ) . '<br>' .
-                    $this->l(
-                        'Make sure to <u>enable adding contacts during registration</u> to 
-                        start sending ecommerce data to GetResponse.',
-                        false,
-                        false,
-                        false
                     ),
                 'input' => [
                     [
