@@ -49,7 +49,8 @@ class AccountSettingsRepository
     public function clearConfiguration()
     {
         $this->clearSettings();
-        (RegistrationServiceFactory::createService())->clearSettings();
+        $registrationService = RegistrationServiceFactory::createService();
+        $registrationService->clearSettings();
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
         (new EcommerceRepository())->clearEcommerceSettings();
