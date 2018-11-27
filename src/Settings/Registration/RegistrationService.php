@@ -30,7 +30,11 @@ class RegistrationService
      */
     public function updateSettings(RegistrationSettings $settings)
     {
-        $this->registrationRepository->updateSettings($settings);
+        if ($settings->isActive()) {
+            $this->registrationRepository->updateSettings($settings);
+        } else {
+            $this->registrationRepository->clearSettings();
+        }
     }
 
     public function clearSettings()

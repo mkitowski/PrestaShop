@@ -3,7 +3,6 @@ namespace GetResponse\Order;
 
 use Db;
 use GetResponse\Account\AccountSettings;
-use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Helper\Shop;
 use GetResponse\Product\ProductFactory;

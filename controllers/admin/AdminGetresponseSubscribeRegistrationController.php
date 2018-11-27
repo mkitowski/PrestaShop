@@ -73,12 +73,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             }
 
             $service = RegistrationServiceFactory::createService();
-
-            if ($registrationSettings->isActive()) {
-                $service->updateSettings($registrationSettings);
-            } else {
-                $service->clearSettings();
-            }
+            $service->updateSettings($registrationSettings);
 
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));

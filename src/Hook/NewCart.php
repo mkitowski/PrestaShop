@@ -2,7 +2,6 @@
 namespace GetResponse\Hook;
 
 use Cart;
-use Configuration;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Cart\CartServiceFactory;
 use GetResponse\Ecommerce\EcommerceServiceFactory;

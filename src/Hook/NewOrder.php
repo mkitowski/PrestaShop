@@ -1,7 +1,6 @@
 <?php
 namespace GetResponse\Hook;
 
-use Configuration;
 use GetResponse\Account\AccountSettings;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Order\OrderServiceFactory;

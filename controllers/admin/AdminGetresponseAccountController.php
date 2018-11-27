@@ -3,8 +3,6 @@
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
-use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
 use GetResponse\WebTracking\TrackingCodeServiceFactory;
 use GetResponse\WebTracking\WebTracking;
@@ -31,16 +29,18 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         ));
     }
 
-    /**
-     * @throws PrestaShopDatabaseException
-     */
     public function initContent()
     {
-        $accountSettings = (new AccountSettingsRepository())->getSettings();
-        $this->display = $accountSettings->isConnectedWithGetResponse() ? 'view' : 'edit';
-        $this->show_form_cancel_button = false;
-
-        parent::initContent();
+        try {
+            $accountService = AccountServiceFactory::create();
+            $this->display = $accountService->isConnectedToGetResponse() ? 'view' : 'edit';
+            $this->show_form_cancel_button = false;
+            parent::initContent();
+        } catch (GetresponseApiException $e) {
+            $this->display = 'edit';
+            $this->show_form_cancel_button = false;
+            parent::initContent();
+        }
     }
 
     public function initToolBarTitle()

@@ -3,7 +3,6 @@ namespace GetResponse\Cart;
 
 use Db;
 use GetResponse\Account\AccountSettings;
-use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Cache\CacheWrapper;
 use GetResponse\Helper\Shop;

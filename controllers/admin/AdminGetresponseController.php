@@ -19,7 +19,7 @@
  */
 
 
-use GetResponse\Account\AccountSettingsRepository;
+use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
@@ -61,9 +61,14 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $accountSettings = (new AccountSettingsRepository())->getSettings();
+        try {
+            $accountService = AccountServiceFactory::create();
+            $isConnectedToGetResponse = $accountService->isConnectedToGetResponse();
+        } catch (GetresponseApiException $e) {
+            $isConnectedToGetResponse = false;
+        }
 
-        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountSettings->isConnectedWithGetResponse()) {
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$isConnectedToGetResponse) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
         }
     }
