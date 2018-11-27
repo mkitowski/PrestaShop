@@ -13,7 +13,7 @@ use GetResponse\Contact\AddContactSettings;
 use GetResponse\Contact\ContactServiceFactory;
 use GetResponse\Customer\CustomerFactory;
 use GetResponse\Hook\FormDisplay;
-use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebTracking\WebTrackingServiceFactory;
 use GrShareCode\Api\Authorization\ApiTypeException;
@@ -271,7 +271,8 @@ class Getresponse extends Module
     public function createSubscriber(Customer $contact, $fromNewsletter = false)
     {
         try {
-            $settings = (new RegistrationRepository())->getSettings();
+            $service = RegistrationServiceFactory::createService();
+            $settings = $service->getSettings();
 
             if (!$settings->isNewsletterActive() || 1 != $contact->newsletter) {
                 return;
@@ -404,8 +405,8 @@ class Getresponse extends Module
             && Validate::isEmail(Tools::getValue('email'))
         ) {
 
-            $settings = (new RegistrationRepository())->getSettings();
-            if (!$settings->isNewsletterActive()) {
+            $service = RegistrationServiceFactory::createService();
+            if (!$service->getSettings()->isNewsletterActive()) {
                 return;
             }
 

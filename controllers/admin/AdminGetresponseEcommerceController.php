@@ -4,7 +4,6 @@ use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
-use GetResponse\Settings\Registration\RegistrationRepository;
 use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Command\AddShopCommand;
@@ -72,8 +71,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
 
             $ecommerce = Ecommerce::createFromPost(Tools::getAllValues());
-
-            $validator = new EcommerceValidator($ecommerce, new RegistrationRepository());
+            $validator = new EcommerceValidator($ecommerce);
 
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();

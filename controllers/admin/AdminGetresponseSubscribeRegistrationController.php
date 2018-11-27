@@ -3,9 +3,8 @@ require_once 'AdminGetresponseController.php';
 
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
-use GetResponse\ContactList\SubscribeViaRegistrationDto;
 use GetResponse\Helper\FlashMessages;
-use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\Settings\Registration\RegistrationSettings;
 use GetResponse\Settings\Registration\RegistrationSettingsValidator;
 use GrShareCode\Api\Authorization\ApiTypeException;
@@ -73,10 +72,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                 return;
             }
 
+            $service = RegistrationServiceFactory::createService();
+
             if ($registrationSettings->isActive()) {
-                (new RegistrationRepository())->updateSettings($registrationSettings);
+                $service->updateSettings($registrationSettings);
             } else {
-                (new RegistrationRepository())->clearSettings();
+                $service->clearSettings();
             }
 
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
@@ -95,7 +96,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     public function renderView()
     {
         $accountSettings = AccountServiceFactory::create()->getAccountSettings();
-        $registrationSettings = (new RegistrationRepository())->getSettings();
+        $registrationService = RegistrationServiceFactory::createService();
+        $registrationSettings = $registrationService->getSettings();
         $contactListService = $contactListService = ContactListServiceFactory::create();
 
         $this->context->smarty->assign(array(
@@ -266,7 +268,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function getFieldsValue($obj)
     {
-        $settings = (new RegistrationRepository())->getSettings();
+        $service = RegistrationServiceFactory::createService();
+        $settings = $service->getSettings();
         return [
             'subscriptionSwitch' => $settings->isActive() ? 1 : 0,
             'campaign' => $settings->getListId(),

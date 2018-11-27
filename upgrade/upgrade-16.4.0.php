@@ -1,6 +1,5 @@
 <?php
 
-
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\CustomFields\CustomFieldsRepository;
 use GetResponse\CustomFields\DefaultCustomFields;
@@ -8,7 +7,7 @@ use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
-use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\Settings\Registration\RegistrationSettings;
 use GetResponse\WebForm\WebForm;
 use GetResponse\WebForm\WebFormRepository;
@@ -83,7 +82,8 @@ function upgradeSettingsTable($idShop) {
         $accountRepository = new AccountSettingsRepository();
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
-        (new RegistrationRepository())->updateSettings(RegistrationSettings::createFromOldDbTable($result));
+        $service = RegistrationServiceFactory::createService();
+        $service->updateSettings(RegistrationSettings::createFromOldDbTable($result));
 
         $webTrackingRepository = new WebTrackingRepository();
         $webTrackingRepository->updateWebTracking(

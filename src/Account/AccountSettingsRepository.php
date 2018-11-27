@@ -3,7 +3,7 @@ namespace GetResponse\Account;
 
 use Configuration;
 use GetResponse\Ecommerce\EcommerceRepository;
-use GetResponse\Settings\Registration\RegistrationRepository;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\WebForm\WebFormRepository;
 use GetResponse\WebTracking\WebTrackingRepository;
 
@@ -49,7 +49,7 @@ class AccountSettingsRepository
     public function clearConfiguration()
     {
         $this->clearSettings();
-        (new RegistrationRepository())->clearSettings();
+        (RegistrationServiceFactory::createService())->clearSettings();
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
         (new EcommerceRepository())->clearEcommerceSettings();
