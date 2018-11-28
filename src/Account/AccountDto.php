@@ -32,14 +32,11 @@ namespace GetResponse\Account;
  */
 class AccountDto
 {
-    const ENTERPRISE_PACKAGE_YES = '1';
-    const ENTERPRISE_PACKAGE_NO = '0';
-
     /** @var string */
     private $apiKey;
 
     /** @var string */
-    private $enterprisePackage;
+    private $isEnterprisePackage;
 
     /** @var string */
     private $accountType;
@@ -49,15 +46,15 @@ class AccountDto
 
     /**
      * @param string $apiKey
-     * @param string $enterprisePackage
+     * @param bool $isEnterprisePackage
      * @param string $accountType
      * @param string $domain
      */
 
-    public function __construct($apiKey, $enterprisePackage, $accountType, $domain)
+    public function __construct($apiKey, $isEnterprisePackage, $accountType, $domain)
     {
         $this->apiKey = $apiKey;
-        $this->enterprisePackage = $enterprisePackage;
+        $this->isEnterprisePackage = $isEnterprisePackage;
         $this->accountType = $accountType;
         $this->domain = $domain;
     }
@@ -68,12 +65,12 @@ class AccountDto
      */
     public static function fromRequest(array $request)
     {
-        $accountType = self::ENTERPRISE_PACKAGE_YES ? $request['accountType'] : AccountSettings::ACCOUNT_TYPE_SMB;
+        $accountType = (bool) $request['enterprisePackage'] ? $request['accountType'] : AccountSettings::ACCOUNT_TYPE_SMB;
         return new self(
             $request['apiKey'],
-            $request['enterprisePackage'],
-            $request['enterprisePackage'] === $accountType,
-            $request['enterprisePackage'] === self::ENTERPRISE_PACKAGE_YES ? $request['domain'] : ''
+            (bool) $request['enterprisePackage'],
+            $accountType,
+            (bool) $request['enterprisePackage'] ? $request['domain'] : ''
         );
     }
 
@@ -106,15 +103,7 @@ class AccountDto
      */
     public function isEnterprisePackage()
     {
-        return $this->getEnterprisePackage() === self::ENTERPRISE_PACKAGE_YES;
-    }
-
-    /**
-     * @return string
-     */
-    public function getEnterprisePackage()
-    {
-        return $this->enterprisePackage;
+        return $this->isEnterprisePackage;
     }
 
     /**
