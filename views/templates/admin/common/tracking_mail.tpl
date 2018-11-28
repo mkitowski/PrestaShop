@@ -25,7 +25,7 @@
 {if isset($tracking_email)}
 <script type='text/javascript'>
     window.onload = function() {
-        gaSetUserId('{$tracking_email}');
+        gaSetUserId('{$tracking_email|escape:'htmlall':'UTF-8'}');
     };
 </script>
 {/if}
