@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
@@ -88,7 +112,6 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
 
             if ($accountService->isConnectionAvailable()) {
-
                 $accountService->updateApiSettings(
                     $accountDto->getApiKey(),
                     $accountDto->getAccountTypeForSettings(),
@@ -108,9 +131,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
                 $webTrackingService->saveTracking(new WebTracking($trackingStatus));
                 $this->confirmations[] = $this->l('GetResponse account connected');
-
             } else {
-
                 $msg = !$accountDto->isEnterprisePackage()
                     ? 'The API key or domain seems incorrect.'
                     : 'The API key seems incorrect.';
@@ -136,7 +157,6 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         $accountService = AccountServiceFactory::create();
 
         if ($accountService->isConnectedToGetResponse()) {
-
             $accountDetails = $accountService->getAccountDetails();
 
             $this->context->smarty->assign([
@@ -259,5 +279,4 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
         return $helper->generateForm(array($fields_form));
     }
-
 }

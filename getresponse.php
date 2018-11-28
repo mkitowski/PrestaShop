@@ -8,15 +8,6 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-use GetResponse\Account\AccountServiceFactory;
-use GetResponse\Contact\AddContactSettings;
-use GetResponse\Contact\ContactServiceFactory;
-use GetResponse\Customer\CustomerFactory;
-use GetResponse\Hook\FormDisplay;
-use GetResponse\Settings\Registration\RegistrationServiceFactory;
-use GetResponse\WebForm\WebFormServiceFactory;
-use GetResponse\WebTracking\WebTrackingServiceFactory;
-use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Validation\Assert\InvalidArgumentException;
 
@@ -41,13 +32,13 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = self::VERSION;
+        $this->version = '16.4.0';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
-        $this->description = $this->l(GetResponse\Config\ConfigService::MODULE_DESCRIPTION);
+        $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions with engaging email marketing campaigns';
         $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
@@ -70,7 +61,6 @@ class Getresponse extends Module
         if (isset($this->context->controller->module)
             && $this->context->controller->module->name === $this->name
             && $confirmations = GetResponse\Helper\FlashMessages::getConfirmations()) {
-
             $this->context->smarty->assign('conf', $confirmations[0]);
         }
 
@@ -211,7 +201,10 @@ class Getresponse extends Module
     {
         try {
             $cartHook = new GetResponse\Hook\NewCart();
-            $cartHook->sendCart($params['cart'], AccountServiceFactory::create()->getAccountSettings());
+            $cartHook->sendCart(
+                $params['cart'],
+                \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings()
+            );
         } catch (Exception $e) {
             $this->handleHookException($e, 'createCart');
         }
@@ -232,7 +225,7 @@ class Getresponse extends Module
     {
         try {
             $orderHook = new GetResponse\Hook\NewOrder();
-            $orderHook->sendOrder($order, AccountServiceFactory::create()->getAccountSettings());
+            $orderHook->sendOrder($order, \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings());
         } catch (Exception $e) {
             $this->handleHookException($e, 'createOrder');
         }
@@ -271,26 +264,24 @@ class Getresponse extends Module
     public function createSubscriber(Customer $contact, $fromNewsletter = false)
     {
         try {
-            $service = RegistrationServiceFactory::createService();
+            $service = \GetResponse\Settings\Registration\RegistrationServiceFactory::createService();
             $settings = $service->getSettings();
 
             if (!$settings->isActive() || 1 != $contact->newsletter) {
                 return;
             }
 
-            $addContactSettings = AddContactSettings::createFromConfiguration($settings);
+            $addContactSettings = \GetResponse\Contact\AddContactSettings::createFromConfiguration($settings);
 
-            $contactService = ContactServiceFactory::createFromSettings();
+            $contactService = \GetResponse\Contact\ContactServiceFactory::createFromSettings();
             $contactService->addContact(
-                CustomerFactory::createFromPsCustomerObject($contact),
+                \GetResponse\Customer\CustomerFactory::createFromPsCustomerObject($contact),
                 $addContactSettings,
                 $fromNewsletter
             );
-
         } catch (Exception $e) {
             $this->handleHookException($e, 'createSubscriber');
         }
-
     }
 
     /**
@@ -309,8 +300,10 @@ class Getresponse extends Module
     {
 
         try {
-            $formDisplay = new FormDisplay(
-                WebFormServiceFactory::createFromSettings(AccountServiceFactory::create()->getAccountSettings())
+            $formDisplay = new \GetResponse\Hook\FormDisplay(
+                \GetResponse\WebForm\WebFormServiceFactory::createFromSettings(
+                    \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings()
+                )
             );
             $assignData = $formDisplay->displayWebForm($position);
 
@@ -340,7 +333,7 @@ class Getresponse extends Module
     public function hookDisplayHeader()
     {
         try {
-            $trackingService = WebTrackingServiceFactory::create();
+            $trackingService = \GetResponse\WebTracking\WebTrackingServiceFactory::create();
             $webTracking = $trackingService->getWebTracking();
 
             if (null === $webTracking || !$webTracking->isTrackingActive()) {
@@ -349,7 +342,7 @@ class Getresponse extends Module
 
             $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
-        } catch (ApiTypeException $e) {
+        } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
             $this->handleHookException($e, 'hookDisplayHeader');
             return '';
         }
@@ -371,7 +364,7 @@ class Getresponse extends Module
         try {
             $this->createNewsletterSubscriber();
 
-            $trackingService = WebTrackingServiceFactory::create();
+            $trackingService = \GetResponse\WebTracking\WebTrackingServiceFactory::create();
             $webTracking = $trackingService->getWebTracking();
 
             if (null === $webTracking) {
@@ -404,8 +397,7 @@ class Getresponse extends Module
             && '0' == Tools::getValue('action')
             && Validate::isEmail(Tools::getValue('email'))
         ) {
-
-            $service = RegistrationServiceFactory::createService();
+            $service = \GetResponse\Settings\Registration\RegistrationServiceFactory::createService();
             if (!$service->getSettings()->isNewsletterActive()) {
                 return;
             }
@@ -462,25 +454,41 @@ class Getresponse extends Module
         }
 
         if ($exception instanceof GetresponseApiException) {
-            $errorMessage = sprintf('GetResponse error: %s: GetresponseApiException: %s', $hookName, $exception->getMessage());
+            $errorMessage = sprintf(
+                'GetResponse error: %s: GetresponseApiException: %s',
+                $hookName,
+                $exception->getMessage()
+            );
             $this->logGetResponseError($errorMessage);
             return;
         }
 
         if ($exception instanceof InvalidArgumentException) {
-            $errorMessage = sprintf('GetResponse error: %s: InvalidArgumentException: %s', $hookName, $exception->getMessage());
+            $errorMessage = sprintf(
+                'GetResponse error: %s: InvalidArgumentException: %s',
+                $hookName,
+                $exception->getMessage()
+            );
             $this->logGetResponseError($errorMessage);
             return;
         }
 
         if ($exception instanceof PrestaShopDatabaseException) {
-            $errorMessage = sprintf('GetResponse error: %s: PrestaShopDatabaseException: %s', $hookName, $exception->getMessage());
+            $errorMessage = sprintf(
+                'GetResponse error: %s: PrestaShopDatabaseException: %s',
+                $hookName,
+                $exception->getMessage()
+            );
             $this->logGetResponseError($errorMessage);
             return;
         }
 
         if ($exception instanceof PrestaShopException) {
-            $errorMessage = sprintf('GetResponse error: %s: PrestaShopException: %s', $hookName, $exception->getMessage());
+            $errorMessage = sprintf(
+                'GetResponse error: %s: PrestaShopException: %s',
+                $hookName,
+                $exception->getMessage()
+            );
             $this->logGetResponseError($errorMessage);
             return;
         }
@@ -491,5 +499,4 @@ class Getresponse extends Module
             return;
         }
     }
-
 }

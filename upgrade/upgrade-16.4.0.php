@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
@@ -15,8 +39,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-function upgrade_module_16_4_0($object) {
-
+function upgrade_module_16_4_0($object)
+{
     $idShop = Context::getContext()->shop->id;
     upgradeCustomsTable($idShop);
     upgradeEcommerceTable($idShop);
@@ -26,8 +50,8 @@ function upgrade_module_16_4_0($object) {
     return true;
 }
 
-function upgradeCustomsTable($idShop) {
-
+function upgradeCustomsTable($idShop)
+{
     $customFieldsService = CustomFieldsServiceFactory::create();
     $customFieldsService->setDefaultCustomFieldsMapping();
 
@@ -35,7 +59,8 @@ function upgradeCustomsTable($idShop) {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeEcommerceTable($idShop) {
+function upgradeEcommerceTable($idShop)
+{
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_ecommerce WHERE id_shop = " . $idShop;
     $result = Db::getInstance()->getRow($sql);
 
@@ -57,7 +82,8 @@ function upgradeEcommerceTable($idShop) {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeSettingsTable($idShop) {
+function upgradeSettingsTable($idShop)
+{
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_settings WHERE id_shop = " . $idShop;
     $result = Db::getInstance()->getRow($sql);
 
@@ -68,11 +94,12 @@ function upgradeSettingsTable($idShop) {
         $service = RegistrationServiceFactory::createService();
         $service->updateSettings(RegistrationSettings::createFromOldDbTable($result));
 
+        $status = $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE;
         $webTrackingRepository = new WebTrackingRepository();
         $webTrackingRepository->updateWebTracking(
             new WebTracking(
-            $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE,
-            $result['tracking_snippet']
+                $status,
+                $result['tracking_snippet']
             )
         );
 
@@ -85,7 +112,8 @@ function upgradeSettingsTable($idShop) {
     DB::getInstance()->execute($sql);
 }
 
-function upgradeWebFormsTable($idShop) {
+function upgradeWebFormsTable($idShop)
+{
     $sql = "SELECT * FROM "._DB_PREFIX_."getresponse_webform WHERE id_shop = " . $idShop;
     $result = Db::getInstance()->getRow($sql);
 

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da45826436d3b24d3587b8756effaa08",
+    "content-hash": "8bbbe636b5772eff266a7c205655fd94",
     "packages": [
         {
             "name": "getresponse/share-code-plugin",
-            "version": "dev-6.0.0-rc",
+            "version": "6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/GetResponse/share-code-plugin.git",
-                "reference": "8a1681ad498bb531c43354a0cf14a226fe984393"
+                "reference": "25218ac9c8b1efde6f8633ee7f26ad31a813cc56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GetResponse/share-code-plugin/zipball/8a1681ad498bb531c43354a0cf14a226fe984393",
-                "reference": "8a1681ad498bb531c43354a0cf14a226fe984393",
+                "url": "https://api.github.com/repos/GetResponse/share-code-plugin/zipball/25218ac9c8b1efde6f8633ee7f26ad31a813cc56",
+                "reference": "25218ac9c8b1efde6f8633ee7f26ad31a813cc56",
                 "shasum": ""
             },
             "require": {
@@ -32,11 +32,7 @@
                     "GrShareCode\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "GrShareCode\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -47,11 +43,7 @@
                 }
             ],
             "description": "Share code plugin",
-            "support": {
-                "source": "https://github.com/GetResponse/share-code-plugin/tree/6.0.0-rc",
-                "issues": "https://github.com/GetResponse/share-code-plugin/issues"
-            },
-            "time": "2018-11-13 14:02:12"
+            "time": "2018-11-19T08:43:15+00:00"
         }
     ],
     "packages-dev": [
@@ -107,7 +99,7 @@
                 "constructor",
                 "instantiate"
             ],
-            "time": "2018-10-15T11:30:00+00:00"
+            "time": "2018-09-01T02:07:49+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -152,7 +144,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2018-06-11T23:09:50+00:00"
+            "time": "2017-10-19T19:58:43+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -361,7 +353,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2018-11-04 18:50:11"
+            "time": "2018-11-04T18:50:11+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -610,11 +602,11 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2017-11-27T08:47:38+00:00"
+            "time": "2017-12-04T15:11:28+00:00"
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.7.x-dev",
+            "version": "5.7.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
@@ -1330,12 +1322,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "c41175c801e3edfda90f32e292619d10c27103d7"
+                "reference": "291e13d808bec481eab83f301f7bff3e699ef603"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/c41175c801e3edfda90f32e292619d10c27103d7",
-                "reference": "c41175c801e3edfda90f32e292619d10c27103d7",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/291e13d808bec481eab83f301f7bff3e699ef603",
+                "reference": "291e13d808bec481eab83f301f7bff3e699ef603",
                 "shasum": ""
             },
             "require": {
@@ -1381,7 +1373,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2018-11-11T19:52:12+00:00"
+            "time": "2018-11-11T19:48:54+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -1436,9 +1428,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "getresponse/share-code-plugin": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
