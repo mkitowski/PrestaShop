@@ -218,7 +218,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'name' => 'exportEcommerce',
                         'values' => [
                             'query' => [
-                                ['id' => 1, 'val' => 1, 'name' => $this->l(' Include ecommerce data in this export')]
+                                [
+                                    'id' => 1,
+                                    'val' => 1,
+                                    'name' => $this->l(' Include ecommerce data in this export')
+                                ]
                             ],
                             'id' => 'id',
                             'name' => 'name',

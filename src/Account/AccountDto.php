@@ -65,11 +65,11 @@ class AccountDto
      */
     public static function fromRequest(array $request)
     {
-        $accountType = (bool) $request['enterprisePackage'] ? $request['accountType'] : AccountSettings::ACCOUNT_TYPE_SMB;
+        $type = (bool) $request['enterprisePackage'] ? $request['accountType'] : AccountSettings::ACCOUNT_TYPE_SMB;
         return new self(
             $request['apiKey'],
             (bool) $request['enterprisePackage'],
-            $accountType,
+            $type,
             (bool) $request['enterprisePackage'] ? $request['domain'] : ''
         );
     }
