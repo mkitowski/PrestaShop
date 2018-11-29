@@ -96,7 +96,7 @@ class ExportRepository
                     cu.birthday,
                     concat(ad.address1, \' \', ad.address2) as address,
                     ad.postcode as postal,
-                    ad.company,
+                    cu.company,
                     pl.name as country,
                     ad.city,
                     ad.phone,
