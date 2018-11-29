@@ -86,13 +86,13 @@ class CustomerFactory
             $customer->id,
             $customer->firstname,
             $customer->lastname,
-            $customer->birthday,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
+            isset($customer->birthday) ? $customer->birthday : '',
+            isset($customer->address) ? $customer->address : '',
+            isset($customer->postal) ? $customer->postal : '',
+            isset($customer->company) ? $customer->company : '',
+            isset($customer->country) ? $customer->country : '',
+            isset($customer->city) ? $customer->city : '',
+            isset($customer->phone) ? $customer->phone : '',
             $customer->email
         );
     }
