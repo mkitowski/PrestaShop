@@ -151,7 +151,7 @@ class OrderServiceTest extends BaseTestCase
         $order->setStatus('pending');
         $order->setExternalCartId('5');
         $order->setShippingPrice(0.0);
-        $order->setProcessedAt('2018-10-10T12:12:12+0200');
+        $order->setProcessedAt('2018-10-10T12:12:12+0000');
 
         $expected = new AddOrderCommand(
             $order,

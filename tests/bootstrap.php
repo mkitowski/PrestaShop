@@ -25,7 +25,8 @@
  */
 
 require_once dirname(__FILE__) . '/../vendor/autoload.php';
-require_once dirname(__FILE__) . '/../../../classes/Tools.php';
+require_once dirname(__FILE__) . '/Unit/PrestashopMock/Tools.php';
+require_once dirname(__FILE__) . '/Unit/PrestashopMock/ImageType.php';
 require_once dirname(__FILE__) . '/Unit/PrestashopMock/Translate.php';
 require_once dirname(__FILE__) . '/Unit/PrestashopMock/Link.php';
 require_once dirname(__FILE__) . '/Unit/PrestashopMock/Category.php';

@@ -55,7 +55,7 @@ class AccountDtoTest extends BaseTestCase
 
         $expected = new AccountDto(
             $apiKey,
-            $enterprisePackage,
+            false,
             'smb',
             ''
         );

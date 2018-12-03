@@ -26,55 +26,10 @@
  * Class Tools
  */
 
-class Tools
+class ImageType
 {
-
-    /**
-     * @param null $use_ssl
-     * @return null
-     */
-    public static function getProtocol($use_ssl = null)
+    public static function getFormattedName($name)
     {
-        return null;
-    }
-
-    /**
-     * @return null
-     */
-    public static function usingSecureMode()
-    {
-        return null;
-    }
-
-    /**
-     * @param bool $http
-     * @param bool $entities
-     * @param bool $ignore_port
-     * @return null
-     */
-    public static function getHttpHost($http = false, $entities = false, $ignore_port = false)
-    {
-        return null;
-    }
-
-    /**
-     * @param $value
-     * @return int
-     */
-    public static function strlen($value)
-    {
-        return strlen($value);
-    }
-
-    /**
-     * @param $str
-     * @param $start
-     * @param bool $length
-     * @param string $encoding
-     * @return int
-     */
-    public static function substr($str, $start, $length = false, $encoding = 'utf-8')
-    {
-        return substr($str, $start, ($length === false ? Tools::strlen($str) : (int) $length));
+        return $name;
     }
 }
