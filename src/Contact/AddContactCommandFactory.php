@@ -1,10 +1,34 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Contact;
 
-use Customer;
+use GetResponse\Customer\Customer;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
-use GrShareCode\Contact\AddContactCommand;
-use GrShareCode\CustomField\CustomFieldCollection;
+use GrShareCode\Contact\Command\AddContactCommand;
 
 /**
  * Class AddContactCommandFactory
@@ -15,49 +39,41 @@ class AddContactCommandFactory
     /** @var CustomFieldMappingCollection */
     private $customFieldMappingCollection;
 
-    /** @var CustomFieldCollection */
-    private $grCustomFieldCollection;
-
     /**
-     * @param CustomFieldMappingCollection $customFieldMappingCollection
-     * @param CustomFieldCollection $customFieldCollection
+     * @param CustomFieldMappingCollection $collection
      */
-    public function __construct(
-        CustomFieldMappingCollection $customFieldMappingCollection,
-        CustomFieldCollection $customFieldCollection
-    ) {
-        $this->customFieldMappingCollection = $customFieldMappingCollection;
-        $this->grCustomFieldCollection = $customFieldCollection;
+    public function __construct(CustomFieldMappingCollection $collection)
+    {
+        $this->customFieldMappingCollection = $collection;
     }
 
     /**
-     * @param Customer $contact
+     * @param Customer $customer
      * @param string $contactListId
      * @param int $dayOfCycle
      * @param bool $updateContactInfoEnabled
      * @return AddContactCommand
      */
-    public function createFromContactAndSettings(Customer $contact, $contactListId, $dayOfCycle, $updateContactInfoEnabled)
-    {
+    public function createFromContactAndSettings(
+        Customer $customer,
+        $contactListId,
+        $dayOfCycle,
+        $updateContactInfoEnabled
+    ) {
         $contactCustomFieldCollectionFactory = new ContactCustomFieldCollectionFactory();
         $contactCustomFieldCollection = $contactCustomFieldCollectionFactory
             ->createFromContactAndCustomFieldMapping(
-                $contact,
+                $customer,
                 $this->customFieldMappingCollection,
-                $this->grCustomFieldCollection,
                 $updateContactInfoEnabled
             );
 
-        $email = $contact->email;
-        $name = trim($contact->firstname . ' ' . $contact->lastname);
-
         return new AddContactCommand(
-            $email,
-            $name,
+            $customer->getEmail(),
+            $customer->getName(),
             $contactListId,
             $dayOfCycle !== '' ? $dayOfCycle : null,
-            $contactCustomFieldCollection,
-            Contact::ORIGIN
+            $contactCustomFieldCollection
         );
     }
 }

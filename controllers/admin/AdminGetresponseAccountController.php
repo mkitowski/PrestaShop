@@ -1,18 +1,44 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 use GetResponse\Account\AccountDto;
 use GetResponse\Account\AccountServiceFactory;
 use GetResponse\Account\AccountSettings;
-use GetResponse\Account\AccountStatusFactory;
 use GetResponse\Account\AccountValidator;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\GetresponseApiException;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\WebTracking\TrackingCodeServiceFactory;
+use GetResponse\WebTracking\WebTracking;
+use GetResponse\WebTracking\WebTrackingServiceFactory;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseAccountController extends AdminGetresponseController
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -30,11 +56,16 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
     public function initContent()
     {
-        $accountStatus = AccountStatusFactory::create();
-        $this->display = $accountStatus->isConnectedToGetResponse() ? 'view' : 'edit';
-        $this->show_form_cancel_button = false;
-
-        parent::initContent();
+        try {
+            $accountService = AccountServiceFactory::create();
+            $this->display = $accountService->isConnectedToGetResponse() ? 'view' : 'edit';
+            $this->show_form_cancel_button = false;
+            parent::initContent();
+        } catch (GetresponseApiException $e) {
+            $this->display = 'edit';
+            $this->show_form_cancel_button = false;
+            parent::initContent();
+        }
     }
 
     public function initToolBarTitle()
@@ -43,6 +74,11 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('GetResponse Account');
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('connectToGetResponse')) {
@@ -54,6 +90,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         }
         parent::postProcess();
     }
+
 
     private function connectToGetResponse()
     {
@@ -75,17 +112,26 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             $accountService = AccountServiceFactory::createFromAccountDto($accountDto);
 
             if ($accountService->isConnectionAvailable()) {
-
                 $accountService->updateApiSettings(
                     $accountDto->getApiKey(),
                     $accountDto->getAccountTypeForSettings(),
                     $accountDto->getDomain()
                 );
 
+                $webTrackingService = WebTrackingServiceFactory::create();
+                $trackingCodeService = TrackingCodeServiceFactory::create();
+                $trackingCode = $trackingCodeService->getTrackingCode();
+
+                $trackingStatus = $trackingCode->isFeatureEnabled()
+                    ? WebTracking::TRACKING_INACTIVE
+                    : WebTracking::TRACKING_DISABLED;
+
+                $customFieldsService = CustomFieldsServiceFactory::create();
+                $customFieldsService->setDefaultCustomFieldsMapping();
+
+                $webTrackingService->saveTracking(new WebTracking($trackingStatus));
                 $this->confirmations[] = $this->l('GetResponse account connected');
-
             } else {
-
                 $msg = !$accountDto->isEnterprisePackage()
                     ? 'The API key or domain seems incorrect.'
                     : 'The API key seems incorrect.';
@@ -104,13 +150,13 @@ class AdminGetresponseAccountController extends AdminGetresponseController
      * @return mixed
      * @throws ApiTypeException
      * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
      */
     public function renderView()
     {
         $accountService = AccountServiceFactory::create();
 
         if ($accountService->isConnectedToGetResponse()) {
-
             $accountDetails = $accountService->getAccountDetails();
 
             $this->context->smarty->assign([
@@ -122,13 +168,14 @@ class AdminGetresponseAccountController extends AdminGetresponseController
             ]);
         }
 
-        $settings = $accountService->getSettings();
+        $accountSettings = AccountServiceFactory::create()->getAccountSettings();
+        $webTrackingService = WebTrackingServiceFactory::create();
 
         $this->context->smarty->assign([
             'selected_tab' => 'api',
             'is_connected' => $accountService->isConnectedToGetResponse(),
-            'active_tracking' => $settings->getActiveTracking(),
-            'api_key' => $settings->getHiddenApiKey()
+            'active_tracking' => $webTrackingService->getWebTracking()->isTrackingActive(),
+            'api_key' => $accountSettings->getHiddenApiKey()
         ]);
 
         return parent::renderView();
@@ -232,5 +279,4 @@ class AdminGetresponseAccountController extends AdminGetresponseController
 
         return $helper->generateForm(array($fields_form));
     }
-
 }

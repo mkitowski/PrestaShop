@@ -1,33 +1,49 @@
 <?php
 /**
- * @static $currentIndex
- * @property $display
- * @property $confirmations
- * @property $errors
- * @property $context
- * @property $toolbar_title
- * @property $module
- * @property $page_header_toolbar_btn
- * @property $bootstrap
- * @property $meta_title
- * @property $identifier
- * @property $show_form_cancel_button
- * @method string l() l($string, $class = null, $addslashes = false, $htmlentities = true)
- * @method void addJs() addJs($path)
- * @method void addJquery()
- * @method null initContent()
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
  */
 
-use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\Account\AccountStatusFactory;
-use GetResponse\Api\ApiFactory;
+use GetResponse\Account\AccountServiceFactory;
+use GetResponse\ContactList\ContactListServiceFactory;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFields\GrCustomFieldsServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\Helper\Shop as GrShop;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\ContactList\Autoresponder;
 use GrShareCode\ContactList\AutorespondersCollection;
-use GrShareCode\GetresponseApi;
+use GrShareCode\ContactList\ContactList;
+use GrShareCode\CustomField\CustomField;
+use GrShareCode\CustomField\CustomFieldCollection;
 
 class AdminGetresponseController extends ModuleAdminController
 {
+    const DEFAULT_CUSTOMS = ['firstname', 'lastname', 'email'];
+
+    /** @var string */
+    protected $name;
+
     /** @var GetResponseRepository */
     public $repository;
 
@@ -52,9 +68,14 @@ class AdminGetresponseController extends ModuleAdminController
 
         $this->repository = new GetResponseRepository(Db::getInstance(), GrShop::getUserShopId());
 
-        $accountStatus = AccountStatusFactory::create();
+        try {
+            $accountService = AccountServiceFactory::create();
+            $isConnectedToGetResponse = $accountService->isConnectedToGetResponse();
+        } catch (GetresponseApiException $e) {
+            $isConnectedToGetResponse = false;
+        }
 
-        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$accountStatus->isConnectedToGetResponse()) {
+        if ('AdminGetresponseAccount' !== Tools::getValue('controller') && !$isConnectedToGetResponse) {
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseAccount'));
         }
     }
@@ -130,6 +151,7 @@ class AdminGetresponseController extends ModuleAdminController
      * Renders custom list
      * @return string
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderCustomList()
     {
@@ -154,6 +176,9 @@ class AdminGetresponseController extends ModuleAdminController
             ]
         ];
 
+        $link = $this->context->link->getAdminLink('AdminGetresponseUpdateMapping', false);
+        $link .= '&configure=' . $this->name . '&referer=' . $this->controller_name;
+
         /** @var HelperListCore $helper */
         $helper = new HelperList();
         $helper->shopLinkType = '';
@@ -165,7 +190,7 @@ class AdminGetresponseController extends ModuleAdminController
         $helper->title = $this->l('Contacts info');
         $helper->table = $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminGetresponseUpdateMapping', false). '&configure=' . $this->name . '&referer=' . $this->controller_name;
+        $helper->currentIndex = $link;
 
         return $helper->generateList($this->getCustomList(), $fieldsList);
     }
@@ -173,22 +198,74 @@ class AdminGetresponseController extends ModuleAdminController
     /**
      * Returns custom list
      * @return array
-     * @throws PrestaShopDatabaseException
      */
     public function getCustomList()
     {
-        $customs = $this->repository->getCustoms();
+        $grCustoms = [];
+        try {
+            $customFieldsService = GrCustomFieldsServiceFactory::create();
+            $grCustomsCollection = $customFieldsService->getAllCustomFields();
+        } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
+            $grCustomsCollection = new CustomFieldCollection();
+        } catch (GetresponseApiException $e) {
+            $grCustomsCollection = new CustomFieldCollection();
+        }
+
+
+        /** @var CustomField $custom */
+        foreach ($grCustomsCollection as $custom) {
+            $grCustoms[$custom->getId()] = $custom->getName();
+        }
+
+        $service = CustomFieldsServiceFactory::create();
+        $customs = $service->getCustomFieldsMapping();
+
         $result = [];
+        /** @var CustomFieldMapping $custom */
         foreach ($customs as $custom) {
+            if (in_array($custom->getCustomName(), self::DEFAULT_CUSTOMS)) {
+                $customName = $custom->getCustomName();
+            } elseif (!empty($custom->getGrCustomId())) {
+                $customName = $grCustoms[$custom->getGrCustomId()];
+            } else {
+                $customName = '';
+            }
+
             $result[] = [
-                'id' => $custom['id_custom'],
-                'customer_detail' => $custom['custom_field'],
-                'gr_custom' => $custom['custom_name'],
-                'default' => 0,
-                'on' => $custom['active_custom'] == 'yes' ? 1 : 0
+                'id' => $custom->getId(),
+                'customer_detail' => $custom->getCustomName(),
+                'gr_custom' => $customName,
+                'default' => (int) $custom->isDefault(),
+                'on' => (int) $custom->isActive()
             ];
         }
 
         return $result;
+    }
+
+    /**
+     * @return array
+     * @throws GetresponseApiException
+     */
+    protected function getCampaignsOptions()
+    {
+        $contactListService = ContactListServiceFactory::create();
+
+        $campaigns = [
+            [
+                'id_option' => 0,
+                'name' => $this->l('Select a list')
+            ]
+        ];
+
+        /** @var ContactList $contactList */
+        foreach ($contactListService->getContactLists() as $contactList) {
+            $campaigns[] = [
+                'id_option' => $contactList->getId(),
+                'name' => $contactList->getName()
+            ];
+        }
+
+        return $campaigns;
     }
 }

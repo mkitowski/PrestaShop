@@ -1,116 +1,79 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\WebForm;
 
-use Db;
-use PrestaShopDatabaseException;
+use Configuration;
 
 /**
  * Class WebFormRepository
  */
 class WebFormRepository
 {
-
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
-
-    /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
+    const RESOURCE_KEY = 'getresponse_forms';
 
     /**
      * @param WebForm $webForm
      */
     public function update(WebForm $webForm)
     {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_webform
-        SET
-            `webform_id` = "' . pSQL($webForm->getId()) . '",
-            `active_subscription` = "' . pSQL($webForm->getStatus()) . '",
-            `sidebar` = "' . pSQL($webForm->getSidebar()) . '",
-            `style` = "' . pSQL($webForm->getStyle()) . '",
-            `url` = "' . pSQL($webForm->getUrl()) . '"
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(
+            self::RESOURCE_KEY,
+            json_encode([
+                'status' => $webForm->getStatus(),
+                'webform_id' => $webForm->getId(),
+                'sidebar' => $webForm->getSidebar(),
+                'style' => $webForm->getStyle(),
+                'url' => $webForm->getUrl()
+            ])
+        );
     }
 
     /**
      * @return WebForm|null
-     * @throws PrestaShopDatabaseException
      */
     public function getWebForm()
     {
-        $query = '
-        SELECT
-            `webform_id`, 
-            `active_subscription`, 
-            `sidebar`, 
-            `style`, 
-            `url`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_webform
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
+        $result = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
-        if ($results = $this->db->ExecuteS($query)) {
-            return WebFormFactory::fromDb($results[0]);
+        if (empty($result)) {
+            return WebForm::createEmptyInstance();
         }
 
-        return null;
+        return new WebForm(
+            $result['status'],
+            $result['webform_id'],
+            $result['sidebar'],
+            $result['style'],
+            $result['url']
+        );
     }
 
-    /**
-     * @param string $activeSubscription
-     */
-    public function updateWebFormSubscription($activeSubscription)
+    public function clearSettings()
     {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_webform 
-        SET
-            `active_subscription` = "' . pSQL($activeSubscription) . '"
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(self::RESOURCE_KEY, null);
     }
-
-    /**
-     * @return array
-     * @throws PrestaShopDatabaseException
-     */
-    public function getWebformSettings()
-    {
-        $sql = '
-        SELECT
-            `webform_id`, 
-            `active_subscription`, 
-            `sidebar`, 
-            `style`, 
-            `url`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_webform
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        if ($results = $this->db->ExecuteS($sql)) {
-            return $results[0];
-        }
-
-        return [];
-    }
-
-
 }

@@ -1,4 +1,29 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Export;
 
 use Db;
@@ -29,7 +54,7 @@ class ExportRepository
     /**
      * @param bool $newsletterGuests
      * @return array
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     public function getContacts($newsletterGuests = false)
     {
@@ -45,6 +70,15 @@ class ExportRepository
         if ($newsletterGuests && $this->checkModuleStatus($newsletterModule)) {
             $ngWhere = 'UNION SELECT
                     0 as id,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     n.email as email
                 FROM
                     ' . $newsletterTableName . ' n
@@ -57,6 +91,15 @@ class ExportRepository
 
         $sql = 'SELECT
                     cu.id_customer as id,
+                    cu.firstname,
+                    cu.lastname,
+                    cu.birthday,
+                    concat(ad.address1, \' \', ad.address2) as address,
+                    ad.postcode as postal,
+                    cu.company,
+                    pl.name as country,
+                    ad.city,
+                    ad.phone,
                     cu.email as email
                 FROM
                     ' . _DB_PREFIX_ . 'customer as cu
@@ -64,6 +107,8 @@ class ExportRepository
                     ' . _DB_PREFIX_ . 'address ad ON cu.id_customer = ad.id_customer
                 LEFT JOIN
                     ' . _DB_PREFIX_ . 'country co ON ad.id_country = co.id_country
+                LEFT JOIN
+                	' . _DB_PREFIX_ . 'country_lang pl on co.id_country = pl.id_country AND pl.id_lang = 1
                 WHERE
                     cu.newsletter = 1
                 AND
@@ -87,7 +132,7 @@ class ExportRepository
     /**
      * @param string $moduleName
      * @return bool
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     public function checkModuleStatus($moduleName)
     {
@@ -114,7 +159,7 @@ class ExportRepository
     /**
      * @param string $email
      * @return string
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getContactCategory($email)
     {
@@ -154,32 +199,8 @@ class ExportRepository
 
     /**
      * @param $customerId
-     * @return array|false|mysqli_result|null|PDOStatement|resource
-     * @throws PrestaShopDatabaseException
-     */
-    public function getCustomerOrders($customerId)
-    {
-        $sql = '
-        SELECT
-            `id_order`,
-            `id_cart`
-        FROM
-            ' . _DB_PREFIX_ . 'orders
-        WHERE
-            `id_shop` = ' . (int) $this->idShop . ' AND
-            `id_customer` = ' . (int) $customerId;
-
-        if ($results = $this->db->executeS($sql)) {
-            return $results;
-        }
-
-        return [];
-    }
-
-    /**
-     * @param $customerId
-     * @return array|false|mysqli_result|null|PDOStatement|resource
-     * @throws PrestaShopDatabaseException
+     * @return array
+     * @throws \PrestaShopDatabaseException
      */
     public function getOrders($customerId)
     {
@@ -199,5 +220,4 @@ class ExportRepository
 
         return array();
     }
-
 }

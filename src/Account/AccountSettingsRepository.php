@@ -1,9 +1,37 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Account;
 
-use Db;
-use GetResponse\CustomFieldsMapping\CustomFieldMapping;
-use PrestaShopDatabaseException;
+use Configuration;
+use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\Ecommerce\EcommerceRepository;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
+use GetResponse\WebForm\WebFormRepository;
+use GetResponse\WebTracking\WebTrackingRepository;
 
 /**
  * Class AccountSettingsRepository
@@ -11,70 +39,20 @@ use PrestaShopDatabaseException;
  */
 class AccountSettingsRepository
 {
-    /** @var Db */
-    private $db;
-
-    /** @var int */
-    private $idShop;
+    const RESOURCE_KEY = 'getresponse_account';
 
     /**
-     * @param Db $db
-     * @param int $shopId
-     */
-    public function __construct($db, $shopId)
-    {
-        $this->db = $db;
-        $this->idShop = $shopId;
-    }
-
-    /**
-     * @return null|AccountSettings
-     * @throws PrestaShopDatabaseException
+     * @return AccountSettings
      */
     public function getSettings()
     {
-        $sql = '
-        SELECT
-            `id`,
-            `id_shop`,
-            `api_key`,
-            `active_subscription`,
-            `active_newsletter_subscription`,
-            `active_tracking`,
-            `tracking_snippet`,
-            `update_address`,
-            `campaign_id`,
-            `cycle_day`,
-            `account_type`,
-            `crypto`
-        FROM
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
+        $result = json_decode(Configuration::get(self::RESOURCE_KEY), true);
 
-        if ($results = $this->db->ExecuteS($sql)) {
-            return AccountSettingsFactory::fromDb($results[0]);
+        if (empty($result)) {
+            return AccountSettings::createEmptyInstance();
         }
 
-        return null;
-    }
-
-    /**
-     * @param string $trackingStatus
-     * @param string $snippet
-     */
-    public function updateTracking($trackingStatus, $snippet)
-    {
-        $query = '
-        UPDATE 
-            ' . _DB_PREFIX_ . 'getresponse_settings
-        SET
-            `active_tracking` = "' . pSQL($trackingStatus) . '",
-            `tracking_snippet` = "' . pSQL($snippet, true) . '"
-        WHERE
-            `id_shop` = ' . (int)$this->idShop;
-
-        $this->db->execute($query);
+        return AccountSettings::createFromSettings($result);
     }
 
     /**
@@ -84,69 +62,31 @@ class AccountSettingsRepository
      */
     public function updateApiSettings($apiKey, $accountType, $domain)
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = "' . pSQL($apiKey) . '",
-            `account_type` = "' . pSQL($accountType) . '",
-            `crypto` = "' . pSQL($domain) . '"
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-
-        $this->db->execute($query);
+        Configuration::updateValue(self::RESOURCE_KEY, json_encode([
+            'api_key' => $apiKey,
+            'type' => $accountType,
+            'domain' => $domain
+        ]));
     }
 
-    public function disconnectApiSettings()
+    public function clearConfiguration()
     {
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_settings 
-        SET
-            `api_key` = null,
-            `active_subscription` = "no",
-            `active_newsletter_subscription` = "no",
-            `active_tracking` = "no",
-            `tracking_snippet` = "",
-            `update_address` = "no",
-            `campaign_id` = "",
-            `cycle_day` = "",
-            `cycle_day` = "",
-            `account_type` = "' . pSQL(AccountSettings::ACCOUNT_TYPE_SMB) . '",
-            `crypto` = null
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
+        $this->clearSettings();
+        $registrationService = RegistrationServiceFactory::createService();
+        $registrationService->clearSettings();
 
-        $query = '
-        UPDATE 
-            ' .  _DB_PREFIX_ . 'getresponse_webform 
-        SET
-            `webform_id` = "",
-            `active_subscription` = "no",
-            `sidebar` = "left",
-            `style` = "webform" 
-         WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
+        $customFieldsService = CustomFieldsServiceFactory::create();
+        $customFieldsService->clearCustomFields();
 
-        $query = '
-        DELETE FROM
-            ' . _DB_PREFIX_ . 'getresponse_ecommerce 
-        WHERE
-            `id_shop` = ' . (int) $this->idShop;
-        $this->db->execute($query);
-
-        $sql = '
-                UPDATE
-                    ' . _DB_PREFIX_ . 'getresponse_customs
-                SET
-                    `custom_name` = "",
-                    `active_custom` = "' . pSQL(CustomFieldMapping::INACTIVE) . '"
-                WHERE
-                    `id_shop` = ' . (int) $this->idShop . '
-                    AND `default` = "' . pSQL(CustomFieldMapping::DEFAULT_NO) . '"';
-        $this->db->execute($sql);
+        (new WebFormRepository())->clearSettings();
+        (new WebTrackingRepository())->clearWebTracking();
+        (new EcommerceRepository())->clearEcommerceSettings();
+        (new AccountRepository())->clearInvalidRequestDate();
+        (new AccountRepository())->clearOriginCustomFieldId();
     }
 
+    public function clearSettings()
+    {
+        Configuration::updateValue(self::RESOURCE_KEY, null);
+    }
 }

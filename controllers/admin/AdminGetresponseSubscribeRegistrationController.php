@@ -1,49 +1,82 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 require_once 'AdminGetresponseController.php';
 
-use GetResponse\ContactList\ContactListService;
+use GetResponse\Account\AccountServiceFactory;
 use GetResponse\ContactList\ContactListServiceFactory;
-use GetResponse\ContactList\SubscribeViaRegistrationDto;
-use GetResponse\ContactList\SubscribeViaRegistrationValidator;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\ContactList\ContactList;
-use GrShareCode\GetresponseApiException;
+use GetResponse\Settings\Registration\RegistrationServiceFactory;
+use GetResponse\Settings\Registration\RegistrationSettings;
+use GetResponse\Settings\Registration\RegistrationSettingsValidator;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseController
 {
-    public $name = 'GRSubscribeRegistration';
+    const UPDATE_CONTACT_ENABLED = '1';
+    const UPDATE_CONTACT_DISABLED = '0';
 
-    /** @var ContactListService */
-    private $contactListService;
-
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
 
+        $this->name = 'GRSubscribeRegistration';
         $this->context->smarty->assign(array(
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
             'base_url',
             __PS_BASE_URI__
         ));
-
-        $this->display = 'view';
-        $this->contactListService = ContactListServiceFactory::create();
     }
 
     public function initContent()
     {
+        $this->display = 'view';
         $this->toolbar_title[] = $this->l('GetResponse');
         $this->toolbar_title[] = $this->l('Add Contacts During Registrations');
         parent::initContent();
     }
 
+    /**
+     * @throws PrestaShopException
+     */
     public function initPageHeaderToolbar()
     {
+        $link = (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList');
+        $link .= '&referer=' . $this->controller_name;
+
         $this->page_header_toolbar_btn['add_campaign'] = [
-            'href' => (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList') . '&referer=' . $this->controller_name,
+            'href' => $link,
             'desc' => $this->l('Add new contact list'),
             'icon' => 'process-icon-new'
         ];
@@ -51,49 +84,46 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         parent::initPageHeaderToolbar();
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws PrestaShopException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('saveSubscribeForm')) {
-
-            $addContactViaRegistrationDto = new SubscribeViaRegistrationDto(
-                Tools::getValue('subscriptionSwitch'),
-                Tools::getValue('newsletter', 0),
-                Tools::getValue('campaign'),
-                Tools::getValue('addToCycle', 0),
-                Tools::getValue('cycledays'),
-                Tools::getValue('contactInfo', 0)
-            );
-
-            $validator = new SubscribeViaRegistrationValidator($addContactViaRegistrationDto);
+            $registrationSettings = RegistrationSettings::createFromPost(Tools::getAllValues());
+            $validator = new RegistrationSettingsValidator($registrationSettings);
 
             if (!$validator->isValid()) {
-
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
-            $this->contactListService->updateSubscribeViaRegistration($addContactViaRegistrationDto);
+            $service = RegistrationServiceFactory::createService();
+            $service->updateSettings($registrationSettings);
+
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
         }
-
-        parent::postProcess();
     }
 
     /**
      * render main view
      * @return mixed
      * @throws GetresponseApiException
+     * @throws PrestaShopDatabaseException
+     * @throws SmartyException
+     * @throws PrestaShopException
      */
     public function renderView()
     {
-        $settings = $this->repository->getSettings();
-        $isConnected = !empty($settings['api_key']) ? true : false;
+        $accountSettings = AccountServiceFactory::create()->getAccountSettings();
+        $registrationService = RegistrationServiceFactory::createService();
+        $registrationSettings = $registrationService->getSettings();
+        $contactListService = $contactListService = ContactListServiceFactory::create();
 
         $this->context->smarty->assign(array(
-            'is_connected' => $isConnected,
-            'active_tracking' => $settings['active_tracking']
+            'is_connected' => $accountSettings->isConnectedWithGetResponse()
         ));
 
         $this->context->smarty->assign([
@@ -101,11 +131,11 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'token' => $this->getToken(),
             'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
                 $this->getCampaignsOptions(),
-                $this->contactListService->getSettings()->getCycleDay()
+                $registrationSettings->getCycleDay()
             ),
             'subscribe_via_registration_list' => $this->renderCustomList(),
-            'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
-            'cycle_day' => $this->contactListService->getSettings()->getCycleDay(),
+            'campaign_days' => json_encode($this->getCampaignDays($contactListService->getAutoresponders())),
+            'cycle_day' => $registrationSettings->getCycleDay(),
         ]);
 
 
@@ -126,10 +156,11 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      * @param array $campaigns
      * @param null|int $addToCycle
      * @return mixed
+     * @throws SmartyException
      */
     public function renderSubscribeRegistrationForm($campaigns = array(), $addToCycle = null)
     {
-        if (is_string($addToCycle) && strlen($addToCycle) > 0) {
+        if (is_string($addToCycle) && Tools::strlen($addToCycle) > 0) {
             $addToCycle = 'checked="checked"';
         } else {
             $addToCycle = '';
@@ -219,12 +250,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                     'values' => [
                         [
                             'id' => 'contact_on',
-                            'value' => SubscribeViaRegistrationDto::UPDATE_CONTACT_ENABLED,
+                            'value' => self::UPDATE_CONTACT_ENABLED,
                             'label' => $this->l('Enabled')
                         ],
                         [
                             'id' => 'contact_off',
-                            'value' => SubscribeViaRegistrationDto::UPDATE_CONTACT_DISABLED,
+                            'value' => self::UPDATE_CONTACT_DISABLED,
                             'label' => $this->l('Disabled')
                         ]
                     ]
@@ -242,32 +273,10 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * @return array
-     * @throws GetresponseApiException
-     */
-    private function getCampaignsOptions()
-    {
-        $campaigns = [
-            [
-                'id_option' => 0,
-                'name' => $this->l('Select a list')
-            ]
-        ];
-
-        /** @var ContactList $contactList */
-        foreach ($this->contactListService->getContactLists() as $contactList) {
-            $campaigns[] = [
-                'id_option' => $contactList->getId(),
-                'name' => $contactList->getName()
-            ];
-        }
-
-        return $campaigns;
-    }
-
-    /**
      * Renders custom list
      * @return mixed
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function renderList()
     {
@@ -281,14 +290,14 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function getFieldsValue($obj)
     {
-        $settings = $this->contactListService->getSettings();
-
+        $service = RegistrationServiceFactory::createService();
+        $settings = $service->getSettings();
         return [
-            'subscriptionSwitch' => $settings->isSubscriptionActive() ? 1 : 0,
-            'campaign' => $settings->getContactListId(),
+            'subscriptionSwitch' => $settings->isActive() ? 1 : 0,
+            'campaign' => $settings->getListId(),
             'cycledays' => $settings->getCycleDay(),
             'contactInfo' => $settings->isUpdateContactEnabled() ? 1 : 0,
-            'newsletter' => $settings->isNewsletterSubscriptionOn() ? 1 : 0
+            'newsletter' => $settings->isNewsletterActive() ? 1 : 0
         ];
     }
 }

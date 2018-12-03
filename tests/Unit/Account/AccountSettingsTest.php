@@ -1,4 +1,29 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Tests\Unit\Account;
 
 use GetResponse\Account\AccountSettings;
@@ -10,103 +35,12 @@ use GetResponse\Tests\Unit\BaseTestCase;
  */
 class AccountSettingsTest extends BaseTestCase
 {
-
-    /**
-     * @test
-     */
-    public function shouldCheckIfSubscriberCanBeSend()
-    {
-        $settings = $this->getSettingsAppendedByParams(
-            [
-                'activeSubscription' => 'yes',
-                'contactListId' => 'contactListId',
-                'activeNewsletterSubscription' => 'yes',
-            ]
-        );
-        $this->assertTrue($settings->canSubscriberBeSend());
-
-        $settings = $this->getSettingsAppendedByParams(
-            [
-                'activeSubscription' => 'no',
-                'contactListId' => 'contactListId',
-                'activeNewsletterSubscription' => 'yes',
-            ]
-        );
-        $this->assertFalse($settings->canSubscriberBeSend());
-
-        $settings = $this->getSettingsAppendedByParams(
-            [
-                'activeSubscription' => 'yes',
-                'contactListId' => '',
-                'activeNewsletterSubscription' => 'yes',
-            ]
-        );
-        $this->assertFalse($settings->canSubscriberBeSend());
-
-        $settings = $this->getSettingsAppendedByParams(
-            [
-                'activeSubscription' => 'yes',
-                'contactListId' => 'contactListId',
-                'activeNewsletterSubscription' => 'no',
-            ]
-        );
-        $this->assertTrue($settings->canSubscriberBeSend());
-    }
-
-    /**
-     * @param array $params
-     * @return AccountSettings
-     */
-    private function getSettingsAppendedByParams($params)
-    {
-        return new AccountSettings(
-            isset($params['id']) ? $params['id'] : 'id',
-            isset($params['shopId']) ? $params['shopId'] : 'shopId',
-            isset($params['apiKey']) ? $params['apiKey'] : 'apiKey',
-            isset($params['activeSubscription']) ? $params['activeSubscription'] : 'no',
-            isset($params['activeNewsletterSubscription']) ? $params['activeNewsletterSubscription'] : 'no',
-            isset($params['activeTracking']) ? $params['activeTracking'] : 'disabled',
-            isset($params['trackingSnippet']) ? $params['trackingSnippet'] : 'trackingSnippet',
-            isset($params['updateAddress']) ? $params['updateAddress'] : 'updateAddress',
-            isset($params['contactListId']) ? $params['contactListId'] : 'contactListId',
-            isset($params['cycleDay']) ? $params['cycleDay'] : 'cycleDay',
-            isset($params['accountType']) ? $params['accountType'] : 'accountType',
-            isset($params['domain']) ? $params['domain'] : 'domain'
-        );
-    }
-
     /**
      * @test
      */
     public function shouldReturnHiddenApiKey()
     {
-        $settings = $this->getSettingsAppendedByParams(['apiKey' => 'QQQQQQQQQQQQ']);
-
+        $settings = new AccountSettings('QQQQQQQQQQQQ', 'accountType', 'domain');
         $this->assertEquals('******QQQQQQ', $settings->getHiddenApiKey());
     }
-
-    /**
-     * @test
-     */
-    public function shouldReturnProperTrackingStatusInfo()
-    {
-        $settings = $this->getSettingsAppendedByParams(['activeTracking' => 'disabled']);
-        $this->assertTrue($settings->isTrackingDisabled());
-
-        $settings = $this->getSettingsAppendedByParams(['activeTracking' => 'yes']);
-        $this->assertTrue($settings->isTrackingActive());
-    }
-
-    /**
-     * @test
-     */
-    public function shouldReturnIfUpdateContactEnabled()
-    {
-        $settings = $this->getSettingsAppendedByParams(['updateAddress' => 'no']);
-        $this->assertFalse($settings->isUpdateContactEnabled());
-
-        $settings = $this->getSettingsAppendedByParams(['updateAddress' => 'yes']);
-        $this->assertTrue($settings->isUpdateContactEnabled());
-    }
-
 }

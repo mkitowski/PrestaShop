@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 require_once 'AdminGetresponseController.php';
 
@@ -10,21 +34,23 @@ use GetResponse\Export\ExportServiceFactory;
 use GetResponse\Export\ExportSettings;
 use GetResponse\Export\ExportValidator;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\Api\ApiTypeException;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\ContactList;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Shop\Shop;
 
 class AdminGetresponseExportController extends AdminGetresponseController
 {
-    public $name = 'AdminGetresponseExport';
-
     /** @var ContactListService */
     public $contactListService;
 
     /** @var EcommerceService */
     private $ecommerceService;
 
+    /**
+     * @throws ApiTypeException
+     * @throws PrestaShopException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -32,6 +58,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
         $this->contactListService = ContactListServiceFactory::create();
         $this->ecommerceService = EcommerceServiceFactory::create();
+        $this->name = 'AdminGetresponseExport';
     }
 
     public function initContent()
@@ -44,8 +71,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
     public function initPageHeaderToolbar()
     {
+        $link = (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList');
+        $link .= '&referer=' . $this->controller_name;
+
         $this->page_header_toolbar_btn['add_campaign'] = [
-            'href' => (new LinkCore())->getAdminLink('AdminGetresponseAddNewContactList') . '&referer=' . $this->controller_name,
+            'href' => $link,
             'desc' => $this->l('Add new contact list'),
             'icon' => 'process-icon-new'
         ];
@@ -63,7 +93,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
     public function postProcess()
     {
         if (Tools::isSubmit($this->name)) {
-
             $exportSettings = new ExportSettings(
                 Tools::getValue('campaign'),
                 Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
@@ -85,7 +114,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
 
             FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Customer data exported'));
             Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseExport'));
-
         }
         parent::postProcess();
     }
@@ -100,14 +128,12 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderView()
     {
-        $settings = $this->repository->getSettings();
-
         $this->context->smarty->assign([
             'selected_tab' => 'export_customers',
             'export_customers_form' => $this->renderExportForm(),
             'export_customers_list' => $this->renderCustomList(),
             'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
-            'cycle_day' => $settings['cycle_day'],
+            'cycle_day' => null,
             'token' => $this->getToken(),
         ]);
 
@@ -122,7 +148,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
      */
     public function renderExportForm()
     {
-        $shops[] = ['shopId' => '', 'name' => $this->l('Select a store')];
+        $shops = [['shopId' => '', 'name' => $this->l('Select a store')]];
 
         /** @var Shop $shop */
         foreach ($this->ecommerceService->getAllShops() as $shop) {
@@ -192,7 +218,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
                         'name' => 'exportEcommerce',
                         'values' => [
                             'query' => [
-                                ['id' => 1, 'val' => 1, 'name' => $this->l(' Include ecommerce data in this export')]
+                                [
+                                    'id' => 1,
+                                    'val' => 1,
+                                    'name' => $this->l(' Include ecommerce data in this export')
+                                ]
                             ],
                             'id' => 'id',
                             'name' => 'name',
@@ -285,5 +315,4 @@ class AdminGetresponseExportController extends AdminGetresponseController
     {
         return Tools::getAdminTokenLite('AdminGetresponseExport');
     }
-
 }
