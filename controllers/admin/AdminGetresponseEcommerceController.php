@@ -1,28 +1,57 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
-use GetResponse\Ecommerce\Activity;
-use GetResponse\Ecommerce\EcommerceDto;
+use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Ecommerce\EcommerceValidator;
-use GrShareCode\GetresponseApiException;
-use GrShareCode\Shop\AddShopCommand;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
+use GrShareCode\Shop\Command\AddShopCommand;
+use GrShareCode\Shop\Command\DeleteShopCommand;
 use GrShareCode\Shop\Shop;
 
 require_once 'AdminGetresponseController.php';
 
 class AdminGetresponseEcommerceController extends AdminGetresponseController
 {
-    private $name = 'GREcommerce';
-
     /** @var EcommerceService */
     private $ecommerceService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
+     */
     public function __construct()
     {
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-ecommerce.js');
+        $this->name = 'GREcommerce';
         $this->ecommerceService = EcommerceServiceFactory::create();
     }
 
@@ -53,21 +82,20 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $this->toolbar_title[] = $this->l('GetResponse Ecommerce');
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('delete' . $this->name)) {
-            $this->ecommerceService->deleteShop(Tools::getValue('shopId'));
-            $this->confirmations[] = $this->l('Ecommerce settings saved');
+            $this->ecommerceService->deleteShop(new DeleteShopCommand(Tools::getValue('shopId')));
+            $this->confirmations[] = $this->l('Store removed');
         }
 
         if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('ecommerce') !== false) {
-
-            $ecommerceDto = new EcommerceDto(
-                Tools::getValue('shop'),
-                Tools::getValue('ecommerce')
-            );
-
-            $validator = new EcommerceValidator($ecommerceDto, $this->ecommerceService);
+            $ecommerce = Ecommerce::createFromPost(Tools::getAllValues());
+            $validator = new EcommerceValidator($ecommerce);
 
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
@@ -75,22 +103,19 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                 return;
             }
 
-            $this->ecommerceService->updateEcommerceDetails($ecommerceDto);
+            $this->ecommerceService->updateEcommerceDetails($ecommerce);
             $this->confirmations[] = $this->l('Ecommerce settings saved');
         }
 
 
         if (Tools::getValue('action') == 'add') {
-
             $this->display = 'add';
 
             if (Tools::isSubmit('submit' . $this->name) && Tools::getValue('form_name') == 'add_store') {
-
                 $shopName = Tools::getValue('shop_name');
 
                 if (empty($shopName)) {
                     $this->errors[] = $this->l('Store name can not be empty');
-
                     return;
                 }
 
@@ -104,20 +129,18 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     );
                     $this->display = 'list';
                     $this->confirmations[] = $this->l('Store added');
-
                 } catch (GetresponseApiException $e) {
                     $this->display = 'add';
                     $this->errors[] = $this->l($e->getMessage());
                 }
-
             }
         }
-
         parent::postProcess();
     }
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     public function renderList()
     {
@@ -126,10 +149,12 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     private function generateForm()
     {
-        $shops[] = ['shopId' => '', 'name' => $this->l('Select a store')];
+        $settings = $this->ecommerceService->getEcommerceSettings();
+        $shops = [['shopId' => '', 'name' => $this->l('Select a store')]];
 
         /** @var Shop $shop */
         foreach ($this->ecommerceService->getAllShops() as $shop) {
@@ -142,7 +167,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $fieldsForm = [
             'form' => [
                 'legend' => [
-                    'title' => $this->l((!$this->ecommerceService->isEcommerceEnabled() ? 'Enable ' : '') . 'GetResponse Ecommerce')
+                    'title' => $this->l((!$settings->isEnabled() ? 'Enable ' : '') . 'GetResponse Ecommerce')
                 ],
                 'description' =>
                     $this->l(
@@ -152,13 +177,6 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                     $this->l(
                         'Use this data to create marketing automation workflows that react to 
                         purchases, abandoned carts, or the amounts of money spent.'
-                    ) . '<br>' .
-                    $this->l(
-                        'Make sure to <u>enable adding contacts during registration</u> to 
-                        start sending ecommerce data to GetResponse.',
-                        false,
-                        false,
-                        false
                     ),
                 'input' => [
                     [
@@ -191,11 +209,23 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
                             'name' => 'name'
                         ]
                     ],
+                    [
+                        'type' => 'select',
+                        'label' => $this->l('Target list'),
+                        'class' => 'gr-select',
+                        'name' => 'list',
+                        'required' => true,
+                        'options' => [
+                            'query' => $this->getCampaignsOptions(),
+                            'id' => 'id_option',
+                            'name' => 'name'
+                        ]
+                    ],
                 ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                    'name' => 'EcommerceConfiguration'
-                ]
+                    'submit' => [
+                        'title' => $this->l('Save'),
+                        'name' => 'EcommerceConfiguration'
+                    ]
             ]
         ];
 
@@ -205,19 +235,19 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
         $helper->submit_action = 'submit' . $this->name;
         $helper->token = $this->getToken();
         $helper->title = $this->l('Enable GetResponse Ecommerce');
-        $helper->fields_value = ['ecommerce' => 0, 'shop' => ''];
-        $settings = $this->ecommerceService->getEcommerceSettings();
-        $activity = Activity::createFromRequest(Tools::getValue('ecommerce'));
+        $helper->fields_value = ['ecommerce' => 0, 'shop' => '', 'listId' => ''];
 
-        if ($settings !== null) {
+        if ($settings->isEnabled()) {
             $helper->fields_value = [
                 'ecommerce' => 1,
-                'shop' => $settings->getGetResponseShopId()
+                'shop' => $settings->getShopId(),
+                'list' => $settings->getListId()
             ];
-        } elseif (Tools::isSubmit('submit' . $this->name) && $activity->isEnabled()) {
+        } else {
             $helper->fields_value = [
-                'ecommerce' => 1,
-                'shop' => Tools::getValue('shop')
+                'ecommerce' => 0,
+                'shop' => null,
+                'list' => null
             ];
         }
 
@@ -226,6 +256,7 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
     /**
      * @return string
+     * @throws GetresponseApiException
      */
     private function generateShopList()
     {
@@ -271,37 +302,36 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
     public function renderForm()
     {
         $fieldsForm = [
-            'form' => [
-                'legend' => [
-                    'title' => $this->l('Add new store'),
+        'form' => [
+            'legend' => [
+                'title' => $this->l('Add new store'),
+            ],
+            'input' => [
+                [
+                    'type' => 'text',
+                    'label' => $this->l('Store name'),
+                    'required' => true,
+                    'name' => 'shop_name',
                 ],
-                'input' => [
-                    [
-                        'type' => 'text',
-                        'label' => $this->l('Store name'),
-                        'required' => true,
-                        'name' => 'shop_name',
-                    ],
-                    [
-                        'type' => 'hidden',
-                        'name' => 'form_name'
-                    ],
-                    [
-                        'type' => 'hidden',
-                        'name' => 'back_url'
-                    ]
+                [
+                    'type' => 'hidden',
+                    'name' => 'form_name'
                 ],
-                'submit' => [
-                    'title' => $this->l('Save'),
-                    'name' => 'NewAutomationConfiguration'
-                ],
-                'reset' => [
-                    'title' => $this->l('Cancel'),
-                    'icon' => 'process-icon-cancel'
-                ],
-                'show_cancel_button' => true
-            ]
-        ];
+                [
+                    'type' => 'hidden',
+                    'name' => 'back_url'
+                ]
+            ],
+            'submit' => [
+                'title' => $this->l('Save'),
+                'name' => 'NewAutomationConfiguration'
+            ],
+            'reset' => [
+                'title' => $this->l('Cancel'),
+                'icon' => 'process-icon-cancel'
+            ],
+            'show_cancel_button' => true
+        ]];
 
         /** @var HelperFormCore $helper */
         $helper = new HelperForm();
@@ -317,5 +347,4 @@ class AdminGetresponseEcommerceController extends AdminGetresponseController
 
         return $helper->generateForm([$fieldsForm]);
     }
-
 }

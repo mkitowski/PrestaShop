@@ -1,9 +1,33 @@
 <?php
-namespace GetResponse\Tests\UnitWebForm;
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
+namespace GetResponse\Tests\Unit\WebForm;
 
 use GetResponse\Tests\Unit\BaseTestCase;
 use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormFactory;
 
 /**
  * Class WebFormFactoryTest
@@ -17,23 +41,22 @@ class WebFormFactoryTest extends BaseTestCase
     public function shouldCreateWebFormFromRequest()
     {
         $request = [
-            'formId' => 'webFormId',
-            'status' => 'no',
-            'sidebar' => 'left',
-            'style' => 'myStyle',
-            'url' => 'http://getresponse.com/webform/webFormId',
+            'form' => 'webFormId',
+            'subscription' => '1',
+            'position' => 'left',
+            'style' => 'myStyle'
         ];
 
-        $webForm = WebFormFactory::fromRequest($request);
+        $webForm = WebForm::createFromPost($request);
 
         $this->assertEquals(
             new WebForm(
-                $request['formId'],
-                $request['status'],
-                $request['sidebar'],
-                $request['style'],
-                $request['url']
-            ), $webForm
+                WebForm::STATUS_ACTIVE,
+                $request['form'],
+                $request['position'],
+                $request['style']
+            ),
+            $webForm
         );
     }
 
@@ -43,24 +66,22 @@ class WebFormFactoryTest extends BaseTestCase
     public function shouldCreateWebFormFromRequestWithDefaultValues()
     {
         $request = [
-            'formId' => 'webFormId',
-            'status' => '',
-            'sidebar' => '',
+            'form' => '',
+            'subscription' => '0',
+            'position' => '',
             'style' => '',
-            'url' => 'http://getresponse.com/webform/webFormId',
         ];
 
-        $webForm = WebFormFactory::fromRequest($request);
+        $webForm = WebForm::createFromPost($request);
 
         $this->assertEquals(
             new WebForm(
-                $request['formId'],
-                'no',
-                'home',
-                'webform',
-                $request['url']
-            ), $webForm
+                WebForm::STATUS_INACTIVE,
+                null,
+                '',
+                ''
+            ),
+            $webForm
         );
     }
-
 }

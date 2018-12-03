@@ -1,4 +1,29 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 require_once 'AdminGetresponseController.php';
 
 use GetResponse\ContactList\AddContactListDto;
@@ -6,25 +31,27 @@ use GetResponse\ContactList\AddContactListValidator;
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
 use GetResponse\Helper\FlashMessages;
-use GrShareCode\ContactList\AddContactListCommand;
+use GrShareCode\Api\Authorization\ApiTypeException;
 use GrShareCode\ContactList\FromFields;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationBody;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubject;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 class AdminGetresponseAddNewContactListController extends AdminGetresponseController
 {
-    public $name = 'GRAddNewContactList';
-
     /** @var ContactListService */
     private $contactListService;
 
+    /**
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     */
     public function __construct()
     {
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
-
+        $this->name = 'GRAddNewContactList';
         $this->context->smarty->assign([
             'gr_tpl_path' => _PS_MODULE_DIR_ . 'getresponse/views/templates/admin/',
             'action_url' => $this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'),
@@ -45,11 +72,11 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
 
     /**
      * @throws GetresponseApiException
+     * @throws PrestaShopException
      */
     public function postProcess()
     {
         if (Tools::isSubmit('addCampaignForm')) {
-
             $addContactListDto = new AddContactListDto(
                 Tools::getValue('campaign_name'),
                 Tools::getValue('from_field'),
@@ -61,7 +88,6 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
             $validator = new AddContactListValidator($addContactListDto);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
@@ -72,10 +98,13 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
             } catch (GrApiException $e) {
                 $this->errors[] = $this->l('Contact list could not be added! (' . $e->getMessage() . ')');
             }
-
         }
     }
 
+    /**
+     * @return string
+     * @throws GetresponseApiException
+     */
     public function renderView()
     {
         $this->context->smarty->assign([
@@ -96,6 +125,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
         return Tools::getAdminTokenLite('AdminGetresponseAddNewContactList');
     }
 
+    /**
+     * @return string
+     * @throws GetresponseApiException
+     */
     public function renderAddContactListForm()
     {
         $fieldsForm = [
@@ -196,10 +229,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
      */
     private function getOptionForFromFields()
     {
-        $options[] = [
+        $options = [[
             'id_option' => '',
             'name' => $this->l('Select from field')
-        ];
+        ]];
 
         /** @var FromFields $fromField */
         foreach ($this->contactListService->getFromFields() as $fromField) {
@@ -218,10 +251,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
      */
     private function getOptionForReplayTo()
     {
-        $options[] = [
+        $options= [[
             'id_option' => '',
             'name' => $this->l('Select reply-to address')
-        ];
+        ]];
 
         /** @var FromFields $fromField */
         foreach ($this->contactListService->getFromFields() as $fromField) {
@@ -240,10 +273,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
      */
     private function getOptionForSubject()
     {
-        $options[] = [
+        $options = [[
             'id_option' => '',
             'name' => $this->l('Select confirmation message subject')
-        ];
+        ]];
 
         /** @var SubscriptionConfirmationSubject $subject */
         foreach ($this->contactListService->getSubscriptionConfirmationSubject() as $subject) {
@@ -262,10 +295,10 @@ class AdminGetresponseAddNewContactListController extends AdminGetresponseContro
      */
     public function getOptionForBody()
     {
-        $options[] = [
+        $options = [[
             'id_option' => '',
             'name' => $this->l('Select confirmation message body template')
-        ];
+        ]];
 
         /** @var SubscriptionConfirmationBody $confirmationBody */
         foreach ($this->contactListService->getSubscriptionConfirmationBody() as $confirmationBody) {

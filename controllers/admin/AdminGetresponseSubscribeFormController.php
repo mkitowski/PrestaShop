@@ -1,9 +1,35 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 
 use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormDto;
 use GetResponse\WebForm\WebFormServiceFactory;
 use GetResponse\WebForm\WebFormValidator;
+use GrShareCode\Api\Authorization\ApiTypeException;
+use GrShareCode\Api\Exception\GetresponseApiException;
+use GrShareCode\WebForm\FormNotFoundException;
 use GrShareCode\WebForm\WebForm as GetResponseForm;
 use GrShareCode\WebForm\WebFormCollection;
 
@@ -17,6 +43,12 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
     /** @var WebFormCollection */
     private $getResponseWebFormCollection;
 
+    /**
+     * AdminGetresponseSubscribeFormController constructor.
+     * @throws PrestaShopException
+     * @throws ApiTypeException
+     * @throws GetresponseApiException
+     */
     public function __construct()
     {
         parent::__construct();
@@ -43,30 +75,28 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         parent::initContent();
     }
 
+    /**
+     * @return bool|ObjectModel|void
+     * @throws GetresponseApiException
+     * @throws FormNotFoundException
+     */
     public function postProcess()
     {
         if (Tools::isSubmit('submitSubscribeForm')) {
+            $webForm = WebForm::createFromPost(Tools::getAllValues());
 
-            $webFormDto = new WebFormDto(
-                Tools::getValue('form', null),
-                Tools::getValue('position', null),
-                Tools::getValue('style', null),
-                Tools::getValue('subscription', null)
-            );
-
-            $validator = new WebFormValidator($webFormDto);
+            $validator = new WebFormValidator($webForm);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
 
                 return;
             }
 
-            $this->webFormService->updateWebForm($webFormDto);
+            $this->webFormService->updateWebForm($webForm);
 
-            $this->confirmations[] = $webFormDto->isEnabled()
+            $this->confirmations[] = $webForm->isActive()
                 ? $this->l('Form published')
                 : $this->l('Form unpublished');
-
         }
         parent::postProcess();
     }
@@ -93,13 +123,10 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
         $webForm = $this->webFormService->getWebForm();
 
         return [
-            'position' => Tools::getValue('position', $webForm->getSidebar()),
-            'form' => Tools::getValue('form', $webForm->getId()),
-            'style' => Tools::getValue('style', $webForm->getStyle()),
-            'subscription' => Tools::getValue(
-                'subscription',
-                $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
-            )
+            'position' => $webForm->getSidebar(),
+            'form' => $webForm->getId(),
+            'style' => $webForm->getStyle(),
+            'subscription' => $webForm->getStatus() === WebForm::STATUS_ACTIVE ? 1 : 0
         ];
     }
 
@@ -204,5 +231,4 @@ class AdminGetresponseSubscribeFormController extends AdminGetresponseController
             ]
         ];
     }
-
 }

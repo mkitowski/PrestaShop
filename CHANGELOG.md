@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.4.0
+*(2018-11-16)*
+* store settings in configuration table
+
 ## 16.3.3
 *(2018-10-31)*
 

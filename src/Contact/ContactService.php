@@ -1,16 +1,36 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Contact;
 
-use Customer;
+use GetResponse\Customer\Customer;
 use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GrShareCode\Api\ApiTypeException;
-use GrShareCode\Contact\AddContactCommand;
 use GrShareCode\Contact\ContactService as GrContactService;
-use GrShareCode\CustomField\CustomFieldCollection;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingServiceFactory;
-use PrestaShopDatabaseException;
 
 /**
  * Class ContactService
@@ -30,51 +50,29 @@ class ContactService
     }
 
     /**
-     * @param Customer $contact
+     * @param Customer $customer
      * @param AddContactSettings $addContactSettings
      * @param bool $isNewsletterContact
      * @throws GetresponseApiException
-     * @throws ApiTypeException
-     * @throws PrestaShopDatabaseException
      */
-    public function addContact(Customer $contact, AddContactSettings $addContactSettings, $isNewsletterContact = false)
+    public function addContact(Customer $customer, AddContactSettings $addContactSettings, $isNewsletterContact = false)
     {
         if ($addContactSettings->isUpdateContactCustomFields() && !$isNewsletterContact) {
-
-            $customFieldMappingService = CustomFieldMappingServiceFactory::create();
-            $customFieldMappingCollection = $customFieldMappingService->getActiveCustomFieldMapping();
-
-            $customFieldsService = CustomFieldsServiceFactory::create();
-            $customFieldsService->addCustomsIfMissing($customFieldMappingCollection);
-
-            $grCustomFieldCollection = $customFieldsService->getCustomFieldsFromGetResponse($customFieldMappingCollection);
-
+            $customFieldService = CustomFieldsServiceFactory::create();
+            $customFieldMappingCollection = $customFieldService->getActiveCustomFieldMapping();
         } else {
             $customFieldMappingCollection = new CustomFieldMappingCollection();
-            $grCustomFieldCollection = new CustomFieldCollection();
         }
 
-        $addContactCommandFactory = new AddContactCommandFactory(
-            $customFieldMappingCollection,
-            $grCustomFieldCollection
-        );
+        $addContactCommandFactory = new AddContactCommandFactory($customFieldMappingCollection);
 
         $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
-            $contact,
+            $customer,
             $addContactSettings->getContactListId(),
             $addContactSettings->getDayOfCycle(),
             $addContactSettings->isUpdateContactCustomFields()
         );
 
-        $this->grContactService->upsertContact($addContactCommand);
-    }
-
-    /**
-     * @param AddContactCommand $addContactCommand
-     * @throws GetresponseApiException
-     */
-    public function upsertContact(AddContactCommand $addContactCommand)
-    {
-        $this->grContactService->upsertContact($addContactCommand);
+        $this->grContactService->addContact($addContactCommand);
     }
 }

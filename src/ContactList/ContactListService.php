@@ -1,17 +1,40 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\ContactList;
 
-use Exception;
-use GetResponse\Account\AccountSettings;
 use GrApiException;
-use GrShareCode\ContactList\AddContactListCommand;
+use GrShareCode\ContactList\Command\AddContactListCommand;
 use GrShareCode\ContactList\AutorespondersCollection;
 use GrShareCode\ContactList\ContactListCollection;
 use GrShareCode\ContactList\ContactListService as GrContactListService;
 use GrShareCode\ContactList\FromFieldsCollection;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationBodyCollection;
 use GrShareCode\ContactList\SubscriptionConfirmation\SubscriptionConfirmationSubjectCollection;
-use GrShareCode\GetresponseApiException;
+use GrShareCode\Api\Exception\GetresponseApiException;
 
 /**
  * Class ContactListService
@@ -22,25 +45,12 @@ class ContactListService
     /** @var GrContactListService */
     private $grContactListService;
 
-    /** @var AccountSettings */
-    private $settings;
-
-    /** @var ContactListRepository */
-    private $repository;
-
     /**
-     * @param ContactListRepository $repository
      * @param GrContactListService $grContactListService
-     * @param AccountSettings $settings
      */
-    public function __construct(
-        ContactListRepository $repository,
-        GrContactListService $grContactListService,
-        AccountSettings $settings
-    ) {
+    public function __construct(GrContactListService $grContactListService)
+    {
         $this->grContactListService = $grContactListService;
-        $this->settings = $settings;
-        $this->repository = $repository;
     }
 
     /**
@@ -89,44 +99,6 @@ class ContactListService
     }
 
     /**
-     * @return AccountSettings
-     */
-    public function getSettings()
-    {
-        return $this->settings;
-    }
-
-    /**
-     * @param SubscribeViaRegistrationDto $subscribeViaRegistrationDto
-     */
-    public function updateSubscribeViaRegistration(SubscribeViaRegistrationDto $subscribeViaRegistrationDto)
-    {
-        $subscription = $subscribeViaRegistrationDto->isSubscriptionEnabled()
-            ? AccountSettings::SUBSCRIPTION_ACTIVE_YES
-            : AccountSettings::SUBSCRIPTION_ACTIVE_NO;
-
-        $updateContact = $subscribeViaRegistrationDto->isUpdateContactEnabled()
-            ? AccountSettings::UPDATE_ADDRESS_YES
-            : AccountSettings::UPDATE_ADDRESS_NO;
-
-        $cycleDay = $subscribeViaRegistrationDto->isAddToCycleEnabled()
-            ? $subscribeViaRegistrationDto->getCycleDay()
-            : null;
-
-        $newsletterSubscribers = $subscribeViaRegistrationDto->isNewsletterEnabled()
-            ? AccountSettings::NEWSLETTER_SUBSCRIPTION_ACTIVE_YES
-            : AccountSettings::NEWSLETTER_SUBSCRIPTION_ACTIVE_NO;
-
-        $this->repository->updateSettings(
-            $subscription,
-            $subscribeViaRegistrationDto->getContactList(),
-            $updateContact,
-            $cycleDay,
-            $newsletterSubscribers
-        );
-    }
-
-    /**
      * @param AddContactListDto $addContactListDto
      * @param string $languageCode
      * @throws GrApiException
@@ -148,5 +120,4 @@ class ContactListService
             throw GrApiException::createForCampaignNotAddedException($e);
         }
     }
-
 }

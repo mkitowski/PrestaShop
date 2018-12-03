@@ -1,12 +1,37 @@
 <?php
+/**
+ * 2007-2018 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author     Getresponse <grintegrations@getresponse.com>
+ * @copyright 2007-2018 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
+
 namespace GetResponse\Tests\Unit\Cart;
 
 use Cart;
 use GetResponse\Cart\CartService;
-use GetResponse\Product\ProductService;
+use GetResponse\Product\ProductFactory;
 use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Cart\CartService as GrCartService;
-use GrShareCode\Cart\AddCartCommand as GrAddCartCommand;
+use GrShareCode\Cart\Command\AddCartCommand as GrAddCartCommand;
 use GrShareCode\Cart\Cart as GrCart;
 use GrShareCode\Product\ProductsCollection;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -92,7 +117,10 @@ class CartServiceTest extends BaseTestCase
 
         $cart = new Cart($params);
 
-        $getresponseProduct = (new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1);
+        $getresponseProduct = (new ProductFactory())->createShareCodeProductFromProduct(
+            new \Product(\ProductGenerator::PROD_1_WITH_SKU),
+            1
+        );
         $productsCollection = new ProductsCollection();
         $productsCollection->add($getresponseProduct);
 
@@ -143,8 +171,14 @@ class CartServiceTest extends BaseTestCase
         $cart = new Cart($params);
 
         $productsCollection = new ProductsCollection();
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1));
-        $productsCollection->add((new ProductService())->createProductFromPrestaShopProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 2));
+        $productsCollection->add((new ProductFactory())->createShareCodeProductFromProduct(
+            new \Product(\ProductGenerator::PROD_1_WITH_SKU),
+            1
+        ));
+        $productsCollection->add((new ProductFactory())->createShareCodeProductFromProduct(
+            new \Product(\ProductGenerator::PROD_2_WITH_SKU),
+            2
+        ));
 
         $grCart = new GrCart(
             $params['id'],
