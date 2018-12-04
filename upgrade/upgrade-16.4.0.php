@@ -55,7 +55,7 @@ function upgradeCustomsTable($idShop)
     $customFieldsService = CustomFieldsServiceFactory::create();
     $customFieldsService->setDefaultCustomFieldsMapping();
 
-    $sql = "DROP TABLE "._DB_PREFIX_."getresponse_customs";
+    $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);
 }
 
@@ -78,7 +78,7 @@ function upgradeEcommerceTable($idShop)
         );
     }
 
-    $sql = "DROP TABLE "._DB_PREFIX_."getresponse_ecommerce";
+    $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_ecommerce";
     DB::getInstance()->execute($sql);
 }
 
@@ -108,7 +108,7 @@ function upgradeSettingsTable($idShop)
         }
     }
 
-    $sql = "DROP TABLE "._DB_PREFIX_."getresponse_settings";
+    $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_settings";
     DB::getInstance()->execute($sql);
 }
 
@@ -128,6 +128,6 @@ function upgradeWebFormsTable($idShop)
         ));
     }
 
-    $sql = "DROP TABLE "._DB_PREFIX_."getresponse_webform";
+    $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_webform";
     DB::getInstance()->execute($sql);
 }
