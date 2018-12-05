@@ -13,9 +13,9 @@
     "preferred-install": "dist"
   },
   "type": "prestashop-module",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "require": {
-    "getresponse/share-code-plugin": "6.0.0"
+    "getresponse/share-code-plugin": "7.0.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.0"

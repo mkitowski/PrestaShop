@@ -72,7 +72,8 @@ class CartServiceFactory
         CacheInterface $cache
     ) {
         return new CartService(
-            (new ShareCodeCartServiceFactory())->create($apiClient, $repository, $cache)
+            (new ShareCodeCartServiceFactory())->create($apiClient, $repository, $cache),
+            _PS_BASE_URL_.__PS_BASE_URI__
         );
     }
 }

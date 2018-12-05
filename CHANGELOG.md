@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.4.1
+*(2018-12-04)*
+* send url to cart
+
 ## 16.4.0
 *(2018-11-16)*
 * store settings in configuration table

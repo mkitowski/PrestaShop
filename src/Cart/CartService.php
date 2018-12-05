@@ -45,13 +45,17 @@ class CartService
 {
     /** @var GrCartService */
     private $grCartService;
+    /** @var string */
+    private $cartUrl;
 
     /**
      * @param GrCartService $grCartService
+     * @param string $cartUrl
      */
-    public function __construct(GrCartService $grCartService)
+    public function __construct(GrCartService $grCartService, $cartUrl)
     {
         $this->grCartService = $grCartService;
+        $this->cartUrl = $cartUrl;
     }
 
     /**
@@ -71,7 +75,8 @@ class CartService
             $productCollection,
             $this->getCurrencyIsoCode((int)$cart->id_currency),
             $cart->getOrderTotal(false),
-            $cart->getOrderTotal(true)
+            $cart->getOrderTotal(true),
+            $this->cartUrl
         );
 
         $customer = new Customer($cart->id_customer);

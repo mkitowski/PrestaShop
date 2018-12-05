@@ -46,11 +46,14 @@ class CartServiceTest extends BaseTestCase
     private $grCartService;
     /** @var CartService */
     private $sut;
+    /** @var string */
+    private $cartUrl;
 
     protected function setUp()
     {
         $this->grCartService = $this->getMockWithoutConstructing(GrCartService::class);
-        $this->sut = new CartService($this->grCartService);
+        $this->cartUrl = 'http://store.com/cart';
+        $this->sut = new CartService($this->grCartService, $this->cartUrl);
     }
 
     /**
@@ -77,7 +80,8 @@ class CartServiceTest extends BaseTestCase
             new ProductsCollection(),
             'PLN',
             $params['total'],
-            $params['total_with_tax']
+            $params['total_with_tax'],
+            $this->cartUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -130,7 +134,8 @@ class CartServiceTest extends BaseTestCase
             $productsCollection,
             'PLN',
             $params['total'],
-            $params['total_with_tax']
+            $params['total_with_tax'],
+            $this->cartUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -185,7 +190,8 @@ class CartServiceTest extends BaseTestCase
             $productsCollection,
             'PLN',
             $params['total'],
-            $params['total_with_tax']
+            $params['total_with_tax'],
+            $this->cartUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
