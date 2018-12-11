@@ -31,7 +31,6 @@ use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Api\ApiFactory;
 use GetResponse\Contact\Contact;
 use GetResponse\Contact\ContactCustomFieldCollectionFactory;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Helper\Shop;
 use GetResponse\Order\OrderFactory;
 use GetResponse\Product\ProductFactory;
@@ -72,7 +71,6 @@ class ExportServiceFactory
                 Contact::ORIGIN
             ),
             new OrderFactory(new ProductFactory()),
-            CustomFieldsServiceFactory::create(),
             new ContactCustomFieldCollectionFactory()
         );
     }

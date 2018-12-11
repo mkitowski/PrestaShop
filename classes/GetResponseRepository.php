@@ -26,7 +26,6 @@
 
 use GetResponse\Account\AccountRepository;
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\WebForm\WebFormRepository;
 use GetResponse\WebTracking\WebTrackingRepository;
@@ -212,12 +211,9 @@ class GetResponseRepository implements DbRepositoryInterface
 
     public function clearDatabase()
     {
-        $customFieldsService = CustomFieldsServiceFactory::create();
-
         (new AccountSettingsRepository())->clearSettings();
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
-        $customFieldsService->clearCustomFields();
         (new EcommerceRepository())->clearEcommerceSettings();
 
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
@@ -278,23 +274,6 @@ class GetResponseRepository implements DbRepositoryInterface
         $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'cart` ADD `gr_id_cart` varchar(32);';
         $sql[] = 'ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `gr_id_order` varchar(32);';
 
-        //multistore
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-            $shops = Shop::getShops();
-
-            if (!empty($shops) && is_array($shops)) {
-                foreach ($shops as $shop) {
-                    if (empty($shop['id_shop'])) {
-                        continue;
-                    }
-                    $sql[] = $this->setDefaultCustomFields($shop['id_shop']);
-                }
-            }
-        } else {
-            $sql[] = $this->setDefaultCustomFields(null);
-        }
-
         //Install SQL
         foreach ($sql as $s) {
             try {
@@ -302,15 +281,6 @@ class GetResponseRepository implements DbRepositoryInterface
             } catch (Exception $e) {
             }
         }
-    }
-
-    /**
-     * @param int|null $storeId
-     */
-    private function setDefaultCustomFields($storeId = null)
-    {
-        $service = CustomFieldsServiceFactory::create();
-        $service->setDefaultCustomFieldsMapping($storeId);
     }
 
     /**

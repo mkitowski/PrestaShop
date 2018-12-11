@@ -58,7 +58,7 @@ class RegistrationService
         if ($settings->isActive()) {
             $this->registrationRepository->updateSettings($settings);
         } else {
-            $this->registrationRepository->clearSettings();
+            $this->clearSettings();
         }
     }
 

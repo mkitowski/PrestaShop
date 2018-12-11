@@ -28,6 +28,7 @@ require_once 'AdminGetresponseController.php';
 
 use GetResponse\ContactList\ContactListService;
 use GetResponse\ContactList\ContactListServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Ecommerce\EcommerceService;
 use GetResponse\Ecommerce\EcommerceServiceFactory;
 use GetResponse\Export\ExportServiceFactory;
@@ -56,6 +57,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-export.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-custom-fields.js');
         $this->contactListService = ContactListServiceFactory::create();
         $this->ecommerceService = EcommerceServiceFactory::create();
         $this->name = 'AdminGetresponseExport';
@@ -93,10 +95,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
     public function postProcess()
     {
         if (Tools::isSubmit($this->name)) {
+
             $exportSettings = new ExportSettings(
                 Tools::getValue('campaign'),
                 Tools::getValue('addToCycle_1', 0) == 1 ? Tools::getValue('autoresponder_day', null) : null,
-                Tools::getValue('contactInfo', 0) == 1,
+                $this->getCustomFieldsFromPost(),
                 Tools::getValue('newsletter', 0) == 1,
                 Tools::getValue('exportEcommerce_1', 0) == 1,
                 Tools::getValue('shop')
@@ -105,7 +108,6 @@ class AdminGetresponseExportController extends AdminGetresponseController
             $validator = new ExportValidator($exportSettings);
             if (!$validator->isValid()) {
                 $this->errors = $validator->getErrors();
-
                 return;
             }
 
@@ -131,7 +133,7 @@ class AdminGetresponseExportController extends AdminGetresponseController
         $this->context->smarty->assign([
             'selected_tab' => 'export_customers',
             'export_customers_form' => $this->renderExportForm(),
-            'export_customers_list' => $this->renderCustomList(),
+            //'export_customers_list' => $this->renderCustomList(),
             'campaign_days' => json_encode($this->getCampaignDays($this->contactListService->getAutoresponders())),
             'cycle_day' => null,
             'token' => $this->getToken(),
@@ -257,6 +259,11 @@ class AdminGetresponseExportController extends AdminGetresponseController
                             '<br>' .
                             $this->l('Clear this option to keep existing data intact.')
                     ],
+                    [
+                        'type' => 'html',
+                        'name' => 'customs',
+                        'html_content' => $this->renderCustomList(new CustomFieldMappingCollection()),
+                    ]
                 ],
                 'submit' => [
                     'title' => $this->l('Export'),

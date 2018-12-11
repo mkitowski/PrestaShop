@@ -25,7 +25,6 @@
  */
 
 use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\Ecommerce;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationServiceFactory;
@@ -42,19 +41,15 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_16_4_0($object)
 {
     $idShop = Context::getContext()->shop->id;
-    upgradeCustomsTable($idShop);
+    upgradeCustomsTable();
     upgradeEcommerceTable($idShop);
     upgradeSettingsTable($idShop);
     upgradeWebFormsTable($idShop);
-
     return true;
 }
 
-function upgradeCustomsTable($idShop)
+function upgradeCustomsTable()
 {
-    $customFieldsService = CustomFieldsServiceFactory::create();
-    $customFieldsService->setDefaultCustomFieldsMapping();
-
     $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);
 }
@@ -92,7 +87,16 @@ function upgradeSettingsTable($idShop)
         $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
         $service = RegistrationServiceFactory::createService();
-        $service->updateSettings(RegistrationSettings::createFromOldDbTable($result));
+
+        $service->updateSettings(
+            new RegistrationSettings(
+                $result['active_subscription'],
+                $result['active_newsletter_subscription'],
+                $result['campaign_id'],
+                $result['cycle_day'],
+                $result['update_address']
+            )
+        );
 
         $status = $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE;
         $webTrackingRepository = new WebTrackingRepository();

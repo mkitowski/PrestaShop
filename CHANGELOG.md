@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.5.0
+*(2018-12-11)*
+* custom field mapping enhancement
+
 ## 16.4.1
 *(2018-12-04)*
 * send url to cart

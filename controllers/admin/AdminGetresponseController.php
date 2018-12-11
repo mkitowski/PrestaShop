@@ -25,10 +25,11 @@
  */
 
 use GetResponse\Account\AccountServiceFactory;
+use GetResponse\Contact\Contact;
 use GetResponse\ContactList\ContactListServiceFactory;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\CustomFields\GrCustomFieldsServiceFactory;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Helper\Shop as GrShop;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\ContactList\Autoresponder;
@@ -148,60 +149,12 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * Renders custom list
+     * @param CustomFieldMappingCollection|null $selectedCustomFields
      * @return string
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws SmartyException
      */
-    public function renderCustomList()
+    public function renderCustomList(CustomFieldMappingCollection $selectedCustomFields)
     {
-        $fieldsList = [
-            'customer_detail' => [
-                'title' => $this->l('Customer detail'),
-                'type' => 'text',
-            ],
-            'gr_custom' => [
-                'title' => $this->l('Custom fields in GetResponse'),
-                'type' => 'text',
-            ],
-            'on' => [
-                'title' => $this->l('Active'),
-                'type' => 'bool',
-                'icon' => [
-                    0 => 'disabled.gif',
-                    1 => 'enabled.gif',
-                    'default' => 'disabled.gif'
-                ],
-                'align' => 'center'
-            ]
-        ];
-
-        $link = $this->context->link->getAdminLink('AdminGetresponseUpdateMapping', false);
-        $link .= '&configure=' . $this->name . '&referer=' . $this->controller_name;
-
-        /** @var HelperListCore $helper */
-        $helper = new HelperList();
-        $helper->shopLinkType = '';
-        $helper->simple_header = true;
-        $helper->identifier = 'id';
-        $helper->actions = array('edit');
-        $helper->show_toolbar = true;
-
-        $helper->title = $this->l('Contacts info');
-        $helper->table = $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminGetresponseUpdateMapping');
-        $helper->currentIndex = $link;
-
-        return $helper->generateList($this->getCustomList(), $fieldsList);
-    }
- 
-    /**
-     * Returns custom list
-     * @return array
-     */
-    public function getCustomList()
-    {
-        $grCustoms = [];
         try {
             $customFieldsService = GrCustomFieldsServiceFactory::create();
             $grCustomsCollection = $customFieldsService->getAllCustomFields();
@@ -211,36 +164,73 @@ class AdminGetresponseController extends ModuleAdminController
             $grCustomsCollection = new CustomFieldCollection();
         }
 
-
+        $getresponseFields = [];
         /** @var CustomField $custom */
         foreach ($grCustomsCollection as $custom) {
-            $grCustoms[$custom->getId()] = $custom->getName();
-        }
-
-        $service = CustomFieldsServiceFactory::create();
-        $customs = $service->getCustomFieldsMapping();
-
-        $result = [];
-        /** @var CustomFieldMapping $custom */
-        foreach ($customs as $custom) {
-            if (in_array($custom->getCustomName(), self::DEFAULT_CUSTOMS)) {
-                $customName = $custom->getCustomName();
-            } elseif (!empty($custom->getGrCustomId())) {
-                $customName = $grCustoms[$custom->getGrCustomId()];
-            } else {
-                $customName = '';
+            if ($custom->getName() != Contact::ORIGIN) {
+                $getresponseFields[] = [
+                    'id' => $custom->getId(),
+                    'name' => $custom->getName(),
+                ];
             }
-
-            $result[] = [
-                'id' => $custom->getId(),
-                'customer_detail' => $custom->getCustomName(),
-                'gr_custom' => $customName,
-                'default' => (int) $custom->isDefault(),
-                'on' => (int) $custom->isActive()
-            ];
         }
 
-        return $result;
+        $pluginFields = [
+            'address',
+            'postalCode',
+            'city',
+            'phone',
+            'country',
+            'birthDate',
+            'company',
+        ];
+
+        $this->context->smarty->assign([
+            'customs' => [
+                'plugin_field' => $pluginFields,
+                'getresponse_field' => $getresponseFields,
+                'defaults' => [
+                    [
+                        'plugin_field' => 'firstName',
+                        'getresponse_field' => 'firstname',
+                    ],
+                    [
+                        'plugin_field' => 'lastName',
+                        'getresponse_field' => 'lastname',
+                    ],
+                    [
+                        'plugin_field' => 'email',
+                        'getresponse_field' => 'email',
+                    ]
+                ],
+                'selected' => $selectedCustomFields->toArray()
+            ]
+        ]);
+
+        return $this->context->smarty->fetch(_PS_MODULE_DIR_ . 'getresponse/views/templates/admin/common/custom_fields.tpl');
+    }
+
+    /**
+     * @return CustomFieldMappingCollection
+     */
+    protected function getCustomFieldsFromPost()
+    {
+        $customFieldMappingCollection = new CustomFieldMappingCollection();
+
+        if (0 == Tools::getValue('contactInfo', 0)) {
+            return $customFieldMappingCollection;
+        }
+
+        $pluginFields = Tools::getValue('plugin_fields', []);
+        $getresponseFields = Tools::getValue('gr_fields', []);
+
+        foreach ($pluginFields as $index => $value) {
+            $customFieldMappingCollection->add(
+                new CustomFieldMapping($value, $getresponseFields[$index])
+            );
+        }
+
+        return $customFieldMappingCollection;
     }
 
     /**

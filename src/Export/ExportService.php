@@ -28,9 +28,7 @@ namespace GetResponse\Export;
 
 use GetResponse\Contact\ContactCustomFieldCollectionFactory;
 use GetResponse\Customer\CustomerFactory;
-use GetResponse\CustomFields\CustomFieldService;
 use GetResponse\Order\OrderFactory;
-use GrShareCode\Contact\ContactCustomField\ContactCustomFieldsCollection;
 use GrShareCode\Export\Command\ExportContactCommand;
 use GrShareCode\Export\ExportContactService;
 use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
@@ -51,10 +49,6 @@ class ExportService
     private $shareCodeExportContactService;
     /** @var OrderFactory */
     private $orderFactory;
-
-    /** @var CustomFieldService */
-    private $customFieldService;
-
     /** @var ContactCustomFieldCollectionFactory */
     private $contactCustomFieldCollectionFactory;
 
@@ -62,20 +56,17 @@ class ExportService
      * @param ExportRepository $exportRepository
      * @param ExportContactService $shareCodeExportContactService
      * @param OrderFactory $orderFactory
-     * @param CustomFieldService $customFieldService
      * @param ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
      */
     public function __construct(
         ExportRepository $exportRepository,
         ExportContactService $shareCodeExportContactService,
         OrderFactory $orderFactory,
-        CustomFieldService $customFieldService,
         ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
     ) {
         $this->exportRepository = $exportRepository;
         $this->shareCodeExportContactService = $shareCodeExportContactService;
         $this->orderFactory = $orderFactory;
-        $this->customFieldService = $customFieldService;
         $this->contactCustomFieldCollectionFactory = $contactCustomFieldCollectionFactory;
     }
 
@@ -89,10 +80,6 @@ class ExportService
 
         if (!count($contacts)) {
             return;
-        }
-
-        if ($exportSettings->isUpdateContactInfo()) {
-                $customFieldMappingCollection = $this->customFieldService->getActiveCustomFieldMapping();
         }
 
         $shareCodeExportSettings = new ShareCodeExportSettings(
@@ -122,16 +109,11 @@ class ExportService
                 }
             }
 
-            if ($exportSettings->isUpdateContactInfo()) {
-                $contactCustomFieldCollection = $this->contactCustomFieldCollectionFactory
-                    ->createFromContactAndCustomFieldMapping(
-                        $customer,
-                        $customFieldMappingCollection,
-                        $exportSettings->isUpdateContactInfo()
-                    );
-            } else {
-                $contactCustomFieldCollection = new ContactCustomFieldsCollection();
-            }
+            $contactCustomFieldCollection = $this->contactCustomFieldCollectionFactory
+                ->createFromContactAndCustomFieldMapping(
+                    $customer,
+                    $exportSettings->getCustomFieldMappingCollection()
+                );
 
             try {
                 $this->shareCodeExportContactService->exportContact(

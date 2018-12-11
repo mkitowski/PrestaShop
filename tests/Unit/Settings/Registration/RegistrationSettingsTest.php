@@ -26,50 +26,44 @@
 
 namespace GetResponse\Tests\Unit\Settings\Registration;
 
-use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Settings\Registration\RegistrationSettings;
-use GetResponse\Settings\Registration\RegistrationSettingsValidator;
 use GetResponse\Tests\Unit\BaseTestCase;
 
 /**
- * Class RegistrationSettingsValidatorTest
+ * Class RegistrationSettingsTest
  * @package GetResponse\Tests\Unit\Settings\Registration
  */
-class RegistrationSettingsValidatorTest extends BaseTestCase
+class RegistrationSettingsTest extends BaseTestCase
 {
     /**
      * @test
      */
-    public function shouldReturnNoError()
+    public function shouldCreateFromConfigurationArray()
     {
-        $registrationSettings = new RegistrationSettings(
-            true,
-            true,
-            'contactListId',
-            '0',
-            new CustomFieldMappingCollection()
-        );
+        $customs = [
+            [
+                'customer_property_name' => 'property1',
+                'gr_custom_id' => 'gr_id1',
+            ],
+            [
+                'customer_property_name' => 'property2',
+                'gr_custom_id' => 'gr_id2',
+            ],
+        ];
 
-        $validator = new RegistrationSettingsValidator($registrationSettings);
-        $this->assertTrue($validator->isValid());
-        $this->assertEmpty($validator->getErrors());
-    }
+        $configuration = [
+            'active_subscription' => true,
+            'active_newsletter_subscription' => true,
+            'campaign_id' => 'cid',
+            'cycle_day' => null,
+        ];
 
-    /**
-     * @test
-     */
-    public function shouldReturnError()
-    {
-        $registrationSettings = new RegistrationSettings(
-            true,
-            false,
-            '',
-            0,
-            new CustomFieldMappingCollection()
-        );
+        $registrationSettings = RegistrationSettings::createFromConfiguration($configuration, $customs);
 
-        $validator = new RegistrationSettingsValidator($registrationSettings);
-        $this->assertFalse($validator->isValid());
-        $this->assertEquals(['You need to select list'], $validator->getErrors());
+        self::assertEquals(2, $registrationSettings->getCustomFieldMappingCollection()->count());
+        self::assertTrue($registrationSettings->isActive());
+        self::assertTrue($registrationSettings->isNewsletterActive());
+        self::assertEquals('cid', $registrationSettings->getListId());
+        self::assertSame(null, $registrationSettings->getCycleDay());
     }
 }

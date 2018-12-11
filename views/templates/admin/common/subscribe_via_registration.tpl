@@ -25,9 +25,6 @@
 {if isset($subscribe_via_registration_form)}
     {$subscribe_via_registration_form}
 {/if}
-{if isset($subscribe_via_registration_list)}
-    {$subscribe_via_registration_list}
-{/if}
 
 {if isset($campaign_days)}
     <script>

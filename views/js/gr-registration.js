@@ -84,23 +84,17 @@ $(function () {
 
     $('input[name="contactInfo"]').on('change', function () {
         if ($('input[name="contactInfo"]:checked').val() == 1) {
-            $('#form-GRSubscribeRegistration').show();
+            $('#gr-custom-field-panel').show();
         } else {
-            $('#form-GRSubscribeRegistration').hide();
+            $('#gr-custom-field-panel').hide();
         }
     });
+
+    $('#gr-custom-field-panel').parent().attr('class', 'col-lg-12');
 
     if ($('input[name="contactInfo"]:checked').val() == 1) {
-        $('#form-GRSubscribeRegistration').show();
+        $('#gr-custom-field-panel').show();
     } else {
-        $('#form-GRSubscribeRegistration').hide();
+        $('#gr-custom-field-panel').hide();
     }
-
-    $('table.GRSubscribeRegistration tr').each(function () {
-        if (['firstname', 'lastname', 'email'].indexOf($(this).find('td').first().text().trim()) >= 0) {
-            var td = $(this).find('td');
-            td.attr('onclick', '').removeClass('pointer');
-            td.last().html('<span class="btn btn-default disabled">Default</span>');
-        }
-    });
 });
