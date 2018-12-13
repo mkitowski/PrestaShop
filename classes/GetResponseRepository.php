@@ -27,6 +27,7 @@
 use GetResponse\Account\AccountRepository;
 use GetResponse\Account\AccountSettingsRepository;
 use GetResponse\Ecommerce\EcommerceRepository;
+use GetResponse\Settings\Registration\RegistrationRepository;
 use GetResponse\WebForm\WebFormRepository;
 use GetResponse\WebTracking\WebTrackingRepository;
 use GrShareCode\DbRepositoryInterface;
@@ -215,6 +216,7 @@ class GetResponseRepository implements DbRepositoryInterface
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
         (new EcommerceRepository())->clearEcommerceSettings();
+        (new RegistrationRepository())->clearSettings();
 
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_automation`;');
         $this->db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'getresponse_products`;');

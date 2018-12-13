@@ -83,6 +83,6 @@ class AccountSettingsRepository
 
     public function clearSettings()
     {
-        Configuration::updateValue(self::RESOURCE_KEY, null);
+        Configuration::deleteByName(self::RESOURCE_KEY);
     }
 }

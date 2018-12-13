@@ -55,7 +55,7 @@ class AccountRepository
 
     public function clearInvalidRequestDate()
     {
-        Configuration::updateValue(self::INVALID_REQUEST, null);
+        Configuration::deleteByName(self::INVALID_REQUEST);
     }
 
     /**
@@ -76,6 +76,6 @@ class AccountRepository
 
     public function clearOriginCustomFieldId()
     {
-        Configuration::updateValue(self::ORIGIN_CUSTOM_FIELD, null);
+        Configuration::deleteByName(self::ORIGIN_CUSTOM_FIELD);
     }
 }

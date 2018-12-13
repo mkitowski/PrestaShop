@@ -77,7 +77,7 @@ class RegistrationRepository
 
     public function clearSettings()
     {
-        Configuration::updateValue(self::RESOURCE_KEY, null);
-        Configuration::updateValue(self::MAPPING_KEY, []);
+        Configuration::deleteByName(self::RESOURCE_KEY);
+        Configuration::deleteByName(self::MAPPING_KEY);
     }
 }

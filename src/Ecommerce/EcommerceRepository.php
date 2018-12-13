@@ -66,6 +66,6 @@ class EcommerceRepository
 
     public function clearEcommerceSettings()
     {
-        Configuration::updateValue(self::RESOURCE_KEY, null);
+        Configuration::deleteByName(self::RESOURCE_KEY);
     }
 }
