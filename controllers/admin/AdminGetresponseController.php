@@ -40,7 +40,30 @@ use GrShareCode\CustomField\CustomFieldCollection;
 
 class AdminGetresponseController extends ModuleAdminController
 {
-    const DEFAULT_CUSTOMS = ['firstname', 'lastname', 'email'];
+    const DEFAULT_MAPPING = [
+        [
+            'plugin_field' => 'firstName',
+            'getresponse_field' => 'firstname',
+        ],
+        [
+            'plugin_field' => 'lastName',
+            'getresponse_field' => 'lastname',
+        ],
+        [
+            'plugin_field' => 'email',
+            'getresponse_field' => 'email',
+        ]
+    ];
+
+    const PRESTASHOP_FIELDS = [
+        'address',
+        'postalCode',
+        'city',
+        'phone',
+        'country',
+        'birthDate',
+        'company',
+    ];
 
     /** @var string */
     protected $name;
@@ -115,15 +138,6 @@ class AdminGetresponseController extends ModuleAdminController
     }
 
     /**
-     * Process Refresh Data
-     * @return mixed
-     */
-    public function processRefreshData()
-    {
-        return $this->module->refreshDatas();
-    }
-
-    /**
      * @param AutorespondersCollection $autoresponders
      * @return array
      */
@@ -158,8 +172,6 @@ class AdminGetresponseController extends ModuleAdminController
         try {
             $customFieldsService = GrCustomFieldsServiceFactory::create();
             $grCustomsCollection = $customFieldsService->getAllCustomFields();
-        } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
-            $grCustomsCollection = new CustomFieldCollection();
         } catch (GetresponseApiException $e) {
             $grCustomsCollection = new CustomFieldCollection();
         }
@@ -175,34 +187,11 @@ class AdminGetresponseController extends ModuleAdminController
             }
         }
 
-        $pluginFields = [
-            'address',
-            'postalCode',
-            'city',
-            'phone',
-            'country',
-            'birthDate',
-            'company',
-        ];
-
         $this->context->smarty->assign([
             'customs' => [
-                'plugin_field' => $pluginFields,
+                'plugin_field' => self::PRESTASHOP_FIELDS,
                 'getresponse_field' => $getresponseFields,
-                'defaults' => [
-                    [
-                        'plugin_field' => 'firstName',
-                        'getresponse_field' => 'firstname',
-                    ],
-                    [
-                        'plugin_field' => 'lastName',
-                        'getresponse_field' => 'lastname',
-                    ],
-                    [
-                        'plugin_field' => 'email',
-                        'getresponse_field' => 'email',
-                    ]
-                ],
+                'defaults' => self::DEFAULT_MAPPING,
                 'selected' => $selectedCustomFields->toArray()
             ]
         ]);

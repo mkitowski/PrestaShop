@@ -38,8 +38,8 @@ class CustomFieldMapping
     private $grCustomId;
 
     /**
-     * @param $customerPropertyName
-     * @param $grCustomId
+     * @param string $customerPropertyName
+     * @param string $grCustomId
      */
     public function __construct($customerPropertyName, $grCustomId)
     {

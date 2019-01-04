@@ -47,7 +47,6 @@ class ExportServiceFactory
 
     /**
      * @return ExportService
-     * @throws \PrestaShopDatabaseException
      * @throws ApiTypeException
      */
     public static function create()

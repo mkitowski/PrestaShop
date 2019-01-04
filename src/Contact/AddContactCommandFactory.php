@@ -51,7 +51,6 @@ class AddContactCommandFactory
      * @param Customer $customer
      * @param string $contactListId
      * @param int $dayOfCycle
-     * @param bool $updateContactInfoEnabled
      * @return AddContactCommand
      */
     public function createFromContactAndSettings(
