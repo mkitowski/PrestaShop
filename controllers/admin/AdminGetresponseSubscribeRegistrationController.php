@@ -102,11 +102,17 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             return;
         }
 
+        $cycleDay = null;
+        $addToCycle = Tools::getValue('addToCycle', 0);
+        if ($addToCycle) {
+            $cycleDay = Tools::getValue('cycledays', null);
+        }
+
         $registrationSettings = new RegistrationSettings(
             true,
             1 == Tools::getValue('newsletter', 0),
             Tools::getValue('campaign', null),
-            Tools::getValue('addToCycle', null),
+            $cycleDay,
             $this->getCustomFieldsFromPost()
         );
 
