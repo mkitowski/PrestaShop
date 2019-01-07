@@ -24,18 +24,30 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-namespace GetResponse\CustomFields;
+namespace GetResponse\Export;
+
+use GrShareCode\Export\Settings\EcommerceSettings as GrEcommerceSettings;
+use GrShareCode\Export\Settings\ExportSettings as GrExportSettings;
 
 /**
- * Class CustomFieldsServiceFactory
+ * Class GrExportSettingsFactory
+ * @package GetResponse\Export
  */
-class CustomFieldsServiceFactory
+class GrExportSettingsFactory
 {
     /**
-     * @return CustomFieldService
+     * @param ExportSettings $exportSettings
+     * @return GrExportSettings
      */
-    public static function create()
+    public static function createFromExportSettings(ExportSettings $exportSettings)
     {
-        return new CustomFieldService(new CustomFieldsRepository());
+        return new GrExportSettings(
+            $exportSettings->getContactListId(),
+            $exportSettings->getCycleDay(),
+            new GrEcommerceSettings(
+                $exportSettings->isEcommerce(),
+                $exportSettings->getShopId()
+            )
+        );
     }
 }

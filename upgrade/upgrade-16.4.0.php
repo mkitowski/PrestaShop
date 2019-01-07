@@ -24,17 +24,6 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-use GetResponse\Account\AccountSettingsRepository;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
-use GetResponse\Ecommerce\Ecommerce;
-use GetResponse\Ecommerce\EcommerceRepository;
-use GetResponse\Settings\Registration\RegistrationServiceFactory;
-use GetResponse\Settings\Registration\RegistrationSettings;
-use GetResponse\WebForm\WebForm;
-use GetResponse\WebForm\WebFormRepository;
-use GetResponse\WebTracking\WebTracking;
-use GetResponse\WebTracking\WebTrackingRepository;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -42,19 +31,15 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_16_4_0($object)
 {
     $idShop = Context::getContext()->shop->id;
-    upgradeCustomsTable($idShop);
+    upgradeCustomsTable();
     upgradeEcommerceTable($idShop);
     upgradeSettingsTable($idShop);
     upgradeWebFormsTable($idShop);
-
     return true;
 }
 
-function upgradeCustomsTable($idShop)
+function upgradeCustomsTable()
 {
-    $customFieldsService = CustomFieldsServiceFactory::create();
-    $customFieldsService->setDefaultCustomFieldsMapping();
-
     $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_customs";
     DB::getInstance()->execute($sql);
 }
@@ -68,13 +53,14 @@ function upgradeEcommerceTable($idShop)
     $settings = Db::getInstance()->getRow($sql);
 
     if (!empty($result)) {
-        $repository = new EcommerceRepository();
-        $repository->updateEcommerceSubscription(
-            new Ecommerce(
-                Ecommerce::STATUS_ACTIVE,
-                isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null,
-                isset($settings['campaign_id']) ? $settings['campaign_id'] : null
-            )
+
+        Configuration::updateValue(
+            'getresponse_ecommerce',
+            json_encode([
+                'status' => 'active',
+                'shop_id' => isset($result['gr_id_shop']) ? $result['gr_id_shop'] : null,
+                'list_id' => isset($settings['campaign_id']) ? $settings['campaign_id'] : null
+            ])
         );
     }
 
@@ -88,23 +74,41 @@ function upgradeSettingsTable($idShop)
     $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['api_key'])) {
-        $accountRepository = new AccountSettingsRepository();
-        $accountRepository->updateApiSettings($result['api_key'], $result['account_type'], $result['crypto']);
 
-        $service = RegistrationServiceFactory::createService();
-        $service->updateSettings(RegistrationSettings::createFromOldDbTable($result));
-
-        $status = $result['active_tracking'] === 'yes' ? WebTracking::TRACKING_ACTIVE : WebTracking::TRACKING_INACTIVE;
-        $webTrackingRepository = new WebTrackingRepository();
-        $webTrackingRepository->updateWebTracking(
-            new WebTracking(
-                $status,
-                $result['tracking_snippet']
-            )
+        Configuration::updateValue(
+            'getresponse_account',
+            json_encode([
+                'api_key' => $result['api_key'],
+                'type' => $result['account_type'],
+                'domain' => $result['crypto']
+            ])
         );
 
+        if (true == $result['active_subscription']) {
+            Configuration::updateValue(
+                'getresponse_registration',
+                json_encode([
+                    'active_subscription' => $result['active_subscription'],
+                    'active_newsletter_subscription' => $result['active_newsletter_subscription'],
+                    'campaign_id' => $result['campaign_id'],
+                    'cycle_day' => $result['cycle_day'],
+                    'update_address' => $result['update_address'],
+                ])
+            );
+        }
+
+        $status = $result['active_tracking'] === 'yes' ? 'active' : 'inactive';
+
+        Configuration::updateValue(
+            'getresponse_web_tracking',
+            json_encode(['status' => $status]),
+            true
+        );
+
+        Configuration::updateValue('getresponse_tracking_code', $result['tracking_snippet'], true);
+
         if (isset($result['invalid_request_date'])) {
-            (new \GetResponse\Account\AccountRepository())->updateInvalidRequestDate($result['invalid_request_date']);
+            Configuration::updateValue('getresponse_invalid_request_date', $result['invalid_request_date']);
         }
     }
 
@@ -118,14 +122,17 @@ function upgradeWebFormsTable($idShop)
     $result = Db::getInstance()->getRow($sql);
 
     if (!empty($result['webform_id'])) {
-        $repository = new WebFormRepository();
-        $repository->update(new WebForm(
-            $result['active_subscription'] === 'yes' ? WebForm::STATUS_ACTIVE : WebForm::STATUS_INACTIVE,
-            $result['webform_id'],
-            $result['sidebar'],
-            $result['style'],
-            $result['url']
-        ));
+
+        Configuration::updateValue(
+            'getresponse_forms',
+            json_encode([
+                'status' => $result['active_subscription'] === 'yes' ? 'active' : 'inactive',
+                'webform_id' => $result['webform_id'],
+                'sidebar' => $result['sidebar'],
+                'style' => $result['style'],
+                'url' => $result['url']
+            ])
+        );
     }
 
     $sql = "DROP TABLE IF EXISTS "._DB_PREFIX_."getresponse_webform";

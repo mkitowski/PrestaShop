@@ -27,10 +27,9 @@
 namespace GetResponse\Contact;
 
 use GetResponse\Customer\Customer;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GrShareCode\Contact\ContactService as GrContactService;
 use GrShareCode\Api\Exception\GetresponseApiException;
-use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 
 /**
  * Class ContactService
@@ -52,14 +51,13 @@ class ContactService
     /**
      * @param Customer $customer
      * @param AddContactSettings $addContactSettings
-     * @param bool $isNewsletterContact
+     * @param bool $withCustomMapping
      * @throws GetresponseApiException
      */
-    public function addContact(Customer $customer, AddContactSettings $addContactSettings, $isNewsletterContact = false)
+    public function addContact(Customer $customer, AddContactSettings $addContactSettings, $withCustomMapping = true)
     {
-        if ($addContactSettings->isUpdateContactCustomFields() && !$isNewsletterContact) {
-            $customFieldService = CustomFieldsServiceFactory::create();
-            $customFieldMappingCollection = $customFieldService->getActiveCustomFieldMapping();
+        if ($withCustomMapping) {
+            $customFieldMappingCollection = $addContactSettings->getCustomFieldMappingCollection();
         } else {
             $customFieldMappingCollection = new CustomFieldMappingCollection();
         }
@@ -69,8 +67,7 @@ class ContactService
         $addContactCommand = $addContactCommandFactory->createFromContactAndSettings(
             $customer,
             $addContactSettings->getContactListId(),
-            $addContactSettings->getDayOfCycle(),
-            $addContactSettings->isUpdateContactCustomFields()
+            $addContactSettings->getDayOfCycle()
         );
 
         $this->grContactService->addContact($addContactCommand);

@@ -26,6 +26,9 @@
 
 namespace GetResponse\Settings\Registration;
 
+use GetResponse\CustomFieldsMapping\CustomFieldMapping;
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+
 /**
  * Class RegistrationSettings
  * @package GetResponse\Settings\Registration
@@ -48,65 +51,23 @@ class RegistrationSettings
     /** @var int */
     private $cycleDay;
 
-    /** @var bool */
-    private $isUpdateContactEnabled;
+    /** @var CustomFieldMappingCollection */
+    private $customFieldMappingCollection;
 
     /**
      * @param bool $isActive
      * @param bool $isNewsletterActive
      * @param string $listId
      * @param int $cycleDay
-     * @param bool $isUpdateContactEnabled
+     * @param CustomFieldMappingCollection $customFieldMappingCollection
      */
-    public function __construct($isActive, $isNewsletterActive, $listId, $cycleDay, $isUpdateContactEnabled)
+    public function __construct($isActive, $isNewsletterActive, $listId, $cycleDay, $customFieldMappingCollection)
     {
         $this->isActive = $isActive;
         $this->isNewsletterActive = $isNewsletterActive;
         $this->listId = $listId;
         $this->cycleDay = $cycleDay;
-        $this->isUpdateContactEnabled = $isUpdateContactEnabled;
-    }
-
-    /**
-     * @param array $params
-     * @return RegistrationSettings
-     */
-    public static function createFromPost($params)
-    {
-        if ($params['subscriptionSwitch']) {
-            $subscription = (bool) $params['subscriptionSwitch'];
-            $updateContact = (bool) $params['contactInfo'];
-            $cycleDay = isset($params['addToCycle']) ? $params['cycledays'] : null;
-            $newsletterSubscribers = (bool) $params['newsletter'];
-        } else {
-            $subscription = false;
-            $updateContact = false;
-            $cycleDay = null;
-            $params['campaign'] = null;
-            $newsletterSubscribers = false;
-        }
-        return new self(
-            $subscription,
-            $newsletterSubscribers,
-            $params['campaign'],
-            $cycleDay,
-            $updateContact
-        );
-    }
-
-    /**
-     * @param array $params
-     * @return RegistrationSettings
-     */
-    public static function createFromOldDbTable($params)
-    {
-        return new self(
-            $params['active_subscription'],
-            $params['active_newsletter_subscription'],
-            $params['campaign_id'],
-            $params['cycle_day'],
-            $params['update_address']
-        );
+        $this->customFieldMappingCollection = $customFieldMappingCollection;
     }
 
     /**
@@ -142,25 +103,37 @@ class RegistrationSettings
     }
 
     /**
-     * @return bool
+     * @return CustomFieldMappingCollection
      */
-    public function isUpdateContactEnabled()
+    public function getCustomFieldMappingCollection()
     {
-        return $this->isUpdateContactEnabled;
+        return $this->customFieldMappingCollection;
     }
 
     /**
      * @param array $configuration
+     * @param array $customs
      * @return RegistrationSettings
      */
-    public static function createFromConfiguration($configuration)
+    public static function createFromConfiguration(array $configuration, array $customs)
     {
+        $customFieldMappingCollection = new CustomFieldMappingCollection();
+
+        if (!empty($customs)) {
+            foreach ($customs as $custom) {
+                $customFieldMappingCollection->add(new CustomFieldMapping(
+                    $custom['customer_property_name'],
+                    $custom['gr_custom_id']
+                ));
+            }
+        }
+
         return new self(
             $configuration['active_subscription'],
             $configuration['active_newsletter_subscription'],
             $configuration['campaign_id'],
             $configuration['cycle_day'],
-            $configuration['update_address']
+            $customFieldMappingCollection
         );
     }
 
@@ -169,6 +142,6 @@ class RegistrationSettings
      */
     public static function createEmptyInstance()
     {
-        return new self(false, false, '', 0, false);
+        return new self(false, false, '', 0, new CustomFieldMappingCollection());
     }
 }

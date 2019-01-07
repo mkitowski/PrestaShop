@@ -29,57 +29,29 @@ namespace GetResponse\Tests\Unit\CustomFieldsMapping;
 use GetResponse\CustomFieldsMapping\CustomFieldMapping;
 use GetResponse\Tests\Unit\BaseTestCase;
 
+/**
+ * Class CustomFieldMappingTest
+ * @package GetResponse\Tests\Unit\CustomFieldsMapping
+ */
 class CustomFieldMappingTest extends BaseTestCase
 {
-    /**
-     * @test
-     */
-    public function shouldCreateCustomFieldMappingFromRequestWithActiveStatus()
-    {
-        $request = [
-            'id' => 'id',
-            'custom_name' => 'customName',
-            'customer_property_name' => 'customerPropName',
-            'gr_custom_id' => 'c34d',
-            'is_active' => 1,
-            'is_default' => 0,
-        ];
-
-        $expected = new CustomFieldMapping(
-            $request['id'],
-            $request['custom_name'],
-            $request['customer_property_name'],
-            $request['gr_custom_id'],
-            true,
-            false
-        );
-
-        $this->assertEquals($expected, CustomFieldMapping::createFromArray($request));
-    }
 
     /**
      * @test
      */
-    public function shouldCreateCustomFieldMappingFromRequestWithInactiveStatus()
+    public function shouldCastToArray()
     {
-        $request = [
-            'id' => 'id',
-            'custom_name' => 'customName',
-            'customer_property_name' => 'customerPropName',
-            'gr_custom_id' => 'c34d',
-            'is_active' => 0,
-            'is_default' => 0,
-        ];
-
-        $expected = new CustomFieldMapping(
-            $request['id'],
-            $request['custom_name'],
-            $request['customer_property_name'],
-            $request['gr_custom_id'],
-            false,
-            false
+        $customFieldMapping = new CustomFieldMapping(
+            'property_name',
+            'gr_id'
         );
 
-        $this->assertEquals($expected, CustomFieldMapping::createFromArray($request));
+        $this->assertEquals(
+            [
+                'customer_property_name' => $customFieldMapping->getCustomerPropertyName(),
+                'gr_custom_id' => $customFieldMapping->getGrCustomId(),
+            ],
+            $customFieldMapping->toArray()
+        );
     }
 }

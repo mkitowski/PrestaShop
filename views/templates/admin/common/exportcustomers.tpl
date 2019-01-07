@@ -26,10 +26,6 @@
     {$export_customers_form}
 {/if}
 
-{if isset($export_customers_list)}
-    {$export_customers_list}
-{/if}
-
 {if isset($campaign_days)}
     <script>
         (function ($) {

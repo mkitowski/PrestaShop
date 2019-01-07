@@ -51,21 +51,18 @@ class AddContactCommandFactory
      * @param Customer $customer
      * @param string $contactListId
      * @param int $dayOfCycle
-     * @param bool $updateContactInfoEnabled
      * @return AddContactCommand
      */
     public function createFromContactAndSettings(
         Customer $customer,
         $contactListId,
-        $dayOfCycle,
-        $updateContactInfoEnabled
+        $dayOfCycle
     ) {
         $contactCustomFieldCollectionFactory = new ContactCustomFieldCollectionFactory();
         $contactCustomFieldCollection = $contactCustomFieldCollectionFactory
             ->createFromContactAndCustomFieldMapping(
                 $customer,
-                $this->customFieldMappingCollection,
-                $updateContactInfoEnabled
+                $this->customFieldMappingCollection
             );
 
         return new AddContactCommand(

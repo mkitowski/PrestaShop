@@ -41,25 +41,17 @@ class ContactCustomFieldCollectionFactory
     /**
      * @param Customer $customer
      * @param CustomFieldMappingCollection $customFieldMappingCollection
-     * @param bool $updateContactInfoEnabled
      * @return ContactCustomFieldsCollection
      */
     public function createFromContactAndCustomFieldMapping(
         $customer,
-        CustomFieldMappingCollection $customFieldMappingCollection,
-        $updateContactInfoEnabled
+        CustomFieldMappingCollection $customFieldMappingCollection
     ) {
         $contactCustomFieldsCollection = new ContactCustomFieldsCollection();
 
-        if (!$updateContactInfoEnabled) {
-            return $contactCustomFieldsCollection;
-        }
 
         /** @var CustomFieldMapping $customFieldMapping */
         foreach ($customFieldMappingCollection as $customFieldMapping) {
-            if (!$customFieldMapping->isActive()) {
-                continue;
-            }
 
             if (empty($customer->getValueByPropertyName(
                 $customFieldMapping->getCustomerPropertyName()

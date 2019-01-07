@@ -49,6 +49,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         parent::__construct();
         $this->addJquery();
         $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-registration.js');
+        $this->addJs(_MODULE_DIR_ . $this->module->name . '/views/js/gr-custom-fields.js');
 
         $this->name = 'GRSubscribeRegistration';
         $this->context->smarty->assign(array(
@@ -90,21 +91,42 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      */
     public function postProcess()
     {
-        if (Tools::isSubmit('saveSubscribeForm')) {
-            $registrationSettings = RegistrationSettings::createFromPost(Tools::getAllValues());
-            $validator = new RegistrationSettingsValidator($registrationSettings);
-
-            if (!$validator->isValid()) {
-                $this->errors = $validator->getErrors();
-                return;
-            }
-
-            $service = RegistrationServiceFactory::createService();
-            $service->updateSettings($registrationSettings);
-
-            FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
-            Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
+        if (!Tools::isSubmit('saveSubscribeForm')) {
+            return;
         }
+
+        $service = RegistrationServiceFactory::createService();
+
+        if (0 == Tools::getValue('subscriptionSwitch', 0)) {
+            $service->clearSettings();
+            return;
+        }
+
+        $cycleDay = null;
+        $addToCycle = Tools::getValue('addToCycle', 0);
+        if ($addToCycle) {
+            $cycleDay = Tools::getValue('cycledays', null);
+        }
+
+        $registrationSettings = new RegistrationSettings(
+            true,
+            1 == Tools::getValue('newsletter', 0),
+            Tools::getValue('campaign', null),
+            $cycleDay,
+            $this->getCustomFieldsFromPost()
+        );
+
+        $validator = new RegistrationSettingsValidator($registrationSettings);
+
+        if (!$validator->isValid()) {
+            $this->errors = $validator->getErrors();
+            return;
+        }
+
+        $service->updateSettings($registrationSettings);
+
+        FlashMessages::add(FlashMessages::TYPE_CONFIRMATION, $this->l('Settings saved'));
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminGetresponseSubscribeRegistration'));
     }
 
     /**
@@ -122,18 +144,14 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
         $registrationSettings = $registrationService->getSettings();
         $contactListService = $contactListService = ContactListServiceFactory::create();
 
-        $this->context->smarty->assign(array(
-            'is_connected' => $accountSettings->isConnectedWithGetResponse()
-        ));
-
         $this->context->smarty->assign([
+            'is_connected' => $accountSettings->isConnectedWithGetResponse(),
             'selected_tab' => 'subscribe_via_registration',
             'token' => $this->getToken(),
             'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
                 $this->getCampaignsOptions(),
-                $registrationSettings->getCycleDay()
+                $registrationSettings
             ),
-            'subscribe_via_registration_list' => $this->renderCustomList(),
             'campaign_days' => json_encode($this->getCampaignDays($contactListService->getAutoresponders())),
             'cycle_day' => $registrationSettings->getCycleDay(),
         ]);
@@ -154,12 +172,14 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     /**
      * Returns subscribe on register form
      * @param array $campaigns
-     * @param null|int $addToCycle
+     * @param RegistrationSettings $registrationSettings
      * @return mixed
      * @throws SmartyException
      */
-    public function renderSubscribeRegistrationForm($campaigns = array(), $addToCycle = null)
+    public function renderSubscribeRegistrationForm($campaigns = array(), $registrationSettings)
     {
+        $addToCycle = $registrationSettings->getCycleDay();
+
         if (is_string($addToCycle) && Tools::strlen($addToCycle) > 0) {
             $addToCycle = 'checked="checked"';
         } else {
@@ -258,7 +278,12 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
                             'value' => self::UPDATE_CONTACT_DISABLED,
                             'label' => $this->l('Disabled')
                         ]
-                    ]
+                    ],
+                ],
+                [
+                    'type' => 'html',
+                    'name' => 'customs',
+                    'html_content' => $this->renderCustomList($registrationSettings->getCustomFieldMappingCollection()),
                 ]
             ],
             'submit' =>
@@ -273,30 +298,20 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
     }
 
     /**
-     * Renders custom list
-     * @return mixed
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     */
-    public function renderList()
-    {
-        return $this->renderCustomList();
-    }
-
-    /**
      * Assigns values to forms
-     * @param $obj
+     * @param ObjectModel $obj
      * @return array
      */
     public function getFieldsValue($obj)
     {
         $service = RegistrationServiceFactory::createService();
         $settings = $service->getSettings();
+
         return [
             'subscriptionSwitch' => $settings->isActive() ? 1 : 0,
             'campaign' => $settings->getListId(),
             'cycledays' => $settings->getCycleDay(),
-            'contactInfo' => $settings->isUpdateContactEnabled() ? 1 : 0,
+            'contactInfo' => $settings->getCustomFieldMappingCollection()->count() > 0,
             'newsletter' => $settings->isNewsletterActive() ? 1 : 0
         ];
     }

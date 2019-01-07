@@ -28,13 +28,9 @@ namespace GetResponse\Export;
 
 use GetResponse\Contact\ContactCustomFieldCollectionFactory;
 use GetResponse\Customer\CustomerFactory;
-use GetResponse\CustomFields\CustomFieldService;
 use GetResponse\Order\OrderFactory;
-use GrShareCode\Contact\ContactCustomField\ContactCustomFieldsCollection;
 use GrShareCode\Export\Command\ExportContactCommand;
 use GrShareCode\Export\ExportContactService;
-use GrShareCode\Export\Settings\EcommerceSettings as ShareCodeEcommerceSettings;
-use GrShareCode\Export\Settings\ExportSettings as ShareCodeExportSettings;
 use GrShareCode\GrShareCodeException;
 use GrShareCode\Order\OrderCollection;
 use Order;
@@ -51,10 +47,6 @@ class ExportService
     private $shareCodeExportContactService;
     /** @var OrderFactory */
     private $orderFactory;
-
-    /** @var CustomFieldService */
-    private $customFieldService;
-
     /** @var ContactCustomFieldCollectionFactory */
     private $contactCustomFieldCollectionFactory;
 
@@ -62,20 +54,17 @@ class ExportService
      * @param ExportRepository $exportRepository
      * @param ExportContactService $shareCodeExportContactService
      * @param OrderFactory $orderFactory
-     * @param CustomFieldService $customFieldService
      * @param ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
      */
     public function __construct(
         ExportRepository $exportRepository,
         ExportContactService $shareCodeExportContactService,
         OrderFactory $orderFactory,
-        CustomFieldService $customFieldService,
         ContactCustomFieldCollectionFactory $contactCustomFieldCollectionFactory
     ) {
         $this->exportRepository = $exportRepository;
         $this->shareCodeExportContactService = $shareCodeExportContactService;
         $this->orderFactory = $orderFactory;
-        $this->customFieldService = $customFieldService;
         $this->contactCustomFieldCollectionFactory = $contactCustomFieldCollectionFactory;
     }
 
@@ -91,56 +80,33 @@ class ExportService
             return;
         }
 
-        if ($exportSettings->isUpdateContactInfo()) {
-                $customFieldMappingCollection = $this->customFieldService->getActiveCustomFieldMapping();
-        }
-
-        $shareCodeExportSettings = new ShareCodeExportSettings(
-            $exportSettings->getContactListId(),
-            $exportSettings->getCycleDay(),
-            new ShareCodeEcommerceSettings(
-                $exportSettings->isEcommerce(),
-                $exportSettings->getShopId()
-            )
-        );
+        $grExportSettings = GrExportSettingsFactory::createFromExportSettings($exportSettings);
 
         foreach ($contacts as $contact) {
-            $shareCodeOrderCollection = new OrderCollection();
 
             if (0 == $contact['id']) {
                 // flow for newsletters subscribers
                 $customer = CustomerFactory::createFromNewsletter($contact['email']);
+                $orderCollection = new OrderCollection();
             } else {
                 $customer = CustomerFactory::createFromArray($contact);
-
-                $customerOrders = $this->exportRepository->getOrders($contact['id']);
-
-                foreach ($customerOrders as $customerOrder) {
-                    $shareCodeOrderCollection->add(
-                        $this->orderFactory->createShareCodeOrderFromOrder(new Order($customerOrder['id_order']))
-                    );
-                }
+                $orderCollection = $this->buildOrderCollection($contact['id']);
             }
 
-            if ($exportSettings->isUpdateContactInfo()) {
-                $contactCustomFieldCollection = $this->contactCustomFieldCollectionFactory
-                    ->createFromContactAndCustomFieldMapping(
-                        $customer,
-                        $customFieldMappingCollection,
-                        $exportSettings->isUpdateContactInfo()
-                    );
-            } else {
-                $contactCustomFieldCollection = new ContactCustomFieldsCollection();
-            }
+            $contactCustomFieldCollection = $this->contactCustomFieldCollectionFactory
+                ->createFromContactAndCustomFieldMapping(
+                    $customer,
+                    $exportSettings->getCustomFieldMappingCollection()
+                );
 
             try {
                 $this->shareCodeExportContactService->exportContact(
                     new ExportContactCommand(
                         $customer->getEmail(),
                         $customer->getName(),
-                        $shareCodeExportSettings,
+                        $grExportSettings,
                         $contactCustomFieldCollection,
-                        $shareCodeOrderCollection
+                        $orderCollection
                     )
                 );
             } catch (GrShareCodeException $e) {
@@ -153,5 +119,27 @@ class ExportService
                 );
             }
         }
+    }
+
+    /**
+     * @param int $contactId
+     * @return OrderCollection
+     */
+    private function buildOrderCollection($contactId)
+    {
+        $customerOrders = $this->exportRepository->getOrders($contactId);
+        $orderCollection = new OrderCollection();
+
+        foreach ($customerOrders as $customerOrder) {
+            try {
+                $orderCollection->add(
+                    $this->orderFactory->createShareCodeOrderFromOrder(new Order($customerOrder['id_order']))
+                );
+            } catch (\InvalidArgumentException $e) {
+                // just skip order that contains invalid fields
+            }
+        }
+
+        return $orderCollection;
     }
 }

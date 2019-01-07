@@ -67,7 +67,7 @@ class WebTrackingRepository
 
     public function clearWebTracking()
     {
-        Configuration::updateValue(self::WEB_TRACKING_KEY, null);
-        Configuration::updateValue(self::TRACKING_CODE_KEY, null);
+        Configuration::deleteByName(self::WEB_TRACKING_KEY);
+        Configuration::deleteByName(self::TRACKING_CODE_KEY);
     }
 }

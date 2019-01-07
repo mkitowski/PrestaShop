@@ -27,7 +27,6 @@
 namespace GetResponse\Account;
 
 use Configuration;
-use GetResponse\CustomFields\CustomFieldsServiceFactory;
 use GetResponse\Ecommerce\EcommerceRepository;
 use GetResponse\Settings\Registration\RegistrationServiceFactory;
 use GetResponse\WebForm\WebFormRepository;
@@ -75,9 +74,6 @@ class AccountSettingsRepository
         $registrationService = RegistrationServiceFactory::createService();
         $registrationService->clearSettings();
 
-        $customFieldsService = CustomFieldsServiceFactory::create();
-        $customFieldsService->clearCustomFields();
-
         (new WebFormRepository())->clearSettings();
         (new WebTrackingRepository())->clearWebTracking();
         (new EcommerceRepository())->clearEcommerceSettings();
@@ -87,6 +83,6 @@ class AccountSettingsRepository
 
     public function clearSettings()
     {
-        Configuration::updateValue(self::RESOURCE_KEY, null);
+        Configuration::deleteByName(self::RESOURCE_KEY);
     }
 }

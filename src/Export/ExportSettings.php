@@ -26,6 +26,8 @@
 
 namespace GetResponse\Export;
 
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
+
 /**
  * Class ExportDto
  * @package GetResponse\Export
@@ -38,8 +40,8 @@ class ExportSettings
     /** @var int|null */
     private $cycleDay;
 
-    /** @var bool */
-    private $updateContactInfo;
+    /** @var CustomFieldMappingCollection */
+    private $customFieldMappingCollection;
 
     /** @var bool */
     private $newsletterSubsIncluded;
@@ -53,7 +55,7 @@ class ExportSettings
     /**
      * @param string $contactListId
      * @param int|null $cycleDay
-     * @param bool $updateContactInfo
+     * @param CustomFieldMappingCollection $customFieldMappingCollection
      * @param bool $newsletterSubsIncluded
      * @param bool $ecommerce
      * @param string $shopId
@@ -61,14 +63,14 @@ class ExportSettings
     public function __construct(
         $contactListId,
         $cycleDay,
-        $updateContactInfo,
+        $customFieldMappingCollection,
         $newsletterSubsIncluded,
         $ecommerce,
         $shopId
     ) {
         $this->contactListId = $contactListId;
         $this->cycleDay = $cycleDay;
-        $this->updateContactInfo = $updateContactInfo;
+        $this->customFieldMappingCollection = $customFieldMappingCollection;
         $this->newsletterSubsIncluded = $newsletterSubsIncluded;
         $this->ecommerce = $ecommerce;
         $this->shopId = $shopId;
@@ -99,11 +101,11 @@ class ExportSettings
     }
 
     /**
-     * @return bool
+     * @return CustomFieldMappingCollection
      */
-    public function isUpdateContactInfo()
+    public function getCustomFieldMappingCollection()
     {
-        return $this->updateContactInfo;
+        return $this->customFieldMappingCollection;
     }
 
     /**

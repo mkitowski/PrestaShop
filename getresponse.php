@@ -8,9 +8,6 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-use GrShareCode\Api\Exception\GetresponseApiException;
-use GrShareCode\Validation\Assert\InvalidArgumentException;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -23,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.4.1';
+    const VERSION = '16.5.0';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -32,7 +29,7 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.4.1';
+        $this->version = '16.5.0';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -277,7 +274,7 @@ class Getresponse extends Module
             $contactService->addContact(
                 \GetResponse\Customer\CustomerFactory::createFromPsCustomerObject($contact),
                 $addContactSettings,
-                $fromNewsletter
+                $fromNewsletter == false
             );
         } catch (Exception $e) {
             $this->handleHookException($e, 'createSubscriber');
@@ -453,7 +450,7 @@ class Getresponse extends Module
             return;
         }
 
-        if ($exception instanceof GetresponseApiException) {
+        if ($exception instanceof GrShareCode\Api\Exception\GetresponseApiException) {
             $errorMessage = sprintf(
                 'GetResponse error: %s: GetresponseApiException: %s',
                 $hookName,
@@ -463,7 +460,7 @@ class Getresponse extends Module
             return;
         }
 
-        if ($exception instanceof InvalidArgumentException) {
+        if ($exception instanceof GrShareCode\Validation\Assert\InvalidArgumentException) {
             $errorMessage = sprintf(
                 'GetResponse error: %s: InvalidArgumentException: %s',
                 $hookName,

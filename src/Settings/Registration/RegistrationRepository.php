@@ -35,6 +35,7 @@ use Configuration;
 class RegistrationRepository
 {
     const RESOURCE_KEY = 'getresponse_registration';
+    const MAPPING_KEY = 'getresponse_customs';
 
     /**
      * @return RegistrationSettings
@@ -42,12 +43,13 @@ class RegistrationRepository
     public function getSettings()
     {
         $configuration = json_decode(Configuration::get(self::RESOURCE_KEY), true);
+        $customs = json_decode(Configuration::get(self::MAPPING_KEY), true);
 
         if (empty($configuration)) {
             return RegistrationSettings::createEmptyInstance();
         }
 
-        return RegistrationSettings::createFromConfiguration($configuration);
+        return RegistrationSettings::createFromConfiguration($configuration, $customs);
     }
 
     /**
@@ -55,20 +57,27 @@ class RegistrationRepository
      */
     public function updateSettings(RegistrationSettings $settings)
     {
+        $customFieldMappingCollection = $settings->getCustomFieldMappingCollection();
+
         Configuration::updateValue(
             self::RESOURCE_KEY,
             json_encode([
                 'active_subscription' => $settings->isActive(),
                 'active_newsletter_subscription' => $settings->isNewsletterActive(),
                 'campaign_id' => $settings->getListId(),
-                'update_address' => $settings->isUpdateContactEnabled(),
                 'cycle_day' => $settings->getCycleDay()
             ])
+        );
+
+        Configuration::updateValue(
+            self::MAPPING_KEY,
+            json_encode($customFieldMappingCollection->toArray())
         );
     }
 
     public function clearSettings()
     {
-        Configuration::updateValue(self::RESOURCE_KEY, null);
+        Configuration::deleteByName(self::RESOURCE_KEY);
+        Configuration::deleteByName(self::MAPPING_KEY);
     }
 }

@@ -26,6 +26,7 @@
 
 namespace GetResponse\Contact;
 
+use GetResponse\CustomFieldsMapping\CustomFieldMappingCollection;
 use GetResponse\Settings\Registration\RegistrationSettings;
 
 /**
@@ -36,23 +37,21 @@ class AddContactSettings
 {
     /** @var string */
     private $contactListId;
-
     /** @var string */
     private $dayOfCycle;
-
-    /** @var bool */
-    private $updateContactCustomFields;
+    /** @var CustomFieldMappingCollection */
+    private $customFieldMappingCollection;
 
     /**
      * @param string $contactListId
      * @param string $dayOfCycle
-     * @param bool $updateContactCustomFields
+     * @param CustomFieldMappingCollection $customFieldMappingCollection
      */
-    public function __construct($contactListId, $dayOfCycle, $updateContactCustomFields)
+    public function __construct($contactListId, $dayOfCycle, $customFieldMappingCollection)
     {
         $this->contactListId = $contactListId;
         $this->dayOfCycle = $dayOfCycle;
-        $this->updateContactCustomFields = $updateContactCustomFields;
+        $this->customFieldMappingCollection = $customFieldMappingCollection;
     }
 
     /**
@@ -64,7 +63,7 @@ class AddContactSettings
         return new self(
             $settings->getListId(),
             $settings->getCycleDay(),
-            $settings->isUpdateContactEnabled()
+            $settings->getCustomFieldMappingCollection()
         );
     }
 
@@ -85,10 +84,10 @@ class AddContactSettings
     }
 
     /**
-     * @return bool
+     * @return CustomFieldMappingCollection
      */
-    public function isUpdateContactCustomFields()
+    public function getCustomFieldMappingCollection()
     {
-        return $this->updateContactCustomFields;
+        return $this->customFieldMappingCollection;
     }
 }
