@@ -35,8 +35,7 @@ class Getresponse extends Module
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
-        $this->description = 'Add your Prestashop contacts to GetResponse. ';
-        $this->description .= 'Automatically follow-up new subscriptions with engaging email marketing campaigns';
+        $this->description = $this->l(GetResponse\Config\ConfigService::DESCRIPTION);
         $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
