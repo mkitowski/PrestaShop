@@ -75,6 +75,6 @@ class Tools
      */
     public static function substr($str, $start, $length = false, $encoding = 'utf-8')
     {
-        return substr($str, $start, ($length === false ? Tools::strlen($str) : (int) $length));
+        return mb_substr($str, $start, ($length === false ? Tools::strlen($str) : (int) $length));
     }
 }
