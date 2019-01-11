@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2018 PrestaShop SA
+ * @copyright 2007-2019 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
@@ -83,9 +83,14 @@ class AdminGetresponseAccountController extends AdminGetresponseController
         if (Tools::isSubmit('connectToGetResponse')) {
             $this->connectToGetResponse();
         } elseif (Tools::isSubmit('disconnectFromGetResponse')) {
-            $accountService = AccountServiceFactory::create();
-            $accountService->disconnectFromGetResponse();
-            $this->confirmations[] = $this->l('GetResponse account disconnected');
+            try {
+                $accountService = AccountServiceFactory::create();
+                $accountService->disconnectFromGetResponse();
+                $this->confirmations[] = $this->l('GetResponse account disconnected');
+            } catch (ApiTypeException $e) {
+                $this->display = 'edit';
+                $this->show_form_cancel_button = false;
+            }
         }
         parent::postProcess();
     }
@@ -133,7 +138,7 @@ class AdminGetresponseAccountController extends AdminGetresponseController
                     : 'The API key seems incorrect.';
 
                 $msg .= ' Please check if you typed or pasted it correctly.
-                    If you recently generated a new key, please make sure you\'re using the right one';
+                    If you recently generated a new key, please make sure you are using the right one';
 
                 $this->errors[] = $this->l($msg);
             }

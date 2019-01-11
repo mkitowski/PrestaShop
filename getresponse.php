@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.0';
+    const VERSION = '16.5.1';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,7 +29,7 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.0';
+        $this->version = '16.5.1';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
@@ -337,12 +337,29 @@ class Getresponse extends Module
                 return '';
             }
 
-            $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
+            $this->smarty->assign(
+                ['gr_tracking_snippet' => $this->getSnippetUrl($webTracking->getSnippet())]
+            );
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
         } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
             $this->handleHookException($e, 'hookDisplayHeader');
             return '';
         }
+    }
+
+    private function getSnippetUrl($snippet)
+    {
+        if (empty($snippet)) {
+            return '';
+        }
+
+        preg_match('/src="([^"]*)"/', $snippet, $url);
+
+        if (isset($url[1])) {
+            return $url[1];
+        }
+
+        return '';
     }
 
     /**

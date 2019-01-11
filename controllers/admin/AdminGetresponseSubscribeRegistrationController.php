@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2018 PrestaShop SA
+ * @copyright 2007-2019 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
@@ -149,8 +149,8 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
             'selected_tab' => 'subscribe_via_registration',
             'token' => $this->getToken(),
             'subscribe_via_registration_form' => $this->renderSubscribeRegistrationForm(
-                $this->getCampaignsOptions(),
-                $registrationSettings
+                $registrationSettings,
+                $this->getCampaignsOptions()
             ),
             'campaign_days' => json_encode($this->getCampaignDays($contactListService->getAutoresponders())),
             'cycle_day' => $registrationSettings->getCycleDay(),
@@ -176,7 +176,7 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
      * @return mixed
      * @throws SmartyException
      */
-    public function renderSubscribeRegistrationForm($campaigns = array(), $registrationSettings)
+    public function renderSubscribeRegistrationForm($registrationSettings, $campaigns = array())
     {
         $addToCycle = $registrationSettings->getCycleDay();
 
@@ -299,7 +299,6 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     /**
      * Assigns values to forms
-     * @param ObjectModel $obj
      * @return array
      */
     public function getFieldsValue($obj)
