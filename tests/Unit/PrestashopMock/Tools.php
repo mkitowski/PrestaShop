@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2019 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2018 PrestaShop SA
+ * @copyright 2007-2019 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  *
@@ -63,7 +63,7 @@ class Tools
      */
     public static function strlen($value)
     {
-        return strlen($value);
+        return mb_strlen($value);
     }
 
     /**
@@ -75,6 +75,6 @@ class Tools
      */
     public static function substr($str, $start, $length = false, $encoding = 'utf-8')
     {
-        return substr($str, $start, ($length === false ? Tools::strlen($str) : (int) $length));
+        return mb_substr($str, $start, ($length === false ? Tools::strlen($str) : (int) $length));
     }
 }

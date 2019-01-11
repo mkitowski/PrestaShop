@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.5.1
+*(2019-01-11)*
+* adjusted code to PrestaShop coding standards 
+
 ## 16.5.0
 *(2018-12-11)*
 * custom field mapping enhancement
