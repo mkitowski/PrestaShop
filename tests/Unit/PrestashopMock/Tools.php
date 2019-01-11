@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2019 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -63,7 +63,7 @@ class Tools
      */
     public static function strlen($value)
     {
-        return array_sum(count_chars($value));
+        return mb_strlen($value);
     }
 
     /**
