@@ -101,9 +101,6 @@ class ConfigService
         'Getresponse'
     ];
 
-    const DESCRIPTION = 'Add your Prestashop contacts to GetResponse. 
-    Automatically follow-up new subscriptions with engaging email marketing campaigns';
-
     const CONFIRM_UNINSTALL = 'Warning: all the module data will be deleted. 
     Are you sure you want uninstall this module?';
 }
