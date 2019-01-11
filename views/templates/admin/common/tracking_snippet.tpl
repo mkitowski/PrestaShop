@@ -24,6 +24,6 @@
  *}
 {if $gr_tracking_snippet != ""}
 <!-- Getresponse Analytics -->
-    <script type="text/javascript" src="{$gr_tracking_snippet}"></script>
+    <script type="text/javascript" src="{$gr_tracking_snippet}" async></script>
 <!-- End Getresponse Analytics -->
 {/if}
