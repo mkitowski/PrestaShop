@@ -63,7 +63,7 @@ class Tools
      */
     public static function strlen($value)
     {
-        return strlen($value);
+        return array_sum(count_chars($value));
     }
 
     /**

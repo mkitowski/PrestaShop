@@ -299,10 +299,9 @@ class AdminGetresponseSubscribeRegistrationController extends AdminGetresponseCo
 
     /**
      * Assigns values to forms
-     * @param ObjectModel $obj
      * @return array
      */
-    public function getFieldsValue($obj)
+    public function getFieldsValue()
     {
         $service = RegistrationServiceFactory::createService();
         $settings = $service->getSettings();
