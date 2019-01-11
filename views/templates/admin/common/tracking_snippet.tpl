@@ -22,4 +22,8 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  *}
-{$gr_tracking_snippet nofilter}
+{if $gr_tracking_snippet != ""}
+<!-- Getresponse Analytics -->
+    <script type="text/javascript" src="{$gr_tracking_snippet}"></script>
+<!-- End Getresponse Analytics -->
+{/if}

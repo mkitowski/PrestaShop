@@ -337,12 +337,29 @@ class Getresponse extends Module
                 return '';
             }
 
-            $this->smarty->assign(['gr_tracking_snippet' => $webTracking->getSnippet()]);
+            $this->smarty->assign(
+                ['gr_tracking_snippet' => $this->getSnippetUrl($webTracking->getSnippet())]
+            );
             return $this->display(__FILE__, 'views/templates/admin/common/tracking_snippet.tpl');
         } catch (\GrShareCode\Api\Authorization\ApiTypeException $e) {
             $this->handleHookException($e, 'hookDisplayHeader');
             return '';
         }
+    }
+
+    private function getSnippetUrl($snippet)
+    {
+        if (empty($snippet)) {
+            return '';
+        }
+
+        preg_match('/src="([^"]*)"/', $snippet, $url);
+
+        if (isset($url[1])) {
+            return $url[1];
+        }
+
+        return '';
     }
 
     /**
