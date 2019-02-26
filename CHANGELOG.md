@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.5.3
+*(2019-02-13)*
+* changed application key
+
 ## 16.5.2
 *(2019-02-13)*
 * added multi-languages handling

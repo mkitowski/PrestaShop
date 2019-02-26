@@ -4,6 +4,8 @@ git archive -o ./release/getresponse.zip --prefix=getresponse/ HEAD
 (cd ./release && unzip getresponse.zip)
 rm ./release/getresponse.zip
 rm -rf ./release/getresponse/tests
+rm -rf ./release/getresponse/config.xml
+rm -rf ./release/getresponse/release.sh
 (cd ./release/getresponse && composer install --no-dev)
 
 (cd ./release && git clone git@github.com:dg/php54-arrays.git && cd php54-arrays && php convert.php --reverse ../getresponse)
