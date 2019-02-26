@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.2';
+    const VERSION = '16.5.3';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,10 +29,10 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.2';
+        $this->version = '16.5.3';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
-        $this->module_key = '7e6dc54b34af57062a5e822bd9b8d5ba';
+        $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
         $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions with engaging email marketing campaigns';
