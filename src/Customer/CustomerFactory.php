@@ -82,11 +82,6 @@ class CustomerFactory
      */
     public static function createFromPsCustomerObject(PsCustomer $customer)
     {
-
-        file_put_contents('./customer.txt', serialize($customer));
-
-
-
         return new Customer(
             $customer->id,
             $customer->firstname,
