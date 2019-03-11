@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.5.4
+*(2019-02-13)*
+* resolved issue with country custom fields on registration page
+
 ## 16.5.3
 *(2019-02-13)*
 * changed application key
