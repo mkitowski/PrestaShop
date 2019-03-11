@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.3';
+    const VERSION = '16.5.4';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,7 +29,7 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.3';
+        $this->version = '16.5.4';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
@@ -251,7 +251,33 @@ class Getresponse extends Module
      */
     public function hookCreateAccount($params)
     {
-        $this->createSubscriber($params['newCustomer'], false);
+        $customer = $params['newCustomer'];
+
+        if (isset($params['_POST']['id_country']) && class_exists('CountryCore')) {
+            $country = new CountryCore($params['_POST']['id_country']);
+
+            if (!empty($country->iso_code)) {
+                $customer->country = $country->iso_code;
+            }
+        }
+
+        if (isset($params['_POST']['city'])) {
+            $customer->city = $params['_POST']['city'];
+        }
+
+        if (isset($params['_POST']['postcode'])) {
+            $customer->postal = $params['_POST']['postcode'];
+        }
+
+        if (isset($params['_POST']['address1'])) {
+            $customer->address = $params['_POST']['address1'];
+        }
+
+        if (isset($params['_POST']['company'])) {
+            $customer->company = $params['_POST']['company'];
+        }
+
+        $this->createSubscriber($customer, false);
     }
 
     /**

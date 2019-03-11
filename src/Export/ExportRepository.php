@@ -111,6 +111,7 @@ class ExportRepository
                 	' . _DB_PREFIX_ . 'country_lang pl on co.id_country = pl.id_country AND pl.id_lang = 1
                 WHERE
                     cu.newsletter = 1
+                    AND cu.deleted = 0
                 AND
                     cu.id_shop = ' . (int) $this->idShop . '
                     GROUP BY cu.email
