@@ -76,8 +76,8 @@ class GetResponseRepository implements DbRepositoryInterface
                     ' . _DB_PREFIX_ . 'getresponse_products
                WHERE
                     `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND
-                    `product_id` = ' . intval($externalProductId) . ' AND
-                    `variant_id` = ' . intval($externalVariantId) . '
+                    `product_id` = ' . ((int)$externalProductId) . ' AND
+                    `variant_id` = ' . ((int)$externalVariantId) . '
                ';
 
         $mapping = $this->db->executeS($sql, true, false);
