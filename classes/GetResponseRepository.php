@@ -75,9 +75,9 @@ class GetResponseRepository implements DbRepositoryInterface
                FROM
                     ' . _DB_PREFIX_ . 'getresponse_products
                WHERE
-                    `gr_shop_id` = "' . $grShopId . '" AND
-                    `product_id` = ' . $externalProductId . ' AND
-                    `variant_id` = ' . $externalVariantId . '
+                    `gr_shop_id` = "' . $this->db->escape($grShopId) . '" AND
+                    `product_id` = ' . intval($externalProductId) . ' AND
+                    `variant_id` = ' . intval($externalVariantId) . '
                ';
 
         $mapping = $this->db->executeS($sql, true, false);
@@ -105,7 +105,7 @@ class GetResponseRepository implements DbRepositoryInterface
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'getresponse_carts 
                 SET
                     `gr_shop_id` = "' . $this->db->escape($grShopId) . '",
-                    `gr_cart_id` = "' . $grCartId .'",
+                    `gr_cart_id` = "' . $this->db->escape($grCartId) .'",
                     `cart_id` = ' . (int) $externalCartId;
         $this->db->execute($sql);
     }
