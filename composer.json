@@ -10,7 +10,8 @@
     }
   ],
   "config": {
-    "preferred-install": "dist"
+    "preferred-install": "dist",
+    "prepend-autoloader": false
   },
   "type": "prestashop-module",
   "minimum-stability": "stable",
