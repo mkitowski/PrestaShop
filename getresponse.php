@@ -35,7 +35,8 @@ class Getresponse extends Module
         $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
-        $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions with engaging email marketing campaigns';
+        $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions ';
+        $this->description .= 'with engaging email marketing campaigns';
         $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
@@ -197,7 +198,12 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
-            $orderUrl = $this->context->link->getPageLink('order', null, (int)$this->context->language->id, array('action' => 'show'));
+            $orderUrl = $this->context->link->getPageLink(
+                'order',
+                null,
+                (int)$this->context->language->id,
+                array('action' => 'show')
+            );
 
             $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart(
