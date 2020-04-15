@@ -69,6 +69,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -78,7 +79,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -89,7 +90,7 @@ class CartServiceTest extends BaseTestCase
             ->with($grAddCartCommand);
 
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 
 
@@ -115,6 +116,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -133,7 +135,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -144,7 +146,7 @@ class CartServiceTest extends BaseTestCase
             ->with($grAddCartCommand);
 
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 
 
@@ -170,6 +172,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -191,7 +194,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -201,6 +204,6 @@ class CartServiceTest extends BaseTestCase
             ->method('sendCart')
             ->with($grAddCartCommand);
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 }
