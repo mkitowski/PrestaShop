@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.5';
+    const VERSION = '16.5.7';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,7 +29,7 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.5';
+        $this->version = '16.5.7';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
@@ -197,10 +197,13 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
+            $orderUrl = $this->context->link->getPageLink('order', null, (int)$this->context->language->id, array('action' => 'show'));
+
             $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart(
                 $params['cart'],
-                \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings()
+                \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings(),
+                $orderUrl
             );
         } catch (Exception $e) {
             $this->handleHookException($e, 'createCart');

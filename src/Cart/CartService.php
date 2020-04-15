@@ -46,26 +46,23 @@ class CartService
 {
     /** @var GrCartService */
     private $grCartService;
-    /** @var string */
-    private $cartUrl;
 
     /**
      * @param GrCartService $grCartService
-     * @param string $cartUrl
      */
-    public function __construct(GrCartService $grCartService, $cartUrl)
+    public function __construct(GrCartService $grCartService)
     {
         $this->grCartService = $grCartService;
-        $this->cartUrl = $cartUrl;
     }
 
     /**
      * @param Cart $cart
      * @param string $contactListId
      * @param string $grShopId
+     * @param string $orderUrl
      * @throws GetresponseApiException
      */
-    public function sendCart(Cart $cart, $contactListId, $grShopId)
+    public function sendCart(Cart $cart, $contactListId, $grShopId, $orderUrl)
     {
         $products = $cart->getProducts();
 
@@ -77,7 +74,7 @@ class CartService
             $this->getCurrencyIsoCode((int)$cart->id_currency),
             $cart->getOrderTotal(false),
             $cart->getOrderTotal(true),
-            $this->cartUrl
+            $orderUrl
         );
 
         $customer = new Customer($cart->id_customer);

@@ -46,14 +46,11 @@ class CartServiceTest extends BaseTestCase
     private $grCartService;
     /** @var CartService */
     private $sut;
-    /** @var string */
-    private $cartUrl;
 
     protected function setUp()
     {
         $this->grCartService = $this->getMockWithoutConstructing(GrCartService::class);
-        $this->cartUrl = 'http://store.com/cart';
-        $this->sut = new CartService($this->grCartService, $this->cartUrl);
+        $this->sut = new CartService($this->grCartService);
     }
 
     /**

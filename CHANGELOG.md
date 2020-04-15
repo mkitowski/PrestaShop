@@ -1,5 +1,13 @@
 # Changelog
 
+## 16.5.7
+*(2020-04-15)*
+* resolved issue with listing autoresponders with single quotes in their names
+
+## 16.5.6
+*(2019-09-20)*
+* resolved issue with listing autoresponders with single quotes in their names
+
 ## 16.5.5
 *(2019-04-02)*
 * security update

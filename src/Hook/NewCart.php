@@ -42,10 +42,11 @@ class NewCart
     /**
      * @param Cart $cart
      * @param AccountSettings $accountSettings
+     * @param string $orderUrl
      * @throws ApiTypeException
      * @throws GetresponseApiException
      */
-    public function sendCart($cart, AccountSettings $accountSettings)
+    public function sendCart($cart, AccountSettings $accountSettings, $orderUrl)
     {
         if (null === $cart || 0 == $cart->id_customer) {
             return;
@@ -58,6 +59,6 @@ class NewCart
         }
 
         $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
-        $cartService->sendCart($cart, $ecommerce->getListId(), $ecommerce->getShopId());
+        $cartService->sendCart($cart, $ecommerce->getListId(), $ecommerce->getShopId(), $orderUrl);
     }
 }
