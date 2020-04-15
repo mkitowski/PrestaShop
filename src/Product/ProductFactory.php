@@ -66,5 +66,4 @@ class ProductFactory
 
         return $grProduct;
     }
-
 }
