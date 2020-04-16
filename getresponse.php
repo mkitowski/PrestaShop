@@ -198,8 +198,10 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
+            $controller = strpos(_PS_VERSION_, '1.6') === 0 ? 'order' : 'cart';
+
             $orderUrl = $this->context->link->getPageLink(
-                'order',
+                $controller,
                 null,
                 (int)$this->context->language->id,
                 array('action' => 'show')
