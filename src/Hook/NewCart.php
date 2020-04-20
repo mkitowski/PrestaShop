@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2020 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2019 PrestaShop SA
+ * @copyright 2007-2020 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
@@ -42,10 +42,11 @@ class NewCart
     /**
      * @param Cart $cart
      * @param AccountSettings $accountSettings
+     * @param string $orderUrl
      * @throws ApiTypeException
      * @throws GetresponseApiException
      */
-    public function sendCart($cart, AccountSettings $accountSettings)
+    public function sendCart($cart, AccountSettings $accountSettings, $orderUrl)
     {
         if (null === $cart || 0 == $cart->id_customer) {
             return;
@@ -58,6 +59,6 @@ class NewCart
         }
 
         $cartService = CartServiceFactory::createFromAccountSettings($accountSettings);
-        $cartService->sendCart($cart, $ecommerce->getListId(), $ecommerce->getShopId());
+        $cartService->sendCart($cart, $ecommerce->getListId(), $ecommerce->getShopId(), $orderUrl);
     }
 }

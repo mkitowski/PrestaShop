@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2020 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2019 PrestaShop SA
+ * @copyright 2007-2020 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
@@ -46,14 +46,11 @@ class CartServiceTest extends BaseTestCase
     private $grCartService;
     /** @var CartService */
     private $sut;
-    /** @var string */
-    private $cartUrl;
 
     protected function setUp()
     {
         $this->grCartService = $this->getMockWithoutConstructing(GrCartService::class);
-        $this->cartUrl = 'http://store.com/cart';
-        $this->sut = new CartService($this->grCartService, $this->cartUrl);
+        $this->sut = new CartService($this->grCartService);
     }
 
     /**
@@ -72,6 +69,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -81,7 +79,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -92,7 +90,7 @@ class CartServiceTest extends BaseTestCase
             ->with($grAddCartCommand);
 
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 
 
@@ -118,6 +116,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -136,7 +135,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -147,7 +146,7 @@ class CartServiceTest extends BaseTestCase
             ->with($grAddCartCommand);
 
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 
 
@@ -173,6 +172,7 @@ class CartServiceTest extends BaseTestCase
 
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
+        $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
 
         $cart = new Cart($params);
 
@@ -194,7 +194,7 @@ class CartServiceTest extends BaseTestCase
             'PLN',
             $params['total'],
             $params['total_with_tax'],
-            $this->cartUrl
+            $orderUrl
         );
 
         $grAddCartCommand = new GrAddCartCommand($grCart, 'customer@getresponse.com', $contactListId, $grShopId);
@@ -204,6 +204,6 @@ class CartServiceTest extends BaseTestCase
             ->method('sendCart')
             ->with($grAddCartCommand);
 
-        $this->sut->sendCart($cart, $contactListId, $grShopId);
+        $this->sut->sendCart($cart, $contactListId, $grShopId, $orderUrl);
     }
 }

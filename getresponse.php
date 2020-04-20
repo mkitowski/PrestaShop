@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.6';
+    const VERSION = '16.5.7';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,13 +29,14 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.6';
+        $this->version = '16.5.7';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
         $this->ps_versions_compliancy = ['min' => '1.6', 'max' => _PS_VERSION_];
         $this->displayName = $this->l('GetResponse');
-        $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions with engaging email marketing campaigns';
+        $this->description = 'Add your Prestashop contacts to GetResponse. Automatically follow-up new subscriptions ';
+        $this->description .= 'with engaging email marketing campaigns';
         $this->confirmUninstall = $this->l(GetResponse\Config\ConfigService::CONFIRM_UNINSTALL);
 
         parent::__construct();
@@ -197,10 +198,20 @@ class Getresponse extends Module
     public function hookCart($params)
     {
         try {
+            $controller = strpos(_PS_VERSION_, '1.6') === 0 ? 'order' : 'cart';
+
+            $orderUrl = $this->context->link->getPageLink(
+                $controller,
+                null,
+                (int)$this->context->language->id,
+                array('action' => 'show')
+            );
+
             $cartHook = new GetResponse\Hook\NewCart();
             $cartHook->sendCart(
                 $params['cart'],
-                \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings()
+                \GetResponse\Account\AccountServiceFactory::create()->getAccountSettings(),
+                $orderUrl
             );
         } catch (Exception $e) {
             $this->handleHookException($e, 'createCart');

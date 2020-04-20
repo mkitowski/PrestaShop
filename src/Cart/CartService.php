@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2018 PrestaShop
+ * 2007-2020 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -19,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  * @author     Getresponse <grintegrations@getresponse.com>
- * @copyright 2007-2019 PrestaShop SA
+ * @copyright 2007-2020 PrestaShop SA
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  * International Registered Trademark & Property of PrestaShop SA
  */
@@ -46,26 +46,23 @@ class CartService
 {
     /** @var GrCartService */
     private $grCartService;
-    /** @var string */
-    private $cartUrl;
 
     /**
      * @param GrCartService $grCartService
-     * @param string $cartUrl
      */
-    public function __construct(GrCartService $grCartService, $cartUrl)
+    public function __construct(GrCartService $grCartService)
     {
         $this->grCartService = $grCartService;
-        $this->cartUrl = $cartUrl;
     }
 
     /**
      * @param Cart $cart
      * @param string $contactListId
      * @param string $grShopId
+     * @param string $orderUrl
      * @throws GetresponseApiException
      */
-    public function sendCart(Cart $cart, $contactListId, $grShopId)
+    public function sendCart(Cart $cart, $contactListId, $grShopId, $orderUrl)
     {
         $products = $cart->getProducts();
 
@@ -77,7 +74,7 @@ class CartService
             $this->getCurrencyIsoCode((int)$cart->id_currency),
             $cart->getOrderTotal(false),
             $cart->getOrderTotal(true),
-            $this->cartUrl
+            $orderUrl
         );
 
         $customer = new Customer($cart->id_customer);
