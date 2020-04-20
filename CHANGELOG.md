@@ -2,7 +2,7 @@
 
 ## 16.5.7
 *(2020-04-15)*
-* resolved issue with listing autoresponders with single quotes in their names
+* added cart url to cart hook
 
 ## 16.5.6
 *(2019-09-20)*
