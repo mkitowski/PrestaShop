@@ -61,8 +61,9 @@ class OrderFactory
 
             $getresponseProduct = $this->productFactory->createShareCodeProductFromProduct(
                 $prestashopProduct,
-                (int)$product['product_quantity'],
-                Configuration::get('PS_LANG_DEFAULT')
+                Configuration::get('PS_LANG_DEFAULT'),
+                $product['product_attribute_id'],
+                (int)$product['product_quantity']
             );
 
             $productsCollection->add($getresponseProduct);

@@ -92,14 +92,15 @@ class OrderService
         foreach ($products as $product) {
             $prestashopProduct = new Product($product['id_product']);
 
-            if (empty($prestashopProduct->reference)) {
+            if (empty($product['product_reference'])) {
                 continue;
             }
             $productService = new ProductFactory();
             $getresponseProduct = $productService->createShareCodeProductFromProduct(
                 $prestashopProduct,
-                (int)$product['product_quantity'],
-                Configuration::get('PS_LANG_DEFAULT')
+                Configuration::get('PS_LANG_DEFAULT'),
+                $product['product_attribute_id'],
+                (int)$product['product_quantity']
             );
 
             $productsCollection->add($getresponseProduct);

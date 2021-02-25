@@ -242,6 +242,14 @@ class Getresponse extends Module
     /**
      * @param array $params
      */
+    public function hookActionOrderStatusUpdate($params)
+    {
+        $a = 3;
+    }
+
+    /**
+     * @param array $params
+     */
     public function hookHookOrderConfirmation($params)
     {
         $this->sendOrderToGr($params['order']);

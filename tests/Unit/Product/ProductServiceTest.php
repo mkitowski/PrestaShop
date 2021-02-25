@@ -58,8 +58,9 @@ class ProductServiceTest extends BaseTestCase
 
         $product = new Product(\ProductGenerator::PROD_1_WITH_SKU, $languageId);
         $quantity = 2;
+        $idProductAtribute = 1;
 
-        $grProduct = $this->productService->createShareCodeProductFromProduct($product, $quantity, 1);
+        $grProduct = $this->productService->createShareCodeProductFromProduct($product, $languageId, $idProductAtribute, $quantity);
 
         $this->assertEquals($productParams['id'], $grProduct->getExternalId());
         $this->assertEquals($productParams['name'][$languageId], $grProduct->getName());
@@ -69,7 +70,7 @@ class ProductServiceTest extends BaseTestCase
             $product->getImages($languageId),
             $product->link_rewrite[$languageId]
         );
-        $variantProduct = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $quantity, $languageId);
+        $variantProduct = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $languageId, $idProductAtribute, $quantity);
         $this->assertEquals($variantProduct, $grProduct->getVariants()->getIterator()->current());
     }
 }

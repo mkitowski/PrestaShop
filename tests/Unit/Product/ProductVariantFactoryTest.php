@@ -49,6 +49,8 @@ class ProductVariantFactoryTest extends BaseTestCase
     public function shouldCreateProduct()
     {
         $languageId = 1;
+        $idProductAttribute = 2;
+        $quantity = 2;
 
         $productParams = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
         $product = new Product(\ProductGenerator::PROD_1_WITH_SKU);
@@ -56,9 +58,8 @@ class ProductVariantFactoryTest extends BaseTestCase
         $imagesCollection = new ImagesCollection();
         $imagesCollection->add(new Image('source1', 1));
         $imagesCollection->add(new Image('source2', 2));
-        $quantity = 2;
 
-        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $quantity, $languageId);
+        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $languageId, $idProductAttribute, $quantity);
 
         $expectedVariant = new Variant(
             $productParams['id'],
@@ -92,7 +93,7 @@ class ProductVariantFactoryTest extends BaseTestCase
         $imagesCollection->add(new Image('source2', 2));
         $quantity = 2;
 
-        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $quantity, $languageId);
+        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $languageId, 1, $quantity);
 
         $expectedVariant = new Variant(
             $productParams['id'],
