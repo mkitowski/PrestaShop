@@ -72,12 +72,21 @@ class OrderService
             return;
         }
 
-        $editOrderCommand = new GrEditOrderCommand(
-            $this->orderFactory->createShareCodeOrderFromOrder($order),
+        $grOrder = $this->orderFactory->createShareCodeOrderFromOrder($order);
+
+        if ($this->grOrderService->orderExists($grShopId, $grOrder->getExternalOrderId())) {
+            $this->grOrderService->updateOrder(new GrEditOrderCommand($grOrder, $grShopId));
+            return;
+        }
+
+        $addOrderCommand = new GrAddOrderCommand(
+            $grOrder,
+            (new Customer($order->id_customer))->email,
+            $contactListId,
             $grShopId
         );
 
-        $this->grOrderService->updateOrder($editOrderCommand);
+        $this->grOrderService->addOrder($addOrderCommand);
     }
 
     /**
