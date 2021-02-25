@@ -1,5 +1,9 @@
 # Changelog
 
+## 16.5.8
+*(2021-02-26)*
+* added support for configurable products
+
 ## 16.5.7
 *(2020-04-15)*
 * added cart url to cart hook

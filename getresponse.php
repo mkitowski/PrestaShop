@@ -20,7 +20,7 @@ include_once _PS_MODULE_DIR_ . '/getresponse/classes/GetResponseNotConnectedExce
 class Getresponse extends Module
 {
     const X_APP_ID = '2cd8a6dc-003f-4bc3-ba55-c2e4be6f7500';
-    const VERSION = '16.5.7';
+    const VERSION = '16.5.8';
 
     /** @var GetResponseRepository */
     private $repository;
@@ -29,7 +29,7 @@ class Getresponse extends Module
     {
         $this->name = 'getresponse';
         $this->tab = 'emailing';
-        $this->version = '16.5.7';
+        $this->version = '16.5.8';
         $this->author = 'GetResponse';
         $this->need_instance = 0;
         $this->module_key = 'b2dff089f1c2740a0ea180a1008fce6c';
@@ -242,14 +242,6 @@ class Getresponse extends Module
     /**
      * @param array $params
      */
-    public function hookActionOrderStatusUpdate($params)
-    {
-        $a = 3;
-    }
-
-    /**
-     * @param array $params
-     */
     public function hookHookOrderConfirmation($params)
     {
         $this->sendOrderToGr($params['order']);
@@ -260,8 +252,9 @@ class Getresponse extends Module
      */
     public function hookPostUpdateOrderStatus($params)
     {
-        if (isset($params['order'])) {
-            $this->sendOrderToGr($params['order']);
+        if (isset($params['id_order'])) {
+            $order = new Order($params['id_order']);
+            $this->sendOrderToGr($order);
         }
     }
 

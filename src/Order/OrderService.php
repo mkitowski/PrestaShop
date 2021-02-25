@@ -31,6 +31,7 @@ use Customer;
 use GetResponse\Product\ProductFactory;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Order\Command\AddOrderCommand as GrAddOrderCommand;
+use GrShareCode\Order\Command\EditOrderCommand as GrEditOrderCommand;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductsCollection;
 use Order;
@@ -71,14 +72,12 @@ class OrderService
             return;
         }
 
-        $addOrderCommand = new GrAddOrderCommand(
+        $editOrderCommand = new GrEditOrderCommand(
             $this->orderFactory->createShareCodeOrderFromOrder($order),
-            (new Customer($order->id_customer))->email,
-            $contactListId,
             $grShopId
         );
 
-        $this->grOrderService->addOrder($addOrderCommand);
+        $this->grOrderService->updateOrder($editOrderCommand);
     }
 
     /**
