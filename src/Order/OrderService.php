@@ -28,7 +28,10 @@ namespace GetResponse\Order;
 
 use Configuration;
 use Customer;
+use Db;
+use GetResponse\Helper\Shop;
 use GetResponse\Product\ProductFactory;
+use GetResponseRepository;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Order\Command\AddOrderCommand as GrAddOrderCommand;
 use GrShareCode\Order\Command\EditOrderCommand as GrEditOrderCommand;
@@ -74,7 +77,9 @@ class OrderService
 
         $grOrder = $this->orderFactory->createShareCodeOrderFromOrder($order);
 
-        if ($this->grOrderService->orderExists($grShopId, $grOrder->getExternalOrderId())) {
+        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
+
+        if (!empty($repository->getGrOrderIdFromMapping($grShopId, $grOrder->getExternalOrderId()))) {
             $this->grOrderService->updateOrder(new GrEditOrderCommand($grOrder, $grShopId));
             return;
         }
