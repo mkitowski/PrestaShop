@@ -38,6 +38,10 @@ class ProductGenerator
         1 => [
             'id' => 1,
             'id_product' => 1,
+            'id_product_attribute' => '0',
+            'product_attribute_id' => '0',
+            'product_quantity' => 1,
+            'cart_quantity' => 1,
             'name' => [self::LANGUAGE_ID => 'skarpetki'],
             'reference' => 'sku-skarpetki',
             'description_short' => [self::LANGUAGE_ID => 'Desc for product skarpetki'],
@@ -52,6 +56,10 @@ class ProductGenerator
         2 => [
             'id' => 2,
             'id_product' => 2,
+            'id_product_attribute' => '0',
+            'product_attribute_id' => '0',
+            'product_quantity' => 1,
+            'cart_quantity' => 1,
             'name' => [self::LANGUAGE_ID => 'czapka'],
             'reference' => 'sku-czapka',
             'description_short' => [self::LANGUAGE_ID => 'Desc for product czapka'],
@@ -66,6 +74,10 @@ class ProductGenerator
         3 => [
             'id' => 3,
             'id_product' => 3,
+            'id_product_attribute' => '0',
+            'product_attribute_id' => '0',
+            'product_quantity' => 1,
+            'cart_quantity' => 1,
             'name' => [self::LANGUAGE_ID => 'ball'],
             'reference' => '',
             'description_short' => [self::LANGUAGE_ID => 'Desc for product ball'],
@@ -80,6 +92,10 @@ class ProductGenerator
         4 => [
             'id' => 4,
             'id_product' => 4,
+            'id_product_attribute' => '0',
+            'product_attribute_id' => '0',
+            'product_quantity' => 1,
+            'cart_quantity' => 1,
             'name' => [self::LANGUAGE_ID => 'majtki'],
             'reference' => 'majtki',
             'description_short' => [self::LANGUAGE_ID => ''],

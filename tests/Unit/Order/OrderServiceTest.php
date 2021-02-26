@@ -100,6 +100,10 @@ class OrderServiceTest extends BaseTestCase
 
         $this->grOrderService
             ->expects(self::never())
+            ->method('orderExists');
+
+        $this->grOrderService
+            ->expects(self::never())
             ->method('addOrder');
 
         $this->sut->sendOrder($order, $contactListId, $grShopId);
@@ -111,18 +115,20 @@ class OrderServiceTest extends BaseTestCase
     public function shouldSendOrder()
     {
         $product1 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
-        $product1['product_quantity'] = 2;
+        $product1['product_quantity'] = 1;
+        $product1['product_reference'] = 'prod_1';
 
         $product2 = \ProductGenerator::genProductParams(\ProductGenerator::PROD_2_WITH_SKU);
         $product2['product_quantity'] = 1;
+        $product1['product_reference'] = 'prod_2';
 
         $productService = new ProductFactory();
         $productsCollection = new ProductsCollection();
         $productsCollection->add(
-            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 2, 1, 2)
+            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_1_WITH_SKU), 1, 1, 1)
         );
         $productsCollection->add(
-            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 1, 1, 2)
+            $productService->createShareCodeProductFromProduct(new \Product(\ProductGenerator::PROD_2_WITH_SKU), 1, 1, 1)
         );
 
         $params = [
@@ -160,6 +166,10 @@ class OrderServiceTest extends BaseTestCase
             'grShopId'
         );
 
+        $this->grOrderService
+            ->expects(self::once())
+            ->method('orderExists')
+            ->willReturn(false);
 
         $this->grOrderService
             ->expects(self::once())

@@ -94,4 +94,9 @@ class Product
     {
         return $this->categories;
     }
+
+    public function hasAttributes()
+    {
+        return [];
+    }
 }

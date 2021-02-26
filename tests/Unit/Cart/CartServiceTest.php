@@ -124,7 +124,7 @@ class CartServiceTest extends BaseTestCase
             new \Product(\ProductGenerator::PROD_1_WITH_SKU),
             1,
             1,
-            2
+            1
         );
         $productsCollection = new ProductsCollection();
         $productsCollection->add($getresponseProduct);
@@ -174,7 +174,7 @@ class CartServiceTest extends BaseTestCase
         $contactListId = 'contactListId';
         $grShopId = 'grShopId';
         $orderUrl = 'http://presta-shop-16:8082/prestashop/zamowienie?action=show';
-        $quantity = 2;
+        $quantity = 1;
 
         $cart = new Cart($params);
 
@@ -187,7 +187,7 @@ class CartServiceTest extends BaseTestCase
         ));
         $productsCollection->add((new ProductFactory())->createShareCodeProductFromProduct(
             new \Product(\ProductGenerator::PROD_2_WITH_SKU),
-            2,
+            1,
             1,
             $quantity
         ));

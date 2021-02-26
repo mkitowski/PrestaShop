@@ -70,7 +70,7 @@ class ProductServiceTest extends BaseTestCase
             $product->getImages($languageId),
             $product->link_rewrite[$languageId]
         );
-        $variantProduct = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $languageId, $idProductAtribute, $quantity);
-        $this->assertEquals($variantProduct, $grProduct->getVariants()->getIterator()->current());
+        $variantProductCollection = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $languageId, $idProductAtribute, $quantity);
+        $this->assertEquals($variantProductCollection, $grProduct->getVariants());
     }
 }
