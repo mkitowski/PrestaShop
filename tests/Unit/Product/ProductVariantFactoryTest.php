@@ -31,6 +31,7 @@ use GetResponse\Tests\Unit\BaseTestCase;
 use GrShareCode\Product\Variant\Images\Image;
 use GrShareCode\Product\Variant\Images\ImagesCollection;
 use GrShareCode\Product\Variant\Variant;
+use GrShareCode\Product\Variant\VariantsCollection;
 use Product;
 
 /**
@@ -49,6 +50,8 @@ class ProductVariantFactoryTest extends BaseTestCase
     public function shouldCreateProduct()
     {
         $languageId = 1;
+        $idProductAttribute = 2;
+        $quantity = 2;
 
         $productParams = \ProductGenerator::genProductParams(\ProductGenerator::PROD_1_WITH_SKU);
         $product = new Product(\ProductGenerator::PROD_1_WITH_SKU);
@@ -56,10 +59,10 @@ class ProductVariantFactoryTest extends BaseTestCase
         $imagesCollection = new ImagesCollection();
         $imagesCollection->add(new Image('source1', 1));
         $imagesCollection->add(new Image('source2', 2));
-        $quantity = 2;
 
-        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $quantity, $languageId);
+        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $languageId, $idProductAttribute, $quantity);
 
+        $expectedVariantCollection = new VariantsCollection();
         $expectedVariant = new Variant(
             $productParams['id'],
             $productParams['name'][$languageId],
@@ -74,7 +77,8 @@ class ProductVariantFactoryTest extends BaseTestCase
             ->setUrl('http://my-prestashop.com/product/' . $productParams['id'])
             ->setDescription($productParams['description_short'][$languageId]);
 
-        $this->assertEquals($expectedVariant, $variant);
+        $expectedVariantCollection->add($expectedVariant);
+        $this->assertEquals($expectedVariantCollection, $variant);
     }
 
     /**
@@ -92,7 +96,7 @@ class ProductVariantFactoryTest extends BaseTestCase
         $imagesCollection->add(new Image('source2', 2));
         $quantity = 2;
 
-        $variant = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $quantity, $languageId);
+        $variantCollection = $this->productVariantFactory->createFromProduct($product, $imagesCollection, $languageId, 1, $quantity);
 
         $expectedVariant = new Variant(
             $productParams['id'],
@@ -107,7 +111,9 @@ class ProductVariantFactoryTest extends BaseTestCase
             ->setImages($imagesCollection)
             ->setUrl('http://my-prestashop.com/product/' . $productParams['id']);
 
-        $this->assertEquals($expectedVariant, $variant);
+        $expectedVariantCollection = new VariantsCollection();
+        $expectedVariantCollection->add($expectedVariant);
+        $this->assertEquals($expectedVariantCollection, $variantCollection);
     }
 
     protected function setUp()

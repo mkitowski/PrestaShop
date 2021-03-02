@@ -46,7 +46,8 @@ class ConfigService
         'cart',
         'postUpdateOrderStatus',
         'hookOrderConfirmation',
-        'displayBackOfficeHeader'
+        'displayBackOfficeHeader',
+        'actionOrderStatusPostUpdate'
     ];
 
     const BACKOFFICE_TABS = [
@@ -101,6 +102,6 @@ class ConfigService
         'Getresponse'
     ];
 
-    const CONFIRM_UNINSTALL = 'Warning: all the module data will be deleted. 
+    const CONFIRM_UNINSTALL = 'Warning: all the module data will be deleted.
     Are you sure you want uninstall this module?';
 }

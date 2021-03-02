@@ -27,7 +27,6 @@
 namespace GetResponse\Product;
 
 use GrShareCode\Product\Product as GrProduct;
-use GrShareCode\Product\Variant\VariantsCollection;
 use Link;
 use Product;
 
@@ -38,21 +37,20 @@ class ProductFactory
 {
     /**
      * @param Product $product
-     * @param int $quantity
      * @param int $languageId
+     * @param int $idProductAttribute
+     * @param int $quantity
      * @return GrProduct
      */
-    public function createShareCodeProductFromProduct(Product $product, $quantity, $languageId)
+    public function createShareCodeProductFromProduct(Product $product, $languageId, $idProductAttribute, $quantity)
     {
-        $categoryCollection = (new ProductCategoryCollectionFactory)->createFromCategories($product->getCategories());
-        $imagesCollection = (new ProductImagesFactory)->createFromImages(
+        $categoryCollection = (new ProductCategoryCollectionFactory())->createFromCategories($product->getCategories());
+        $imagesCollection = (new ProductImagesFactory())->createFromImages(
             $product->getImages($languageId),
             $product->link_rewrite[$languageId]
         );
 
-        $variant = (new ProductVariantFactory)->createFromProduct($product, $imagesCollection, $quantity, $languageId);
-        $variantCollection = new VariantsCollection();
-        $variantCollection->add($variant);
+        $variantCollection = (new ProductVariantFactory())->createFromProduct($product, $imagesCollection, $languageId, $idProductAttribute, $quantity);
 
         $grProduct = new GrProduct(
             (int)$product->id,

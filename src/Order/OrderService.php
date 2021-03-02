@@ -28,9 +28,13 @@ namespace GetResponse\Order;
 
 use Configuration;
 use Customer;
+use Db;
+use GetResponse\Helper\Shop;
 use GetResponse\Product\ProductFactory;
+use GetResponseRepository;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Order\Command\AddOrderCommand as GrAddOrderCommand;
+use GrShareCode\Order\Command\EditOrderCommand as GrEditOrderCommand;
 use GrShareCode\Order\OrderService as GrOrderService;
 use GrShareCode\Product\ProductsCollection;
 use Order;
@@ -71,8 +75,17 @@ class OrderService
             return;
         }
 
+        $grOrder = $this->orderFactory->createShareCodeOrderFromOrder($order);
+
+        $repository = new GetResponseRepository(Db::getInstance(), Shop::getUserShopId());
+
+        if (!empty($repository->getGrOrderIdFromMapping($grShopId, $grOrder->getExternalOrderId()))) {
+            $this->grOrderService->updateOrder(new GrEditOrderCommand($grOrder, $grShopId));
+            return;
+        }
+
         $addOrderCommand = new GrAddOrderCommand(
-            $this->orderFactory->createShareCodeOrderFromOrder($order),
+            $grOrder,
             (new Customer($order->id_customer))->email,
             $contactListId,
             $grShopId
@@ -92,14 +105,15 @@ class OrderService
         foreach ($products as $product) {
             $prestashopProduct = new Product($product['id_product']);
 
-            if (empty($prestashopProduct->reference)) {
+            if (empty($product['product_reference'])) {
                 continue;
             }
             $productService = new ProductFactory();
             $getresponseProduct = $productService->createShareCodeProductFromProduct(
                 $prestashopProduct,
-                (int)$product['product_quantity'],
-                Configuration::get('PS_LANG_DEFAULT')
+                Configuration::get('PS_LANG_DEFAULT'),
+                $product['product_attribute_id'],
+                (int)$product['product_quantity']
             );
 
             $productsCollection->add($getresponseProduct);

@@ -28,8 +28,10 @@ namespace GetResponse\Product;
 
 use GrShareCode\Product\Variant\Images\ImagesCollection;
 use GrShareCode\Product\Variant\Variant;
+use GrShareCode\Product\Variant\VariantsCollection;
 use Link;
 use Product;
+use ProductCore;
 use Tools;
 
 /**
@@ -43,12 +45,44 @@ class ProductVariantFactory
     /**
      * @param Product $product
      * @param ImagesCollection $imagesCollection
-     * @param int $quantity
      * @param int $languageId
-     * @return Variant
+     * @param int $idProductAttribute
+     * @param int $quantity
+     * @return VariantsCollection
      */
-    public function createFromProduct(Product $product, ImagesCollection $imagesCollection, $quantity, $languageId)
-    {
+    public function createFromProduct(
+        Product $product,
+        ImagesCollection $imagesCollection,
+        $languageId,
+        $idProductAttribute,
+        $quantity
+    ) {
+        $variantCollection = new VariantsCollection();
+
+        /** @var ProductCore $product */
+        if ($product->hasAttributes()) {
+            $combinations = $this->prepareCombinations($product->getAttributeCombinationsById($idProductAttribute, $languageId));
+
+            foreach ($combinations as $combination) {
+                $variant = new Variant(
+                    (int) $combination['id_product_attribute'],
+                    $combination['name'],
+                    $product->getPrice(false, $combination['id_product_attribute']),
+                    $product->getPrice(true, $combination['id_product_attribute']),
+                    $combination['reference']
+                );
+
+                $variant
+                    ->setQuantity($quantity)
+                    ->setImages($imagesCollection)
+                    ->setUrl((new Link())->getProductLink($product, false, false, false, $languageId))
+                    ->setDescription($this->getDescription($product, $languageId));
+
+                $variantCollection->add($variant);
+            }
+            return $variantCollection;
+        }
+
         $variant = new Variant(
             $product->id,
             $product->name[$languageId],
@@ -63,7 +97,9 @@ class ProductVariantFactory
             ->setUrl((new Link())->getProductLink($product, false, false, false, $languageId))
             ->setDescription($this->getDescription($product, $languageId));
 
-        return $variant;
+        $variantCollection->add($variant);
+
+        return $variantCollection;
     }
 
     /**
@@ -80,5 +116,22 @@ class ProductVariantFactory
         }
 
         return Tools::substr($description, 0, self::VARIANT_DESC_MAX_LENGTH);
+    }
+
+    private function prepareCombinations(array $combinations)
+    {
+        $uniqueCombinations = [];
+
+        foreach ($combinations as $combination) {
+            if (array_key_exists($combination['id_product_attribute'], $uniqueCombinations)) {
+                $combination['name'] = $combination['group_name'] . ' - ' . $combination['attribute_name'];
+                $uniqueCombinations[$combination['id_product_attribute']]['name'] .= ', ' . $combination['name'];
+            } else {
+                $combination['name'] = $combination['group_name'] . ' - ' . $combination['attribute_name'];
+                $uniqueCombinations[$combination['id_product_attribute']] = $combination;
+            }
+        }
+
+        return $uniqueCombinations;
     }
 }

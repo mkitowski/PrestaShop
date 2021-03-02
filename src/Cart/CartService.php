@@ -38,6 +38,7 @@ use GrShareCode\Cart\CartService as GrCartService;
 use GrShareCode\Api\Exception\GetresponseApiException;
 use GrShareCode\Product\ProductsCollection;
 use Product;
+use ProductCore;
 
 /**
  * Class CartService
@@ -94,17 +95,20 @@ class CartService
         $productsCollection = new ProductsCollection();
 
         foreach ($products as $product) {
-            $prestashopProduct = new Product($product['id_product']);
-
-            if (empty($prestashopProduct->reference)) {
+            if (empty($product['reference'])) {
                 continue;
             }
+
+            /** @var ProductCore|Product $prestashopProduct */
+            $prestashopProduct = new Product($product['id_product']);
+
             $productService = new ProductFactory();
 
             $getresponseProduct = $productService->createShareCodeProductFromProduct(
                 $prestashopProduct,
-                $product['quantity'],
-                Configuration::get('PS_LANG_DEFAULT')
+                Configuration::get('PS_LANG_DEFAULT'),
+                $product['id_product_attribute'],
+                (int) $product['cart_quantity']
             );
 
             $productsCollection->add($getresponseProduct);
