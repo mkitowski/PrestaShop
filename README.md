@@ -10,7 +10,7 @@ Send personalized, targeted offers to maximize conversions and increase sales.
 
 ## Getting started
 
-1. Go to releases section and download the most recent release of the zip file (don’t unpack it).
+1. Go to [releases](https://github.com/GetResponse/PrestaShop/releases) section and download the most recent release of the zip file (don’t unpack it).
 2. Log into your PrestaShop administrative panel.
 3. Go to the “Modules and Services” section and click Add a new module.
 4. Click Browse to find the addon archive you downloaded from the Marketplace.
