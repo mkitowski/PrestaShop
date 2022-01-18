@@ -1,3 +1,6 @@
+### This repo is no loner supported.
+##### New version is published here: https://github.com/GetResponse/GetresponseForPrestashop
+
 ####Latest release
 #####Warning! Version 16.3.0 breaks compatibility. If your current plugin version is older than 16.3, please remove plugin completely from administration panel before installing new version. 
 If you are using getResponse ecommerce functionality, we recommend to setup new shop (You can add shop via 'GetResponse Ecommerce' -> 'Add new Shop').
