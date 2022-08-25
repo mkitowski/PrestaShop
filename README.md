@@ -1,4 +1,4 @@
-### This repo is no loner supported.
+### This repo is no longer supported.
 ##### New version is published here: https://github.com/GetResponse/GetresponseForPrestashop
 
 ####Latest release
